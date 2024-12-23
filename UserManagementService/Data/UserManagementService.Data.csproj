@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application\UserManagementService.Application.csproj" />
-    <ProjectReference Include="..\Application\UserManagmentService.Application.csproj" />
   </ItemGroup>
 
 </Project>
