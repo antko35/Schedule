@@ -12,21 +12,22 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["API/UserService.Api.csproj", "API/"]
-COPY ["Core/UserService.Core.csproj", "Core/"]
-COPY ["Data/UserService.Data.csproj", "Data/"]
-RUN dotnet restore "./API/UserService.Api.csproj"
+COPY ["UserManagementService.API/UserManagementService.API.csproj", "UserManagementService.API/"]
+COPY ["Application/UserManagementService.Application.csproj", "Application/"]
+COPY ["Domain/UserManagementService.Domain.csproj", "Domain/"]
+COPY ["Data/UserManagementService.Data.csproj", "Data/"]
+RUN dotnet restore "./UserManagementService.API/UserManagementService.API.csproj"
 COPY . .
-WORKDIR "/src/API"
-RUN dotnet build "./UserService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/UserManagementService.API"
+RUN dotnet build "./UserManagementService.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./UserService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./UserManagementService.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "UserService.Api.dll"]
+ENTRYPOINT ["dotnet", "UserManagementService.API.dll"]

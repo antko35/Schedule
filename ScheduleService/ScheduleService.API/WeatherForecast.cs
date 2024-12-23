@@ -1,4 +1,4 @@
-namespace WebApplication1
+namespace ScheduleService.API
 {
     public class WeatherForecast
     {
