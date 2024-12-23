@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ScheduleService.Domain\ScheduleService.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

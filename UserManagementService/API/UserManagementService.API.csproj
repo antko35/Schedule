@@ -4,7 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>c4ac7d7d-f746-4bef-bc69-3dbcba10ed78</UserSecretsId>
+    <UserSecretsId>1d224a00-f7e5-4725-9723-8029cf6bfed3</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application\ScheduleService.Application.csproj" />
-    <ProjectReference Include="..\ScheduleService.Data\ScheduleService.Data.csproj" />
+    <ProjectReference Include="..\Application\UserManagementService.Application.csproj" />
+    <ProjectReference Include="..\Data\UserManagementService.Data.csproj" />
   </ItemGroup>
 
 </Project>
