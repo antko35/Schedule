@@ -13,8 +13,9 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["UserService.API/UserService.API.csproj", "UserService.API/"]
-COPY ["Core/UserService.Core.csproj", "Core/"]
-COPY ["Data/UserService.Data.csproj", "Data/"]
+COPY ["Core/UserService.Application.csproj", "Core/"]
+COPY ["Data/UserService.Infrastructure.csproj", "Data/"]
+COPY ["Domain/UserService.Domain.csproj", "Domain/"]
 RUN dotnet restore "./UserService.API/UserService.API.csproj"
 COPY . .
 WORKDIR "/src/UserService.API"

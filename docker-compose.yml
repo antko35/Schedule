@@ -3,7 +3,7 @@
 services:
   user-service:
     build:
-      context: ./UserService
+      context: ./src/UserService
       dockerfile: UserService.API/Dockerfile
     ports:
       - "5001:8080" # Локальный порт → Порт внутри контейнера
@@ -12,7 +12,7 @@ services:
 
   schedule-service:
     build:
-      context: ./ScheduleService
+      context: ./src/ScheduleService
       dockerfile: ScheduleService.API/Dockerfile
     ports:
       - "5002:8080"
@@ -21,7 +21,7 @@ services:
 
   user-management-service:
     build:
-      context: ./UserManagementService
+      context: ./src/UserManagementService
       dockerfile: UserManagementService.API/Dockerfile
     ports:
       - "5003:8080"
