@@ -13,9 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserManagementService.Data"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserManagementService.Domain", "UserManagementService\Domain\UserManagementService.Domain.csproj", "{31FE2F6F-CA14-4CE5-AA1B-6405E7AC3E14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Core", "UserService\Core\UserService.Core.csproj", "{12BE3207-78D2-42FB-9838-00752A4FDCB0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Application", "UserService\Core\UserService.Application.csproj", "{12BE3207-78D2-42FB-9838-00752A4FDCB0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Data", "UserService\Data\UserService.Data.csproj", "{BAD5E78D-DA8A-49AE-82A7-3880E2A7ACF7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Infrastructure", "UserService\Data\UserService.Infrastructure.csproj", "{BAD5E78D-DA8A-49AE-82A7-3880E2A7ACF7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheduleService.Application", "ScheduleService\Application\ScheduleService.Application.csproj", "{0AB635BC-348B-4E86-94D0-F82006AB7A4B}"
 EndProject
@@ -40,6 +40,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UserManagementServiceTests", "UserManagementServiceTests", "{2ADCB1DC-4611-47F5-9ECB-F45C6CB4DA2F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UserServiceTests", "UserServiceTests", "{7902B9BB-24CB-4C9A-BECF-B6FEA736D12A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Domain", "UserService\Domain\UserService.Domain.csproj", "{6FC1D5D7-CF9A-42DC-9EB1-2D1DD752D631}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +93,10 @@ Global
 		{17A17EF1-7EF3-4528-8778-F3342231D41F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17A17EF1-7EF3-4528-8778-F3342231D41F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17A17EF1-7EF3-4528-8778-F3342231D41F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FC1D5D7-CF9A-42DC-9EB1-2D1DD752D631}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FC1D5D7-CF9A-42DC-9EB1-2D1DD752D631}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FC1D5D7-CF9A-42DC-9EB1-2D1DD752D631}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FC1D5D7-CF9A-42DC-9EB1-2D1DD752D631}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -113,5 +119,6 @@ Global
 		{0FB7F44F-B4FA-4C8E-BBFD-202D26544F9F} = {B1E2A54F-61A4-4FDF-AE6C-BA49B4C41102}
 		{2ADCB1DC-4611-47F5-9ECB-F45C6CB4DA2F} = {B1E2A54F-61A4-4FDF-AE6C-BA49B4C41102}
 		{7902B9BB-24CB-4C9A-BECF-B6FEA736D12A} = {B1E2A54F-61A4-4FDF-AE6C-BA49B4C41102}
+		{6FC1D5D7-CF9A-42DC-9EB1-2D1DD752D631} = {5D912FDF-B279-4088-9FF1-FDC9B2432546}
 	EndGlobalSection
 EndGlobal
