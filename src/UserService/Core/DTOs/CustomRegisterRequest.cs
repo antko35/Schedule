@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UserService.Application.DTOs
 {
-    public class RegisterRequest
+    public class CustomRegisterRequest
     {
         public string Username { get; set; }
         public string Email { get; set; }

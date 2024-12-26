@@ -1,10 +1,54 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Text;
+using UserService.API.Controllers;
+using UserService.Application.JWTService;
+using UserService.Application.UseCases;
+using UserService.Domain.Models;
 using UserService.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder => {
+        builder.AllowAnyOrigin();
+        builder.AllowAnyMethod();
+        builder.AllowAnyHeader();
+    });
+});
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+       // Role = new ClaimsIdentity(),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+})
+.AddCookie(options =>
+{
+    options.LoginPath = "/login"; // Путь для перенаправления при неаутентифицированном доступе
+    options.Cookie.Name = "authCookie"; // Имя куки
+    options.Cookie.HttpOnly = true; // Защита от доступа через JavaScript
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Использование только по HTTPS
+}); ;
+
 
 builder.Services.AddControllers();
 
@@ -15,10 +59,16 @@ var connectionString = builder.Configuration.GetConnectionString("postgresConnec
 builder.Services.AddEntityFrameworkNpgsql().AddDbContext<UserDbContext>(options => options.UseNpgsql(connectionString));
 
 builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<UserDbContext>();
 
 builder.Services.AddAuthorization();
 
+
+builder.Services.AddScoped<RegistrationUseCase>();
+builder.Services.AddScoped<LoginUseCase>();
+builder.Services.AddScoped<LogOutUseCase>();
+builder.Services.AddScoped<JWTGenerator>();
 var app = builder.Build();
 
 app.MapIdentityApi<IdentityUser>();
@@ -36,16 +86,34 @@ if (app.Environment.IsDevelopment())
 
     var application = app.Services.CreateScope().ServiceProvider.GetRequiredService<UserDbContext>();
 
-    var pendingMigrations = await application.Database.GetPendingMigrationsAsync();
-    if (pendingMigrations != null)
-        await application.Database.MigrateAsync();
+    //var pendingMigrations = await application.Database.GetPendingMigrationsAsync();
+    //if (pendingMigrations != null)
+    //    await application.Database.MigrateAsync();
 }
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ UseAuthorization
+app.UseCors();
+
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager =
+        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    var roles = new[] { "Admin","User"};
+
+    foreach (var role in roles)
+    {
+        if(!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+}
+
+    app.Run();
