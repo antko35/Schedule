@@ -1,6 +1,4 @@
-﻿version: "3.9"
-
-services:
+﻿services:
   user-service:
     build:
       context: ./src/UserService
@@ -9,6 +7,30 @@ services:
       - "5001:8080" # Локальный порт → Порт внутри контейнера
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - user-service-pg-db
+    command: >
+      sh -c "dotnet ef database update -s ./src/UserService/UserService.API -p ./src/UserService/Data && 
+             dotnet UserService.API.dll"
+  
+  user-service-pg-db:
+    image: postgres:latest
+    ports:
+      - "5432:5432" # Локальный порт → Порт внутри контейнера
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=users_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  pdAdmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
 
   schedule-service:
     build:
@@ -28,4 +50,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 
+volumes:
+  db-data:
 
