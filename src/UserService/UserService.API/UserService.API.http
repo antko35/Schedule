@@ -1,13 +1,20 @@
-@UserService.API_HostAddress = http://localhost:5130
-@token = 
+#@UserService.API_HostAddress = https://localhost:5130
+@UserService.API_HostAddress = https://localhost:7226
+@token =CfDJ8PDxhR5-nxlCu0GyyS8HRthkWnOqrkAnJHDQvbCKaJ6vlj6OIznmyNUtHdJTpWWG-b12MBBfdGj7kC96wdrdbPpsKN0sc1J-PnMEsu6erIo9bVkY5nfheTXUcRxpkpSYpVa9iusjUg_mR-CaMynaKydHcVf0wepg3OeNervCYvPNkKskUlNxIkgEECtspjla5wMVCoWyaqvjrXoEznTzy-wdSQfTnX-7hf6cKV2EftCgwZRNlcMHtvww4tNvlBaQByPW4ebTKoiNG_onFrLba_N2GdbZv7UHx6j8WaGQ55LmOFAEJD3un1Nmi8UdLKIZFjLjADGU_-4mbpYJmSvtlWROt17iE9cmjOVB-q4mimj8eC_NcZacsSJnxXJP3IZ7e4T6OXcgHRY1lnMeO6K28L3lF3PjdqINhfjRlpqti8bdZrv02QepFvuJuPWqiVX-flQEHMJ6TsisooGKqdSCI1Gb_j52QTHTG3F0bbo3D5hkFyDD5-_DxOJpy694SSf8zk6j8UD_MHc4IVqyGx56lbio4dtt__IADsNpmQ6LKqMxZUyn6eLxcbXHAdThU24SCWp59M6mmpJx5rBAmm9piU0AkRGGN-9iwKqiFsiBtN8D5oeZpxl69fBRDh7DkgAsf9B-ZthIs0eSiwxGAVm5_uJR9viH4ly0dk0itZoRokG1_B81giXrutMY8cNX93ZLVw
+
 
 GET {{UserService.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
 
-POST{{schedule-user-service-1}}/userService/login
+POST {{UserService.API_HostAddress}}/userService/login
+Content-Type: application/json
 {
-    email: "string@gmail.com"
-    password: "strinG_1"
+    "email": "string@gmail.com",
+    "password": "strinG_1"
 }
+
+###
+GET {{UserService.API_HostAddress}}/weatherForecast
+Authorization: Bearer {{token}}

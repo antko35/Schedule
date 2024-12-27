@@ -14,10 +14,8 @@ namespace UserService.Infrastructure.Extensions
             services.AddEntityFrameworkNpgsql()
                 .AddDbContext<UserDbContext>(options => options.UseNpgsql(connectionString));
 
-
-            //services.AddIdentityApiEndpoints<User>()
+            // services.AddIdentityApiEndpoints<User>()
             //    .AddEntityFrameworkStores<UserDbContext>();
-
         }
     }
 }
