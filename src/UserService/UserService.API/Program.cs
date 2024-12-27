@@ -2,13 +2,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
 using UserService.API.Controllers;
-using UserService.Application.JWTService;
-using UserService.Application.UseCases;
+//using UserService.Application.JWTService;
+//using UserService.Application.UseCases;
 using UserService.Domain.Models;
 using UserService.Infrastructure;
+using UserService.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +33,6 @@ builder.Services.AddAuthentication(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-       // Role = new ClaimsIdentity(),
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
@@ -51,27 +52,50 @@ builder.Services.AddAuthentication(options =>
 
 
 builder.Services.AddControllers();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer"
+    });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement // добавляет токен в header
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "bearerAuth" }
+            },
+            []
+        }
+    });
+});
 
-var connectionString = builder.Configuration.GetConnectionString("postgresConnection");
-builder.Services.AddEntityFrameworkNpgsql().AddDbContext<UserDbContext>(options => options.UseNpgsql(connectionString));
 
-builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+// exeption handling middleware
+
+//var connectionString = builder.Configuration.GetConnectionString("postgresConnection");
+//builder.Services.AddEntityFrameworkNpgsql().AddDbContext<UserDbContext>(options => options.UseNpgsql(connectionString));
+
+builder.Services.AddIdentityApiEndpoints<User>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<UserDbContext>();
 
+builder.Services.AddEndpointsApiExplorer(); // visible identity endpoints
+
 builder.Services.AddAuthorization();
 
+builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services.AddScoped<RegistrationUseCase>();
-builder.Services.AddScoped<LoginUseCase>();
-builder.Services.AddScoped<LogOutUseCase>();
-builder.Services.AddScoped<JWTGenerator>();
+//builder.Services.AddScoped<RegistrationUseCase>();
+//builder.Services.AddScoped<LoginUseCase>();
+//builder.Services.AddScoped<LogOutUseCase>();
+//builder.Services.AddScoped<JWTGenerator>();
+
 var app = builder.Build();
 
-app.MapIdentityApi<IdentityUser>();
+
 
 // Configure the HTTP request pipeline.
 
@@ -84,8 +108,7 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = string.Empty;
     });
 
-    var application = app.Services.CreateScope().ServiceProvider.GetRequiredService<UserDbContext>();
-
+   // var application = app.Services.CreateScope().ServiceProvider.GetRequiredService<UserDbContext>();
     //var pendingMigrations = await application.Database.GetPendingMigrationsAsync();
     //if (pendingMigrations != null)
     //    await application.Database.MigrateAsync();
@@ -94,6 +117,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors();
+
+app.MapGroup("userService").MapIdentityApi<User>();
 
 app.UseAuthentication(); 
 app.UseAuthorization();
