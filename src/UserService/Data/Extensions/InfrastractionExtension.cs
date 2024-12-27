@@ -1,12 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.AspNetCore.Identity;
-using System.Threading.Tasks;
+
 using UserService.Domain.Models;
 
 namespace UserService.Infrastructure.Extensions
@@ -19,9 +14,8 @@ namespace UserService.Infrastructure.Extensions
             services.AddEntityFrameworkNpgsql()
                 .AddDbContext<UserDbContext>(options => options.UseNpgsql(connectionString));
 
-           
+
             //services.AddIdentityApiEndpoints<User>()
-            //    //.AddRoles<IdentityRole>()
             //    .AddEntityFrameworkStores<UserDbContext>();
 
         }

@@ -1,13 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using System.Security.Claims;
 using System.Text;
-using UserService.API.Controllers;
-//using UserService.Application.JWTService;
-//using UserService.Application.UseCases;
+using UserService.API.Extensions;
 using UserService.Domain.Models;
 using UserService.Infrastructure;
 using UserService.Infrastructure.Extensions;
@@ -51,41 +46,12 @@ builder.Services.AddAuthentication(options =>
 }); ;
 
 
-builder.Services.AddControllers();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
-    {
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer"
-    });
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement // добавляет токен в header
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "bearerAuth" }
-            },
-            []
-        }
-    });
-});
-
-
-// exeption handling middleware
-
-//var connectionString = builder.Configuration.GetConnectionString("postgresConnection");
-//builder.Services.AddEntityFrameworkNpgsql().AddDbContext<UserDbContext>(options => options.UseNpgsql(connectionString));
-
 builder.Services.AddIdentityApiEndpoints<User>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<UserDbContext>();
 
-builder.Services.AddEndpointsApiExplorer(); // visible identity endpoints
 
-builder.Services.AddAuthorization();
-
+builder.AddPresentation();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 //builder.Services.AddScoped<RegistrationUseCase>();
@@ -125,20 +91,20 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager =
-        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+//using (var scope = app.Services.CreateScope())
+//{
+//    var roleManager =
+//        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    var roles = new[] { "Admin","User"};
+//    var roles = new[] { "Admin","User"};
 
-    foreach (var role in roles)
-    {
-        if(!await roleManager.RoleExistsAsync(role))
-        {
-            await roleManager.CreateAsync(new IdentityRole(role));
-        }
-    }
-}
+//    foreach (var role in roles)
+//    {
+//        if(!await roleManager.RoleExistsAsync(role))
+//        {
+//            await roleManager.CreateAsync(new IdentityRole(role));
+//        }
+//    }
+//}
 
     app.Run();

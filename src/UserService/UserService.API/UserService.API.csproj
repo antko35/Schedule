@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\UserService.Application.csproj" />
+    <ProjectReference Include="..\Data\UserService.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
