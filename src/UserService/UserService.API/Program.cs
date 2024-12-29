@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Identity;
 using UserService.API.Extensions;
 using UserService.Domain.Models;
 using UserService.Infrastructure;
 using UserService.Infrastructure.Extensions;
+using UserService.Infrastructure.Seeders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,9 +44,9 @@ builder.Services.AddCors(options =>
 // });;
 builder.AddPresentation();
 
-builder.Services.AddIdentityApiEndpoints<User>()
-    .AddEntityFrameworkStores<UserDbContext>();
-
+// builder.Services.AddIdentityApiEndpoints<User>()
+//    .AddRoles<IdentityRole>()
+//    .AddEntityFrameworkStores<UserDbContext>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // builder.Services.AddScoped<RegistrationUseCase>();
@@ -52,6 +54,12 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // builder.Services.AddScoped<LogOutUseCase>();
 // builder.Services.AddScoped<JWTGenerator>();
 var app = builder.Build();
+
+app.UseMiddleware<ExeptionHadlingMiddleware>();
+
+var scope = app.Services.CreateScope();
+var seeder = scope.ServiceProvider.GetRequiredService<IUserSeeder>();
+await seeder.Seed();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -63,10 +71,7 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = string.Empty;
     });
 
-   // var application = app.Services.CreateScope().ServiceProvider.GetRequiredService<UserDbContext>();
-    // var pendingMigrations = await application.Database.GetPendingMigrationsAsync();
-    // if (pendingMigrations != null)
-    //    await application.Database.MigrateAsync();
+    app.ApplyMigrations();
 }
 
 app.UseHttpsRedirection();
@@ -79,17 +84,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// using (var scope = app.Services.CreateScope())
-// {
-//    var roleManager =
-//        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-//    var roles = new[] { "Admin","User"};
-//    foreach (var role in roles)
-//    {
-//        if(!await roleManager.RoleExistsAsync(role))
-//        {
-//            await roleManager.CreateAsync(new IdentityRole(role));
-//        }
-//    }
-// }
 app.Run();

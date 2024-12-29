@@ -1,0 +1,57 @@
+﻿using System.Net;
+using System.Text.Json;
+
+namespace UserService.API.Extensions
+{
+    public class ExeptionHadlingMiddleware
+    {
+        private readonly RequestDelegate next;
+
+        public ExeptionHadlingMiddleware(RequestDelegate next)
+        {
+            this.next = next;
+        }
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            try
+            {
+                await next(context);
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(context, ex);
+            }
+        }
+
+        private Task HandleExceptionAsync(HttpContext context, Exception exception)
+        {
+            context.Response.ContentType = "application/json";
+            HttpStatusCode status;
+            string message;
+
+            switch (exception)
+            {
+                case ArgumentNullException argumentNull:
+                    status = HttpStatusCode.NotFound;
+                    message = argumentNull.Message;
+                    break;
+
+                case InvalidOperationException invalidOperation:
+                    status = HttpStatusCode.NotFound;
+                    message = invalidOperation.Message;
+                    break;
+
+                default:
+                    status = HttpStatusCode.InternalServerError;
+                    message = "An occurad error";
+                    break;
+            }
+
+            var result = JsonSerializer.Serialize(new { error = message });
+            context.Response.StatusCode = (int)status;
+
+            return context.Response.WriteAsync(result);
+        }
+    }
+}

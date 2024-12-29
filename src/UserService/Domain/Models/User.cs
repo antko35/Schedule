@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UserService.Domain.Models
+﻿namespace UserService.Domain.Models
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Identity;
+
     public class User : IdentityUser
     {
     }
