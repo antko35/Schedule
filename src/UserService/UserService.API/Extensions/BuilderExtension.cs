@@ -4,17 +4,20 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using UserService.Domain.Models;
 using UserService.Infrastructure;
+using UserService.Infrastructure.EmailSender;
 
 public static class BuilderExtension
 {
-    public static void AddPresentation(this WebApplicationBuilder builder) {
-
+    public static void AddPresentation(this WebApplicationBuilder builder)
+    {
         builder.Services.AddAuthentication();
         builder.Services.AddControllers();
 
         builder.Services.AddIdentityApiEndpoints<User>()
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<UserDbContext>();
+
+       // builder.Services.AddSingleton<IEmailSender, IdentityEmailSender>();
 
         builder.Services.AddSwaggerGen(c =>
         {

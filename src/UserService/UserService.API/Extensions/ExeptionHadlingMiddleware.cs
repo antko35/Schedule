@@ -44,7 +44,7 @@ namespace UserService.API.Extensions
 
                 default:
                     status = HttpStatusCode.InternalServerError;
-                    message = "An occurad error";
+                    message = exception.Message;
                     break;
             }
 

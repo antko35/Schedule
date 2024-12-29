@@ -1,10 +1,10 @@
 ﻿namespace UserService.Infrastructure.Extensions
 {
+    using Microsoft.AspNetCore.Identity.UI.Services;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using UserService.Domain.Models;
-    using Microsoft.AspNetCore.Identity;
+    using UserService.Infrastructure.EmailSender;
     using UserService.Infrastructure.Seeders;
 
     public static class InfrastractionExtension
@@ -16,6 +16,8 @@
                 .AddDbContext<UserDbContext>(options => options.UseNpgsql(connectionString));
 
             services.AddScoped<IUserSeeder, UserSeeder>();
+            services.AddSingleton<IEmailSender, IdentityEmailSender>();
+
             //services.AddIdentityCore<User>()
             //    .AddEntityFrameworkStores<UserDbContext>()
             //    .AddApiEndpoints();
