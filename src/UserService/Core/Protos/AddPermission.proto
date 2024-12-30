@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace UserService.Application.Protos
+{
+    class AddPermission
+    {
+        syntax = "proto3";
+
+service UserService {
+  rpc AddClaimToPerson(AddClaimRequest) returns (AddClaimResponse);
+}
+
+message AddClaimRequest {
+  string userId = 1;
+  string claimType = 2;
+  string claimValue = 3;
+}
+
+message AddClaimResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+    }
+}

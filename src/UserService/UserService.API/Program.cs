@@ -18,41 +18,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// builder.Services.AddAuthentication(options =>
-// {
-//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-// }).AddJwtBearer(options =>
-// {
-//    options.TokenValidationParameters = new TokenValidationParameters
-//    {
-//        ValidateIssuer = true,
-//        ValidateAudience = true,
-//        ValidateLifetime = true,
-//        ValidateIssuerSigningKey = true,
-//        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-//        ValidAudience = builder.Configuration["Jwt:Audience"],
-//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-//    };
-// })
-// .AddCookie(options =>
-// {
-//    options.LoginPath = "/login"; // Путь для перенаправления при неаутентифицированном доступе
-//    options.Cookie.Name = "authCookie"; // Имя куки
-//    options.Cookie.HttpOnly = true; // Защита от доступа через JavaScript
-//    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Использование только по HTTPS
-// });;
 builder.AddPresentation();
 
-// builder.Services.AddIdentityApiEndpoints<User>()
-//    .AddRoles<IdentityRole>()
-//    .AddEntityFrameworkStores<UserDbContext>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// builder.Services.AddScoped<RegistrationUseCase>();
-// builder.Services.AddScoped<LoginUseCase>();
-// builder.Services.AddScoped<LogOutUseCase>();
-// builder.Services.AddScoped<JWTGenerator>();
 var app = builder.Build();
 
 app.UseMiddleware<ExeptionHadlingMiddleware>();

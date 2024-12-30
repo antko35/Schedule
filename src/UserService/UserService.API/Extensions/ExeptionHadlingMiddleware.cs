@@ -16,7 +16,7 @@ namespace UserService.API.Extensions
         {
             try
             {
-                await next(context);
+                await this.next(context);
             }
             catch (Exception ex)
             {

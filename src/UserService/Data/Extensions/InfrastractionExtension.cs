@@ -17,13 +17,6 @@
 
             services.AddScoped<IUserSeeder, UserSeeder>();
             services.AddSingleton<IEmailSender, IdentityEmailSender>();
-
-            //services.AddIdentityCore<User>()
-            //    .AddEntityFrameworkStores<UserDbContext>()
-            //    .AddApiEndpoints();
-
-            //services.AddIdentityApiEndpoints<User>()
-            //    .AddEntityFrameworkStores<UserDbContext>();
         }
     }
 }

@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
-using UserService.Application.DTOs;
-using UserService.Domain.Models;
-
-namespace UserService.Application.Services
+﻿namespace UserService.Application.Services
 {
+    using global::UserService.Application.DTOs;
+    using global::UserService.Domain.Models;
+    using Grpc.Core;
+    using Microsoft.AspNetCore.Identity;
+    using System.Security.Claims;
+
     public class UserService(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {
         public async Task ChangeRole(ChangeUserRole request)
@@ -21,6 +23,33 @@ namespace UserService.Application.Services
             }
 
             await userManager.AddToRoleAsync(user, role.Name!);
+        }
+
+        public async Task<AddClaimResponse> AddClaimToPerson(AddClaimRequest request)
+        {
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                throw new InvalidOperationException($"No person with this email {request.Email}");
+            }
+
+            var claim = new Claim("Permission", request.ClaimName);
+            var result = await userManager.AddClaimAsync(user, claim);
+
+            if (result.Succeeded)
+            {
+                return new AddClaimResponse
+                {
+                    Success = true,
+                    Message = "Claim added successfully"
+                };
+            }
+
+            return new AddClaimResponse
+            {
+                Success = false,
+                Message = string.Join(", ", result.Errors.Select(e => e.Description))
+            };
         }
     }
 }
