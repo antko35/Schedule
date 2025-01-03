@@ -9,7 +9,7 @@
         {
             using IServiceScope scope = app.ApplicationServices.CreateScope();
             using UserDbContext context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-            context.Database.Migrate();
+            //context.Database.Migrate();
         }
     }
 }

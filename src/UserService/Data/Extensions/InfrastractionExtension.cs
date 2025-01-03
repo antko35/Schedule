@@ -17,6 +17,7 @@
 
             services.AddScoped<IUserSeeder, UserSeeder>();
             services.AddSingleton<IEmailSender, IdentityEmailSender>();
+
         }
     }
 }

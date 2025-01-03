@@ -13,6 +13,8 @@ public static class BuilderExtension
         builder.Services.AddAuthentication();
         builder.Services.AddControllers();
 
+        builder.Services.AddGrpc();
+
         builder.Services.AddIdentityApiEndpoints<User>()
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<UserDbContext>();

@@ -1,13 +1,26 @@
-using Microsoft.AspNetCore.Identity;
 using UserService.API.Extensions;
+using UserService.Application.Services;
 using UserService.Domain.Models;
-using UserService.Infrastructure;
 using UserService.Infrastructure.Extensions;
 using UserService.Infrastructure.Seeders;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(8080, opt =>
+    {
+        var certPath = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel__Certificates__Default__Path");
+        var certPassword = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel__Certificates__Default__Password");
+
+        if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(certPassword))
+        {
+            opt.UseHttps(certPath, certPassword);
+        }
+    });
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
@@ -33,6 +46,8 @@ await seeder.Seed();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseHttpsRedirection();
+
     app.UseSwagger();
     app.UseSwaggerUI(options => // UseSwaggerUI is called only in Development.
     {
@@ -43,9 +58,11 @@ if (app.Environment.IsDevelopment())
     app.ApplyMigrations();
 }
 
+app.UseCors();
+
 app.UseHttpsRedirection();
 
-app.UseCors();
+app.MapGrpcService<GrpcService>();
 
 app.MapGroup("userService").MapIdentityApi<User>();
 

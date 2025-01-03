@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.Core.Api" Version="2.67.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.67.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -18,9 +18,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Domain\UserService.Domain.csproj" />
   </ItemGroup>
-	
-	<ItemGroup>
-		<Protobuf Include="Protos\user_service.proto" GrpcServices="Server" />
-	</ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\userService.proto" GrpcServices="Server" />
+  </ItemGroup>
 
 </Project>

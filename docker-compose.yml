@@ -7,8 +7,12 @@
       - "5001:8080" # Локальный порт → Порт внутри контейнера
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
     depends_on:
       - user-service-pg-db
+    volumes:
+      - ~/.aspnet/https:/https:ro
     command: >
       sh -c "dotnet ef database update -s ./src/UserService/UserService.API -p ./src/UserService/Data && 
              dotnet UserService.API.dll"
@@ -49,6 +53,8 @@
       - "5003:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ./server-cert.crt:/usr/local/share/ca-certificates/server-cert.crt:ro
 
 volumes:
   db-data:
