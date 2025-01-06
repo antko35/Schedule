@@ -74,7 +74,6 @@
             }
 
             var result = await userManager.RemoveClaimAsync(user, claimToDelete);
-            Console.WriteLine(result);
             if (result.Succeeded)
             {
                 return new AddClaimResponse

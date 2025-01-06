@@ -17,23 +17,5 @@
             await userService.ChangeRole(request);
             return Ok();
         }
-
-        //[HttpPost]
-        //[Route("addClaim")]
-        ////[Authorize(Roles = UserRoles.Admin)]
-        //public async Task<IActionResult> addClaim([FromBody] AddClaimRequest request)
-        //{
-        //    var result = await userService.AddClaimToPerson(request);
-        //    return Ok(result);
-        //}
-
-        //[HttpPost]
-        //[Route("removeClaim")]
-        ////[Authorize(Roles = UserRoles.Admin)]
-        //public async Task<IActionResult> removeClaim([FromBody] AddClaimRequest request)
-        //{
-        //    var result = await userService.DeletePersonClaim(request);
-        //    return Ok(result);
-        //}
     }
 }

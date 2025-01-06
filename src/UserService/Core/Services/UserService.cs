@@ -22,55 +22,13 @@
                 throw new InvalidOperationException("Role " + request.Role + " doest exixt");
             }
 
-            await userManager.AddToRoleAsync(user, role.Name!);
+            var result = await userManager.AddToRoleAsync(user, role.Name!);
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException(
+                    $"Failed to add user '{request.Email}' to role '{role.Name}'. " +
+                    $"Errors: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            }
         }
-
-        // public async Task<AddClaimResponse> AddClaimToPerson(AddClaimRequest request)
-        // {
-        // var user = await userManager.FindByEmailAsync(request.Email);
-        //    if (user == null)
-        //    {
-        //        throw new InvalidOperationException($"No person with this email {request.Email}");
-        //    }
-        //    var claim = new Claim(request.organizationId, request.ClaimName);
-        //// userManager.GetUsersForClaimAsync(claim).Wait();
-        // var result = await userManager.AddClaimAsync(user, claim);
-        //    if (result.Succeeded)
-        //    {
-        //        return new AddClaimResponse
-        //        {
-        //            Success = true,
-        //            Message = "Claim added successfully"
-        //        };
-        //    }
-        //    return new AddClaimResponse
-        //    {
-        //        Success = false,
-        //        Message = string.Join(", ", result.Errors.Select(e => e.Description))
-        //    };
-// }
-// public async Task<AddClaimResponse> DeletePersonClaim(AddClaimRequest request)
-//        {
-//            var user = await userManager.FindByEmailAsync(request.Email);
-//            if (user == null)
-//            {
-//                throw new InvalidOperationException($"No person with this email {request.Email}");
-//            }
-//            var claimToDelete = new Claim(request.organizationId, request.ClaimName);
-//            var result = await userManager.RemoveClaimAsync(user, claimToDelete);
-//            if (result.Succeeded)
-//            {
-//                return new AddClaimResponse
-//                {
-//                    Success = true,
-//                    Message = "Claim added successfully"
-//                };
-//            }
-//            return new AddClaimResponse
-//            {
-//                Success = false,
-//                Message = string.Join(", ", result.Errors.Select(e => e.Description))
-//            };
-//        }
-   }
+    }
 }

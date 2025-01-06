@@ -15,7 +15,7 @@ builder.Services.AddSingleton<UserClient>(sp =>
 {
     var channel = GrpcChannel.ForAddress(
         "https://user-service:8080",
-        new GrpcChannelOptions { HttpHandler = handler }); // URL сервера
+        new GrpcChannelOptions { HttpHandler = handler });
     return new UserClient(new UserGrpcService.UserGrpcServiceClient(channel));
 });
 
