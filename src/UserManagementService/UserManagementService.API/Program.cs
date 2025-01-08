@@ -1,6 +1,6 @@
 using Grpc.Net.Client;
 using UserManagementService.API.Extensions;
-using UserManagementService.Application.GrpcClient;
+using UserManagementService.API.GrpcClient.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

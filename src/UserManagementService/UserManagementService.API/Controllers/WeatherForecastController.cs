@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using UserManagementService.Application.GrpcClient;
+using UserManagementService.API.GrpcClient.Services;
 
 namespace UserManagementService.API.Controllers;
 
@@ -31,6 +31,14 @@ public class WeatherForecastController : ControllerBase
             Summary = Summaries[Random.Shared.Next(Summaries.Length)]
         })
         .ToArray();
+    }
+
+    [HttpGet]
+    [Route("GetClaims/{email}")]
+    public async Task<IActionResult> GetClaims([FromRoute] string email)
+    {
+        var response = await _userClient.GetUserClaimsAsync(email);
+        return Ok(response);
     }
 
     [HttpPost]

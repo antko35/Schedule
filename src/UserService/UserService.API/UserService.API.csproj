@@ -40,5 +40,9 @@
     <ProjectReference Include="..\Data\UserService.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Protobuf Include="Grpc\Protos\userService.proto" GrpcServices="Server" />
+  </ItemGroup>
+
 
 </Project>

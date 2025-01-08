@@ -23,8 +23,4 @@
     <ProjectReference Include="..\Domain\UserManagementService.Domain.csproj" />
   </ItemGroup>
 
-	<ItemGroup>
-		<Protobuf Include="Protos\userService.proto" GrpcServices="Client" />
-	</ItemGroup>
-
 </Project>

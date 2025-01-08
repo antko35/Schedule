@@ -5,6 +5,7 @@
 service UserGrpcService {
   rpc AddClaimToPerson(AddClaimRequest) returns (AddClaimResponse);
   rpc DeletePersonClaim(AddClaimRequest) returns (AddClaimResponse);
+  rpc GetPersonClaims(GetClaimsRequest) returns (GetClaimResponse);
 }
 
 message AddClaimRequest {
@@ -16,4 +17,19 @@ message AddClaimRequest {
 message AddClaimResponse {
   bool success = 1;
   string message = 2;
+}
+
+message GetClaimsRequest{
+	string email = 1;
+}
+
+message GetClaimResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Claim claims = 3;
+}
+
+message Claim {
+  string type = 1;
+  string value = 2;
 }

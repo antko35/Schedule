@@ -1,10 +1,26 @@
-﻿namespace UserManagementService.Application.GrpcClient
+﻿namespace UserManagementService.API.GrpcClient.Services
 {
     using System;
     using System.Threading.Tasks;
 
     public class UserClient(UserGrpcService.UserGrpcServiceClient client)
     {
+        public async Task<GetClaimResponse> GetUserClaimsAsync(string email)
+        {
+            var request = new GetClaimsRequest { Email = email };
+            var response = await client.GetPersonClaimsAsync(request);
+
+            if (response.Success)
+            {
+                Console.WriteLine($"Claims : {response.Claims}");
+                return response;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Failed to get claim: {response.Message}");
+            }
+        }
+
         public async Task AddClaimAsync(AddClaimRequest request)
         {
             var response = await client.AddClaimToPersonAsync(request);

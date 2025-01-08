@@ -4,7 +4,7 @@ using UserService.Application.DTOs;
 using UserService.Domain.Models;
 using Xunit;
 
-namespace UserServiceTests
+namespace UserServiceTests.Application
 {
     public class UserServiceTests
     {

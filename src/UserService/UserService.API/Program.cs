@@ -7,19 +7,7 @@ using UserService.Infrastructure.Seeders;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(8080, opt =>
-    {
-        var certPath = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel__Certificates__Default__Path");
-        var certPassword = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel__Certificates__Default__Password");
-
-        if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(certPassword))
-        {
-            opt.UseHttps(certPath, certPassword);
-        }
-    });
-});
+builder.AddHost();
 
 builder.Services.AddCors(options =>
 {
