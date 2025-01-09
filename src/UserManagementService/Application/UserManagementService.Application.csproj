@@ -23,4 +23,8 @@
     <ProjectReference Include="..\Domain\UserManagementService.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UseCases\" />
+  </ItemGroup>
+
 </Project>

@@ -53,9 +53,32 @@
       - "5003:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - management-mongo
     volumes:
       - ./server-cert.crt:/usr/local/share/ca-certificates/server-cert.crt:ro
 
+  management-mongo:
+    image: mongo:latest
+    container_name: management-mongo
+    ports:
+      - "27017:27017" 
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=usermanagement_db
+    volumes:
+      - management-mongo-data:/data/db
+
+  management-mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=management-mongo
+
 volumes:
   db-data:
-
+  management-mongo-data:
