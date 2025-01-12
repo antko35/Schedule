@@ -15,7 +15,7 @@ WORKDIR /src
 COPY ["UserManagementService.API/UserManagementService.API.csproj", "UserManagementService.API/"]
 COPY ["Application/UserManagementService.Application.csproj", "Application/"]
 COPY ["Domain/UserManagementService.Domain.csproj", "Domain/"]
-COPY ["Data/UserManagementService.Data.csproj", "Data/"]
+COPY ["Data/UserManagementService.DataAccess.csproj", "Data/"]
 RUN dotnet restore "./UserManagementService.API/UserManagementService.API.csproj"
 COPY . .
 WORKDIR "/src/UserManagementService.API"

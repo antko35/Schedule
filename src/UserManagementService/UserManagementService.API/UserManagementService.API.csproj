@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application\UserManagementService.Application.csproj" />
-    <ProjectReference Include="..\Data\UserManagementService.Data.csproj" />
+    <ProjectReference Include="..\Data\UserManagementService.DataAccess.csproj" />
   </ItemGroup>
 
   <ItemGroup>

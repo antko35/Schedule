@@ -13,12 +13,10 @@ public class WeatherForecastController : ControllerBase
     };
 
     private readonly ILogger<WeatherForecastController> _logger;
-    public readonly UserClient _userClient;
 
     public WeatherForecastController(ILogger<WeatherForecastController> logger, UserClient userClient)
     {
         _logger = logger;
-        _userClient = userClient;
     }
 
     [HttpGet]
@@ -31,27 +29,5 @@ public class WeatherForecastController : ControllerBase
             Summary = Summaries[Random.Shared.Next(Summaries.Length)]
         })
         .ToArray();
-    }
-
-    [HttpGet]
-    [Route("GetClaims/{email}")]
-    public async Task<IActionResult> GetClaims([FromRoute] string email)
-    {
-        var response = await _userClient.GetUserClaimsAsync(email);
-        return Ok(response);
-    }
-
-    [HttpPost]
-    [Route("AddClaim")]
-    public async Task AddClaim(AddClaimRequest request)
-    {
-        await _userClient.AddClaimAsync(request);
-    }
-
-    [HttpPost]
-    [Route("DeleteClaim")]
-    public async Task DeleteClaim(AddClaimRequest request)
-    {
-        await _userClient.DeleteClaimAsync(request);
     }
 }

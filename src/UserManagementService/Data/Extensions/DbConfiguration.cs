@@ -1,16 +1,13 @@
-﻿
-namespace UserManagementService.Data.Extensions
+﻿namespace UserManagementService.DataAccess.Extensions
 {
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Options;
     using UserManagementService.DataAccess.Database;
-    using UserManagementService.DataAccess.Repository;
-    using UserManagementService.Domain.Abstractions.IRepository;
 
-    public static class DependencyInjection
+    public static class DbConfiguration
     {
-        public static void AddDataLayer(
+        public static IServiceCollection ConfigureDb(
             this IServiceCollection services,
             IConfiguration configuration)
         {
@@ -19,13 +16,6 @@ namespace UserManagementService.Data.Extensions
                 sp.GetRequiredService<IOptions<DbOptions>>().Value);
 
             services.AddSingleton<DbContext>();
-        }
-
-        public static IServiceCollection AddDataLayerDependencis(this IServiceCollection services)
-        {
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IDepartmentRepository, DepartmentRepository>();
-            services.AddScoped<IUserJobsRepository, UserJobsRepository>();
 
             return services;
         }

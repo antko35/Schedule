@@ -1,18 +1,18 @@
-﻿namespace UserManagementService.Data.Database;
+﻿namespace UserManagementService.DataAccess.Database;
 
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 public class DbContext
 {
-    private readonly IMongoDatabase? _database;
+    private readonly IMongoDatabase? database;
 
-    public DbContext(DbSettings settings)
+    public DbContext(IDbOptions settings)
     {
         var mongoURI = MongoUrl.Create(settings.ConnectionString);
         var mongoClient = new MongoClient(mongoURI);
-        _database = mongoClient.GetDatabase(settings.DatabaseName);
+        database = mongoClient.GetDatabase(settings.DatabaseName);
     }
 
-    public IMongoDatabase? Database => _database;
+    public IMongoDatabase? Database => database;
 }

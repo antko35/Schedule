@@ -1,21 +1,48 @@
-﻿using MongoDB.Driver;
-using UserManagementService.Data.Database;
+﻿namespace UserManagementService.DataAccess.Repository;
+
+using MongoDB.Driver;
+using UserManagementService.DataAccess.Database;
 using UserManagementService.Domain.Abstractions.IRepository;
 using UserManagementService.Domain.Models;
 
-namespace UserManagementService.Data.Repository;
-
-public class UserRepository : IUserRepository
+public class UserRepository : GenericRepository<User>, IUserRepository
 {
-    private readonly IMongoCollection<User> _users;
-
-    public UserRepository(DbContext context)
+    public UserRepository(DbContext context,
+                          IDbOptions options) : base(context, options.UsersCollectionName)
     {
-        _users = context.Database.GetCollection<User>("Users");
     }
 
-    public async Task<IEnumerable<User>> GetAllAsync()
-    {
-        return await _users.Find(_ => true).ToListAsync();
-    }
+    //private readonly IMongoCollection<User> users;
+
+    //public UserRepository(DbContext context, IDbOptions settings)
+    //{
+    //    users = context.Database.GetCollection<User>(settings.UsersCollectionName);
+    //}
+
+    //public async Task<IEnumerable<User>> GetAllAsync()
+    //{
+    //    return await users.Find(_ => true).ToListAsync();
+    //}
+
+    //public async Task<User> GetByIdAsync(string id)
+    //{
+    //    return await users.Find(user => user.Id == id).FirstOrDefaultAsync();
+    //}
+
+    //public async Task<User> CreateAsync(User user)
+    //{
+    //    await users.InsertOneAsync(user);
+    //    return user;
+    //}
+
+    //public async Task<User> UpdateAsync(string id, User updatedUser)
+    //{
+    //    await users.ReplaceOneAsync(user => user.Id == id, updatedUser);
+    //    return updatedUser;
+    //}
+
+    //public async Task DeleteAsync(string id)
+    //{
+    //    await users.DeleteOneAsync(user => user.Id == id);
+    //}
 }

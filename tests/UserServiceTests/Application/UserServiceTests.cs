@@ -11,6 +11,7 @@ namespace UserServiceTests.Application
         private readonly Mock<UserManager<User>> _userManagerMock;
         private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
         private readonly UserService.Application.Services.UserService _userService;
+
         public UserServiceTests()
         {
             _userManagerMock = MockUserManager();

@@ -2,31 +2,27 @@ using Grpc.Net.Client;
 using Microsoft.Extensions.Options;
 using UserManagementService.API.Extensions;
 using UserManagementService.API.GrpcClient.Services;
+using UserManagementService.Application.Extensions;
 using UserManagementService.Data;
 using UserManagementService.Data.Extensions;
+using UserManagementService.DataAccess.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-//var handler = new HttpClientHandler();
-//handler.ServerCertificateCustomValidationCallback =
-//    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-
-//builder.Services.AddSingleton<UserClient>(sp =>
-//{
-//    var channel = GrpcChannel.ForAddress(
-//        "https://user-service:8080",
-//        new GrpcChannelOptions { HttpHandler = handler });
-//    return new UserClient(new UserGrpcService.UserGrpcServiceClient(channel));
-//});
-
+// API Layer
 builder.ConfigureGrpc();
-builder.ConfigureDatabase();
 
-builder.Services.AddDataLayer(builder.Configuration);
-builder.Services.AddDependencis();
+// Application Layer
+builder.Services
+    .AddApplicatiobLayerDependencis();
+
+// DataAccess Layer
+builder.Services
+    .ConfigureDb(builder.Configuration)
+    .AddDataLayerDependencis();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
