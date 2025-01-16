@@ -1,9 +1,6 @@
-using Grpc.Net.Client;
-using Microsoft.Extensions.Options;
+using System.Reflection;
 using UserManagementService.API.Extensions;
-using UserManagementService.API.GrpcClient.Services;
 using UserManagementService.Application.Extensions;
-using UserManagementService.Data;
 using UserManagementService.Data.Extensions;
 using UserManagementService.DataAccess.Extensions;
 
@@ -25,7 +22,11 @@ builder.Services
     .AddDataLayerDependencis();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+});
 
 var app = builder.Build();
 

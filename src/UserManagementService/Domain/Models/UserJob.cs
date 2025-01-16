@@ -7,7 +7,7 @@ public class UserJob : Entity
 {
     [BsonRepresentation(BsonType.ObjectId)]
     [BsonElement("userId")]
-    public string? UserId { get; set; }
+    public string UserId { get; set; } = string.Empty;
 
     [BsonRepresentation(BsonType.ObjectId)]
     [BsonElement("departmentId")]
@@ -18,4 +18,8 @@ public class UserJob : Entity
 
     [BsonElement("status")]
     public string? Status { get; set; }
+
+    public string? PhoneNumber { get; set; }
+
+    public string? Email { get; set; }
 }

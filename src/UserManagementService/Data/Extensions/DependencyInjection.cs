@@ -10,22 +10,12 @@ namespace UserManagementService.Data.Extensions
 
     public static class DependencyInjection
     {
-        public static void AddDataLayer(
-            this IServiceCollection services,
-            IConfiguration configuration)
-        {
-            services.Configure<DbOptions>(configuration.GetSection("DatabaseSettings"));
-            services.AddSingleton<IDbOptions>(sp =>
-                sp.GetRequiredService<IOptions<DbOptions>>().Value);
-
-            services.AddSingleton<DbContext>();
-        }
-
         public static IServiceCollection AddDataLayerDependencis(this IServiceCollection services)
         {
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IDepartmentRepository, DepartmentRepository>();
             services.AddScoped<IUserJobsRepository, UserJobsRepository>();
+            services.AddScoped<IClinicRepository, ClinicRepository>();
 
             return services;
         }

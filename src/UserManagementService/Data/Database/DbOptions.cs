@@ -1,6 +1,6 @@
 ﻿namespace UserManagementService.DataAccess.Database;
 
-public class DbOptions : IDbOptions
+public class DbOptions : BaseDbOptions
 {
     public string DatabaseName { get; set; } = string.Empty;
 
@@ -11,4 +11,6 @@ public class DbOptions : IDbOptions
     public string DepartmentsCollectionName { get; set; } = string.Empty;
 
     public string UserJobsCollectionName { get; set; } = string.Empty;
+
+    public string ClinicsCollectionName { get; set; } = string.Empty;
 }

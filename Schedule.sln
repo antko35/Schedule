@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary2", "tests\Sche
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UserManagementTests", "UserManagementTests", "{F99FAD73-4400-406D-A6F1-8B2607D22EBB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary3", "tests\UserManagementTests\ClassLibrary3\ClassLibrary3.csproj", "{250DA39E-A9E7-46AA-B610-D11764EDD223}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserManagementService", "tests\UserManagementTests\ClassLibrary3\UserManagementService.csproj", "{250DA39E-A9E7-46AA-B610-D11764EDD223}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UserServiceTests", "UserServiceTests", "{2C08103F-A268-46CB-8AE0-DBBB3B8E7FBF}"
 EndProject

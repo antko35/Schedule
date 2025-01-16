@@ -12,7 +12,7 @@
             IConfiguration configuration)
         {
             services.Configure<DbOptions>(configuration.GetSection("DatabaseSettings"));
-            services.AddSingleton<IDbOptions>(sp =>
+            services.AddSingleton<BaseDbOptions>(sp =>
                 sp.GetRequiredService<IOptions<DbOptions>>().Value);
 
             services.AddSingleton<DbContext>();

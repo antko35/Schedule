@@ -19,13 +19,26 @@ public class CreateDepartmentCommandHandler
 
     public async Task<Department> Handle(CreateDepartmentCommand request, CancellationToken cancellationToken)
     {
-        if (String.IsNullOrEmpty(request.department.ClinicId))
+        if (String.IsNullOrEmpty(request.ClinicId))
         {
-            request.department.ClinicId = ObjectId.GenerateNewId().ToString();
+            request.ClinicId = ObjectId.GenerateNewId().ToString();
         }
 
-        await departmentRepository.AddAsync(request.department);
+        var departmentsInClinic = await departmentRepository.GetByClinicId(request.ClinicId);
 
-        return request.department;
+        var departmentToCreate = new Department()
+        {
+            ClinicId = request.ClinicId,
+            DepartmentName = request.DeartmentName,
+        };
+
+        if (departmentsInClinic.Any(x => x.ClinicId == departmentToCreate.ClinicId && x.DepartmentName == departmentToCreate.DepartmentName))
+        {
+            throw new InvalidOperationException("This department already exist");
+        }
+
+        await departmentRepository.AddAsync(departmentToCreate);
+
+        return departmentToCreate;
     }
 }

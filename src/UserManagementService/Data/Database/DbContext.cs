@@ -7,7 +7,7 @@ public class DbContext
 {
     private readonly IMongoDatabase? database;
 
-    public DbContext(IDbOptions settings)
+    public DbContext(BaseDbOptions settings)
     {
         var mongoURI = MongoUrl.Create(settings.ConnectionString);
         var mongoClient = new MongoClient(mongoURI);

@@ -19,6 +19,4 @@ public class User : Entity
 
     [BsonElement("age")]
     public int Age { get; set; }
-
-    // phone, email in auth service
 }

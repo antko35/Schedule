@@ -13,7 +13,7 @@ using UserManagementService.Domain.Models;
 public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : Entity
 {
     private readonly DbContext context;
-    private IMongoCollection<TEntity> dbSet;
+    protected IMongoCollection<TEntity> dbSet;
 
     public GenericRepository(DbContext context, string collectionName)
     {

@@ -11,40 +11,46 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
     private readonly IUserRepository userRepository;
     private readonly IDepartmentRepository departmentRepository;
     private readonly IUserJobsRepository userJobsRepository;
+    private readonly IClinicRepository clinicRepository;
 
     public AddUserToDepartmentCommandHandler(IUserRepository userRepository,
                                              IDepartmentRepository departmentRepository,
-                                             IUserJobsRepository userJobsRepository)
+                                             IUserJobsRepository userJobsRepository,
+                                             IClinicRepository clinicRepository)
     {
         this.userRepository = userRepository;
         this.departmentRepository = departmentRepository;
         this.userJobsRepository = userJobsRepository;
+        this.clinicRepository = clinicRepository;
     }
 
     public async Task<UserJob> Handle(AddUserToDepartmentCommand request, CancellationToken cancellationToken)
     {
-        var user = await userRepository.GetByIdAsync(request.userJob.UserId);
-        if (user == null)
+        var user = await userRepository.GetByIdAsync(request.UserId)
+            ?? throw new KeyNotFoundException("User doesnt exist");
+
+        var department = await departmentRepository.GetByIdAsync(request.DepartmentId)
+            ?? throw new KeyNotFoundException("Department doesnt exist");
+
+        var userJob = await userJobsRepository.GetUserJobAsync(request.UserId, request.DepartmentId);
+
+        if (userJob != null)
         {
-            throw new InvalidOperationException("User doesnt exist");
+            throw new InvalidOperationException($"User {user.Id} already in department {department.Id}");
         }
 
-        var department = await departmentRepository.GetByIdAsync(request.userJob.DepartmentId);
-        if (department == null)
+        var newUserJob = new UserJob()
         {
-            throw new InvalidOperationException("Department doesnt exist");
-        }
-
-        var userJob = new UserJob()
-        {
-            UserId = user.Id,
-            DepartmentId = department.Id,
-            Role = request.userJob.Role,
-            Status = request.userJob.Status,
+           UserId = request.UserId,
+           DepartmentId = request.DepartmentId,
+           Role = request.Role,
+           Status = request.Status,
+           Email = request.Email,
+           PhoneNumber = request.PhoneNumber,
         };
 
-        await userJobsRepository.AddAsync(userJob);
+        await userJobsRepository.AddAsync(newUserJob);
 
-        return userJob;
+        return newUserJob;
     }
 }

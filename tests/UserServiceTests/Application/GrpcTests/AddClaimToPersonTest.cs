@@ -27,8 +27,7 @@
 
             context = TestServerCallContext.Create(
                 method: "AddClaimToPerson",
-                host: "localhost"
-            );
+                host: "localhost");
         }
 
         [Fact]

@@ -2,7 +2,6 @@
 {
     using System.Security.Claims;
     using System.Threading.Tasks;
-    using global::UserService.API.Grpc.Services;
     using global::UserService.Domain.Models;
     using Grpc.Core;
     using Microsoft.AspNetCore.Components.Authorization;
