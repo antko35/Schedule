@@ -17,5 +17,6 @@
         public string? Patronymic { get; set; }
         public string? Gender { get; set; }
         public int Age { get; set; }
+        public DateOnly DateOfBirth { get; set; }
     }
 }

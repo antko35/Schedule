@@ -19,4 +19,7 @@ public class User : Entity
 
     [BsonElement("age")]
     public int Age { get; set; }
+
+    [BsonElement("dateOfBirth")]
+    public DateOnly DateOfBirth { get; set; }
 }

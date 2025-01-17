@@ -29,7 +29,7 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
     // TODO почитать чзх
     public void Dispose()
     {
-        throw new NotImplementedException();
+        //throw new NotImplementedException();
     }
 
     public async Task<IEnumerable<TEntity>> GetAllAsync()

@@ -1,7 +1,12 @@
+using Hangfire;
+using MediatR;
 using System.Reflection;
 using UserManagementService.API.Extensions;
+using UserManagementService.API.Extensions.AppExtensions.Hangfire;
 using UserManagementService.Application.Extensions;
+using UserManagementService.Application.UseCases.Commands.User;
 using UserManagementService.Data.Extensions;
+using UserManagementService.DataAccess.Database;
 using UserManagementService.DataAccess.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +24,7 @@ builder.Services
 // DataAccess Layer
 builder.Services
     .ConfigureDb(builder.Configuration)
+    .ConfigureHangfire()
     .AddDataLayerDependencis();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -41,6 +47,8 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = string.Empty;
     });
 }
+
+app.ConfigureHangfire();
 
 app.UseHttpsRedirection();
 
