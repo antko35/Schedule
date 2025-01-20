@@ -14,6 +14,7 @@
         public async override Task<AddClaimResponse> AddClaimToPerson(AddClaimRequest request, ServerCallContext context)
         {
             var user = await userManager.FindByEmailAsync(request.Email);
+
             if (user == null)
             {
                 return new AddClaimResponse
@@ -24,7 +25,9 @@
             }
 
             var claim = new Claim(request.ClaimType, request.ClaimValue);
+
             var userClaims = await userManager.GetClaimsAsync(user);
+
             if (userClaims.Any(c => c.Type == claim.Type && c.Value == claim.Value))
             {
                 return new AddClaimResponse
@@ -57,6 +60,7 @@
         public async override Task<AddClaimResponse> DeletePersonClaim(AddClaimRequest request, ServerCallContext context)
         {
             var user = await userManager.FindByEmailAsync(request.Email);
+
             if (user == null)
             {
                 return new AddClaimResponse
@@ -67,7 +71,9 @@
             }
 
             var claimToDelete = new Claim(request.ClaimType, request.ClaimValue);
+
             var userClaims = await userManager.GetClaimsAsync(user);
+
             if (!userClaims.Any(c => c.Type == claimToDelete.Type && c.Value == claimToDelete.Value))
             {
                 return new AddClaimResponse
@@ -78,6 +84,7 @@
             }
 
             var result = await userManager.RemoveClaimAsync(user, claimToDelete);
+
             if (result.Succeeded)
             {
                 return new AddClaimResponse
@@ -99,6 +106,7 @@
         public async override Task<GetClaimResponse> GetPersonClaims(GetClaimsRequest request, ServerCallContext context)
         {
             var user = await userManager.FindByEmailAsync(request.Email);
+
             if (user == null)
             {
                 return new GetClaimResponse

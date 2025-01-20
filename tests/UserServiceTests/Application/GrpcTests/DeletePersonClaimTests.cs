@@ -10,25 +10,24 @@
 
     public class DeletePersonClaimTests
     {
-        private readonly Mock<UserManager<User>> _userManagerMock;
-        private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
-        private readonly GrpcService _grpcService;
-        public ServerCallContext context;
+        private readonly Mock<UserManager<User>> userManagerMock;
+        private readonly Mock<RoleManager<IdentityRole>> roleManagerMock;
+        private readonly GrpcService grpcService;
+        private ServerCallContext context;
 
         public DeletePersonClaimTests()
         {
             var userStoreMock = new Mock<IUserStore<User>>();
-            _userManagerMock = new Mock<UserManager<User>>(userStoreMock.Object, null, null, null, null, null, null, null, null);
+            userManagerMock = new Mock<UserManager<User>>(userStoreMock.Object, null, null, null, null, null, null, null, null);
 
             var roleStoreMock = new Mock<IRoleStore<IdentityRole>>();
-            _roleManagerMock = new Mock<RoleManager<IdentityRole>>(roleStoreMock.Object, null, null, null, null);
+            roleManagerMock = new Mock<RoleManager<IdentityRole>>(roleStoreMock.Object, null, null, null, null);
 
-            _grpcService = new GrpcService(_userManagerMock.Object, _roleManagerMock.Object);
+            grpcService = new GrpcService(userManagerMock.Object, roleManagerMock.Object);
 
             context = TestServerCallContext.Create(
                 method: "AddClaimToPerson",
-                host: "localhost"
-            );
+                host: "localhost");
         }
 
         [Fact]
@@ -36,9 +35,9 @@
         {
             var email = "user@gmail.com";
             AddClaimRequest request = new AddClaimRequest { Email = email, ClaimType = "value", ClaimValue = "value" };
-            _userManagerMock.Setup(um => um.FindByEmailAsync(email)).ReturnsAsync((User)null);
+            userManagerMock.Setup(um => um.FindByEmailAsync(email)).ReturnsAsync((User)null);
 
-            var result = await _grpcService.DeletePersonClaim(request, context);
+            var result = await grpcService.DeletePersonClaim(request, context);
 
             Assert.False(result.Success);
             Assert.Equal("No user with this email", result.Message);
@@ -52,10 +51,10 @@
             User user = new User { Email = email };
             AddClaimRequest request = new AddClaimRequest { Email = email, ClaimType = claim.Type, ClaimValue = claim.Value };
 
-            _userManagerMock.Setup(um => um.FindByEmailAsync(email)).ReturnsAsync(user);
-            _userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync(new Claim[0]);
+            userManagerMock.Setup(um => um.FindByEmailAsync(email)).ReturnsAsync(user);
+            userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync(new Claim[0]);
 
-            var result = await _grpcService.DeletePersonClaim(request, context);
+            var result = await grpcService.DeletePersonClaim(request, context);
 
             Assert.False(result.Success);
             Assert.Equal("User doesnt have this claim", result.Message);
@@ -69,11 +68,11 @@
             User user = new User { Email = email };
             AddClaimRequest request = new AddClaimRequest { Email = email, ClaimType = claim.Type, ClaimValue = claim.Value };
 
-            _userManagerMock.Setup(um => um.FindByEmailAsync(email)).ReturnsAsync(user);
-            _userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync([claim]);
-            _userManagerMock.Setup(um => um.RemoveClaimAsync(It.IsAny<User>(), It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Success);
+            userManagerMock.Setup(um => um.FindByEmailAsync(email)).ReturnsAsync(user);
+            userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync([claim]);
+            userManagerMock.Setup(um => um.RemoveClaimAsync(It.IsAny<User>(), It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Success);
 
-            var result = await _grpcService.DeletePersonClaim(request, context);
+            var result = await grpcService.DeletePersonClaim(request, context);
 
             Assert.True(result.Success);
             Assert.Equal("Claim successfully delited", result.Message);
@@ -87,11 +86,11 @@
             User user = new User { Email = email };
             AddClaimRequest request = new AddClaimRequest { Email = email, ClaimType = claim.Type, ClaimValue = claim.Value };
 
-            _userManagerMock.Setup(um => um.FindByEmailAsync(email)).ReturnsAsync(user);
-            _userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync([claim]);
-            _userManagerMock.Setup(um => um.RemoveClaimAsync(It.IsAny<User>(), It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Failed());
+            userManagerMock.Setup(um => um.FindByEmailAsync(email)).ReturnsAsync(user);
+            userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync([claim]);
+            userManagerMock.Setup(um => um.RemoveClaimAsync(It.IsAny<User>(), It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Failed());
 
-            var result = await _grpcService.DeletePersonClaim(request, context);
+            var result = await grpcService.DeletePersonClaim(request, context);
 
             Assert.False(result.Success);
         }

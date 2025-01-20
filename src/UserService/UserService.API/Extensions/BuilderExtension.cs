@@ -38,31 +38,6 @@ public static class BuilderExtension
                 },
             });
         });
-
-        // builder.Services.AddAuthentication(options =>
-        // {
-        //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        // }).AddJwtBearer(options =>
-        // {
-        //    options.TokenValidationParameters = new TokenValidationParameters
-        //    {
-        //        ValidateIssuer = true,
-        //        ValidateAudience = true,
-        //        ValidateLifetime = true,
-        //        ValidateIssuerSigningKey = true,
-        //        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        //        ValidAudience = builder.Configuration["Jwt:Audience"],
-        //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        //    };
-        // })
-        // .AddCookie(options =>
-        // {
-        //    options.LoginPath = "/login"; // Путь для перенаправления при неаутентифицированном доступе
-        //    options.Cookie.Name = "authCookie"; // Имя куки
-        //    options.Cookie.HttpOnly = true; // Защита от доступа через JavaScript
-        //    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Использование только по HTTPS
-        // });;
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddScoped<Application.Services.UserService>();
     }

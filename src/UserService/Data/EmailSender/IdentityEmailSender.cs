@@ -18,7 +18,6 @@
         {
             var mailMessage = new MailMessage
             {
-               // From = new MailAddress(configuration["Smtp:From"]),
                 Subject = subject,
                 Body = htmlMessage,
                 IsBodyHtml = true,

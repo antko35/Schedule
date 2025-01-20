@@ -1,7 +1,5 @@
 ﻿syntax = "proto3";
 
-//option csharp_namespace = "UserService";
-
 service UserGrpcService {
   rpc AddClaimToPerson(AddClaimRequest) returns (AddClaimResponse);
   rpc DeletePersonClaim(AddClaimRequest) returns (AddClaimResponse);

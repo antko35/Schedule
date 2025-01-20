@@ -10,7 +10,8 @@
     using UserService.Domain.Constants;
     using UserService.Domain.Models;
 
-    public class UserSeeder(UserDbContext dbContext, RoleManager<IdentityRole> roleManager) : IUserSeeder
+    public class UserSeeder(UserDbContext dbContext, RoleManager<IdentityRole> roleManager)
+        : IUserSeeder
     {
         public async Task Seed()
         {

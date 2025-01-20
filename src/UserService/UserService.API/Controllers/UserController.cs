@@ -15,6 +15,7 @@
         public async Task<IActionResult> ShareAdmin([FromBody] ChangeUserRole request)
         {
             await userService.ChangeRole(request);
+
             return Ok();
         }
     }
