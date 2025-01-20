@@ -15,7 +15,8 @@ public class GetDepartmentByIdQueryHandler : IRequestHandler<GetDepartmentByIdQu
 
     public async Task<Department> Handle(GetDepartmentByIdQuery request, CancellationToken cancellationToken)
     {
-        var department = await departmentRepository.GetByIdAsync(request.id);
+        var department = await departmentRepository.GetByIdAsync(request.id)
+            ?? throw new KeyNotFoundException("Department not found");
         return department;
     }
 }

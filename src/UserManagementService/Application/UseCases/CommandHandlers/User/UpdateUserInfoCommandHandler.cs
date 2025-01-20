@@ -22,7 +22,7 @@
 
         public async Task<User> Handle(UpdateUserInfoCommand request, CancellationToken cancellationToken)
         {
-            var user = userRepository.GetByIdAsync(request.UserId)
+            var user = await userRepository.GetByIdAsync(request.UserId)
                 ?? throw new KeyNotFoundException("User not found");
 
             var newUser = new User
