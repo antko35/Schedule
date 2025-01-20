@@ -45,11 +45,16 @@
             return Ok(response);
         }
 
+        /// <summary>
+        /// Create user
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns>created user</returns>
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] User user)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserCommand command)
         {
-            await userRepository.AddAsync(user);
-            return Ok();
+            var result = await mediator.Send(command);
+            return Ok(result);
         }
 
         /// <summary>

@@ -14,6 +14,9 @@
         public UpdateUserInfoCommandValidator()
         {
             RuleFor(x => x.UserId).NotEmpty();
+            RuleFor(x => x.DateOfBirth)
+                .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today))
+                .WithMessage("Date of birth cannot be in the future.");
         }
     }
 }

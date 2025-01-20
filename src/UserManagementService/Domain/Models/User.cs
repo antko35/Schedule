@@ -22,4 +22,21 @@ public class User : Entity
 
     [BsonElement("dateOfBirth")]
     public DateOnly DateOfBirth { get; set; }
+
+    /// <summary>
+    /// Set updated age
+    /// </summary>
+    /// <returns>new age</returns>
+    public int CalculateAge()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var calculatedAge = today.Year - DateOfBirth.Year;
+        if (today < DateOfBirth.AddYears(calculatedAge))
+        {
+            calculatedAge--;
+        }
+
+        Age = calculatedAge;
+        return Age;
+    }
 }

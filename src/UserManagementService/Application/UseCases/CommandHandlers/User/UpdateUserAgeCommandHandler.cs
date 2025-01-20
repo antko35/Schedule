@@ -22,17 +22,11 @@
         public async Task Handle(UpdateUserAgeCommand request, CancellationToken cancellationToken)
         {
             var users = await userRepository.GetAllAsync();
-            var today = DateOnly.FromDateTime(DateTime.Today);
 
             foreach (var user in users)
             {
-                var calculatedAge = today.Year - user.DateOfBirth.Year;
-                if (today < user.DateOfBirth.AddYears(calculatedAge))
-                {
-                    calculatedAge--;
-                }
+                user.CalculateAge();
 
-                user.Age = calculatedAge;
                 await userRepository.UpdateAsync(user);
             }
         }
