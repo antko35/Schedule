@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheduleService.Application
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheduleService.API", "src\ScheduleService\ScheduleService.API\ScheduleService.API.csproj", "{C4A53A0E-77B5-4199-8A57-8D8B8AB77C0F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheduleService.Data", "src\ScheduleService\ScheduleService.Data\ScheduleService.Data.csproj", "{9AE0A600-55B5-49EA-A12B-7F933CCEA875}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheduleService.DataAccess", "src\ScheduleService\ScheduleService.DataAccess\ScheduleService.DataAccess.csproj", "{9AE0A600-55B5-49EA-A12B-7F933CCEA875}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheduleService.Domain", "src\ScheduleService\ScheduleService.Domain\ScheduleService.Domain.csproj", "{3DDC30FF-073B-4BEF-AB3D-5F774385A881}"
 EndProject
