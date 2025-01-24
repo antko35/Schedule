@@ -41,7 +41,7 @@ namespace ScheduleService.DataAccess.Repository
             var result = await dbSet.UpdateOneAsync(filter, update);
         }
 
-        public async Task<UserScheduleRules> GetWorkDaySchedue(string userId, string departmentId, string monthName)
+        public async Task<UserScheduleRules> GetMonthScheduleRules(string userId, string departmentId, string monthName)
         {
             var filter = Builders<UserScheduleRules>.Filter.And(
                Builders<UserScheduleRules>.Filter.Eq(x => x.UserId, userId),
@@ -78,6 +78,20 @@ namespace ScheduleService.DataAccess.Repository
                 day => day.StartTime.Day == workDayToDelete.Day);
 
             var result = await dbSet.UpdateOneAsync(filter, update);
+        }
+
+        public async Task<WorkDay?> GetWorkDayAsync(string userId, string departmentId, string monthName, int day)
+        {
+            var filter = Builders<UserScheduleRules>.Filter.And(
+              Builders<UserScheduleRules>.Filter.Eq(x => x.UserId, userId),
+              Builders<UserScheduleRules>.Filter.Eq(x => x.DepartmentId, departmentId),
+              Builders<UserScheduleRules>.Filter.Eq(x => x.Month, monthName));
+
+            var userScheduleRules = await dbSet.Find(filter).FirstOrDefaultAsync();
+
+            var workDay = userScheduleRules.Schedule.FirstOrDefault(wd => wd.StartTime.Day == day);
+
+            return workDay;
         }
     }
 }

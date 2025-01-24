@@ -14,7 +14,7 @@ namespace ScheduleService.DataAccess.Extensions
         public static IServiceCollection AddDataAccessDependencis(this IServiceCollection services)
         {
             services.AddScoped<ICalendarRepository, CalendarRepository>();
-            services.AddScoped<IUserRuleRepository,UserRuleRepository>();
+            services.AddScoped<IUserRuleRepository, UserRuleRepository>();
 
             return services;
         }

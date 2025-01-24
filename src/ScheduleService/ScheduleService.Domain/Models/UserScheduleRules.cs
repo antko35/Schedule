@@ -46,6 +46,9 @@
 
         public bool FirstShift { get; set; }
 
+        public string ScheduleId { get; set; }
+
+        // вынести
         public List<WorkDay> Schedule = new List<WorkDay>();
     }
 }

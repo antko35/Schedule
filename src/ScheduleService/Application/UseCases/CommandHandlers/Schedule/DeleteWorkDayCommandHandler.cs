@@ -20,7 +20,7 @@
         {
             string monthName = new DateTime(request.WorkDay.Year, request.WorkDay.Month, request.WorkDay.Day).ToString("MMMM", CultureInfo.CreateSpecificCulture("es"));
 
-            var schedule = await userRuleRepository.GetWorkDaySchedue(request.UserId, request.DepartmentId, monthName);
+            var schedule = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName);
 
             var dayToDelete = schedule.Schedule.Find(x => x.StartTime.Day == request.WorkDay.Day);
             if (dayToDelete != null)
