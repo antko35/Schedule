@@ -15,6 +15,7 @@ namespace ScheduleService.DataAccess.Extensions
         {
             services.AddScoped<ICalendarRepository, CalendarRepository>();
             services.AddScoped<IUserRuleRepository, UserRuleRepository>();
+            services.AddScoped<IScheduleRepository, ScheduleRepository>();
 
             return services;
         }

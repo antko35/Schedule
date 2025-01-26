@@ -8,6 +8,8 @@ namespace ScheduleService.Domain.Models
 {
     public class WorkDay
     {
+        public int Day { get; set; }
+
         public DateTime StartTime { get; set; }
 
         public DateTime EndTime { get; set; }

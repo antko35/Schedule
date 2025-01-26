@@ -25,27 +25,29 @@
 
         public async Task Handle(CreateWorkDayManuallyCommand request, CancellationToken cancellationToken)
         {
-            string monthName = new DateTime(request.StartTime.Year, request.StartTime.Month, 1).ToString("MMMM")
+            string monthName = new DateTime(request.StartTime.Year, request.StartTime.Month, 1)
+                .ToString("MMMM")
                 .ToLower();
 
             var userSchedueRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName)
-                ?? throw new InvalidOperationException($"Schedile rules not found, {monthName}");
+                ?? throw new InvalidOperationException($"Schedule rules not found, {monthName}");
 
-            WorkDay workDay = await scheduleRepository.GetWorkDayAsync(userSchedueRules.ScheduleId, request.StartTime.Day);
+            var dailySchedule = await scheduleRepository.GetWorkDayAsync(userSchedueRules.ScheduleId, request.StartTime.Day);
 
-            var newWorkDay = new WorkDay
+            WorkDay newWorkDay = new WorkDay
             {
+                Day = request.StartTime.Day,
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
             };
 
-            if (workDay != null)
+            if (dailySchedule == null)
             {
-                await userRuleRepository.UpdateWorkDayAsync(request.UserId, request.DepartmentId, monthName, newWorkDay);
+                await scheduleRepository.AddWorkDayAsync(userSchedueRules.ScheduleId, newWorkDay);
             }
             else
             {
-                await scheduleRepository.AddWorkDayAsync(userSchedueRules.ScheduleId, newWorkDay);
+                await scheduleRepository.UpdateWorkDayAsync(userSchedueRules.ScheduleId, newWorkDay);
             }
         }
     }

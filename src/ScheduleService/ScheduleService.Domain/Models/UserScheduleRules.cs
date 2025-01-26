@@ -1,5 +1,6 @@
 ﻿namespace ScheduleService.Domain.Models
 {
+    using MongoDB.Bson;
     using MongoDB.Bson.Serialization.Attributes;
     using System;
     using System.Collections.Generic;
@@ -46,6 +47,7 @@
 
         public bool FirstShift { get; set; }
 
+        [BsonRepresentation(BsonType.ObjectId)]
         public string ScheduleId { get; set; }
 
         // вынести
