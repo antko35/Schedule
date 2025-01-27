@@ -1,6 +1,7 @@
 ﻿namespace UserServiceTests.Application.GrpcTests
 {
     using System.Security.Claims;
+    using FluentAssertions;
     using Grpc.Core;
     using Microsoft.AspNetCore.Identity;
     using Moq;
@@ -27,21 +28,20 @@
 
             context = TestServerCallContext.Create(
                 method: "AddClaimToPerson",
-                host: "localhost"
-            );
+                host: "localhost");
         }
 
         [Fact]
         public async Task AddClaim_UserNotFound_ErrorResponse()
         {
             var email = "user@gmail.com";
-            var reqest = new AddClaimRequest { Email=email, ClaimType="value", ClaimValue = "value" };
+            var reqest = new AddClaimRequest { Email = email, ClaimType = "value", ClaimValue = "value" };
             userManagerMock.Setup(um => um.FindByEmailAsync(reqest.Email)).ReturnsAsync((User)null);
 
             var result = await grpcService.AddClaimToPerson(reqest, context);
 
-            Assert.False(result.Success);
-            Assert.Equal("No person with this email", result.Message);
+            result.Success.Should().BeFalse();
+            result.Message.Should().Be("No person with this email");
         }
 
         [Fact]
@@ -57,8 +57,8 @@
 
             var result = await grpcService.AddClaimToPerson(reqest, this.context);
 
-            Assert.False(result.Success);
-            Assert.Equal("User already have this claim", result.Message);
+            result.Success.Should().BeFalse();
+            result.Message.Should().Be("User already have this claim");
         }
 
         [Fact]
@@ -75,8 +75,8 @@
 
             var result = await grpcService.AddClaimToPerson(reqest, this.context);
 
-            Assert.True(result.Success);
-            Assert.Equal("Claim added successfully", result.Message);
+            result.Success.Should().BeTrue();
+            result.Message.Should().Be("Claim added successfully");
         }
 
         [Fact]
@@ -93,7 +93,7 @@
 
             var result = await grpcService.AddClaimToPerson(reqest, this.context);
 
-            Assert.False(result.Success);
+            result.Success.Should().BeFalse();
         }
     }
 }

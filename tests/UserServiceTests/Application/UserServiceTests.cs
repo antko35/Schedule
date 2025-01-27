@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Identity;
 using Moq;
 using UserService.Application.DTOs;
 using UserService.Domain.Models;
@@ -18,8 +19,7 @@ namespace UserServiceTests.Application
             this.roleManagerMock = MockRoleManager();
             this.userService = new UserService.Application.Services.UserService(
                 this.userManagerMock.Object,
-                this.roleManagerMock.Object
-            );
+                this.roleManagerMock.Object);
         }
 
         [Fact]
@@ -31,10 +31,12 @@ namespace UserServiceTests.Application
                 .Setup(um => um.FindByEmailAsync(request.Email))
                 .ReturnsAsync((User)null);
 
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => userService.ChangeRole(request));
-            Assert.Equal($"email doesnt exist {request.Email}", exception.Message);
+            // Act
+            var act = () => userService.ChangeRole(request);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage($"email doesnt exist {request.Email}");
         }
 
         [Fact]
@@ -51,10 +53,12 @@ namespace UserServiceTests.Application
                 .Setup(rm => rm.FindByNameAsync(request.Role))
                 .ReturnsAsync((IdentityRole)null);
 
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => userService.ChangeRole(request));
-            Assert.Equal("Role " + request.Role + " doest exixt", exception.Message);
+            // Act
+            var act = () => userService.ChangeRole(request);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Role " + request.Role + " doest exixt");
         }
 
         [Fact]

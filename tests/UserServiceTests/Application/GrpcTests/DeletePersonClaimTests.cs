@@ -1,6 +1,7 @@
 ﻿namespace UserServiceTests.Application.GrpcTests
 {
     using System.Security.Claims;
+    using FluentAssertions;
     using Grpc.Core;
     using Microsoft.AspNetCore.Identity;
     using Moq;
@@ -39,8 +40,8 @@
 
             var result = await grpcService.DeletePersonClaim(request, context);
 
-            Assert.False(result.Success);
-            Assert.Equal("No user with this email", result.Message);
+            result.Success.Should().BeFalse();
+            result.Message.Should().Be("No user with this email");
         }
 
         [Fact]
@@ -56,8 +57,8 @@
 
             var result = await grpcService.DeletePersonClaim(request, context);
 
-            Assert.False(result.Success);
-            Assert.Equal("User doesnt have this claim", result.Message);
+            result.Success.Should().BeFalse();
+            result.Message.Should().Be("User doesnt have this claim");
         }
 
         [Fact]

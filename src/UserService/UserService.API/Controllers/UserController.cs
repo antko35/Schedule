@@ -10,9 +10,9 @@
     public class UserController(Application.Services.UserService userService) : ControllerBase
     {
         [HttpPost]
-        [Route("shareAdmin")]
+        [Route("shareAdminRole")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> ShareAdmin([FromBody] ChangeUserRole request)
+        public async Task<IActionResult> ShareAdminRole([FromBody] ChangeUserRole request)
         {
             await userService.ChangeRole(request);
 
