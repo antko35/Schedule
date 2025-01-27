@@ -75,8 +75,8 @@
 
             var result = await grpcService.DeletePersonClaim(request, context);
 
-            Assert.True(result.Success);
-            Assert.Equal("Claim successfully delited", result.Message);
+            result.Success.Should().BeTrue();
+            result.Message.Should().Be("Claim successfully delited");
         }
 
         [Fact]
@@ -93,7 +93,7 @@
 
             var result = await grpcService.DeletePersonClaim(request, context);
 
-            Assert.False(result.Success);
+            result.Success.Should().BeFalse();
         }
     }
 }

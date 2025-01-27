@@ -1,5 +1,6 @@
 ﻿namespace UserServiceTests.Application.GrpcTests
 {
+    using FluentAssertions;
     using Grpc.Core;
     using Microsoft.AspNetCore.Identity;
     using Moq;
@@ -39,8 +40,8 @@
             var result = await grpcService.GetPersonClaims(reqest, context);
 
             //assert
-            Assert.False(result.Success);
-            Assert.Equal("No person with this email", result.Message);
+            result.Success.Should().BeFalse();
+            result.Message.Should().Be("No person with this email");
         }
 
         [Fact]
@@ -61,12 +62,12 @@
             var result = await grpcService.GetPersonClaims(reqest, context);
 
             // assert
-            Assert.True(result.Success);
-            Assert.Equal("Claims retrieved successfully", result.Message);
-            Assert.Equal(2, result.Claims.Count);
+            result.Success.Should().BeTrue();
+            result.Message.Should().Be("Claims retrieved successfully");
+            result.Claims.Count.Should().Be(2);
 
-            Assert.Contains(result.Claims, c => c.Type == "Type1" && c.Value == "Value1");
-            Assert.Contains(result.Claims, c => c.Type == "Type2" && c.Value == "Value2");
+            result.Claims.Should().Contain(c => c.Type == "Type1" && c.Value == "Value1");
+            result.Claims.Should().Contain(c => c.Type == "Type2" && c.Value == "Value2");
         }
     }
 }
