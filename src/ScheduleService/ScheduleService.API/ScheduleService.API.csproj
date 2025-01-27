@@ -22,8 +22,4 @@
     <ProjectReference Include="..\ScheduleService.DataAccess\ScheduleService.DataAccess.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Extensions\" />
-  </ItemGroup>
-
 </Project>

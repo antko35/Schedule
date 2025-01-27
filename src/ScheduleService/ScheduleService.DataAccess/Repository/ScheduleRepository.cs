@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -28,6 +29,16 @@
             var result = await dbSet.UpdateOneAsync(filter, update);
         }
 
+        public async Task DeleteWorkDayAsync(string scheduleId, int day)
+        {
+            var filer = Builders<Schedule>.Filter.Eq(x => x.Id, scheduleId);
+
+            var update = Builders<Schedule>.Update
+                .PullFilter(x => x.WorkDays, x => x.Day == day);
+
+            var result = await dbSet.UpdateOneAsync(filer, update);
+        }
+
         public async Task<Schedule?> GetWorkDayAsync(string scheduleId, int day)
         {
             var filter = Builders<Schedule>.Filter.And(
@@ -36,19 +47,18 @@
 
             var result = await dbSet.Find(filter).FirstOrDefaultAsync();
 
-            // Возврат первого подходящего рабочего дня
             return result;
         }
 
         public async Task UpdateWorkDayAsync(string scheduleId, WorkDay newWorkDay)
         {
             var filter = Builders<Schedule>.Filter.And(
-                Builders<Schedule>.Filter.Eq(x => x.Id, scheduleId));
+                Builders<Schedule>.Filter.Eq(x => x.Id, scheduleId),
+                Builders<Schedule>.Filter.ElemMatch(x => x.WorkDays, wd => wd.Day == newWorkDay.Day));
 
-            var update = Builders<Schedule>.Update.Set(
-                s => s.WorkDays[-1].StartTime, newWorkDay.StartTime)
-            .Set(
-                s => s.WorkDays[-1].EndTime, newWorkDay.EndTime);
+            var update = Builders<Schedule>.Update
+                .Set("WorkDays.$.StartTime", newWorkDay.StartTime)
+                .Set("WorkDays.$.EndTime", newWorkDay.EndTime);
 
             await dbSet.UpdateOneAsync(filter, update);
         }

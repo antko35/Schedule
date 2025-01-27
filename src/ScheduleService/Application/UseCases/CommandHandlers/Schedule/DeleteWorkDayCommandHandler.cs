@@ -6,26 +6,38 @@
     using MediatR;
     using ScheduleService.Application.UseCases.Commands.Schedule;
     using ScheduleService.DataAccess.Repository;
+    using ScheduleService.Domain.Abstractions;
 
     public class DeleteWorkDayCommandHandler : IRequestHandler<DeleteWorkDayCommand>
     {
         private readonly IUserRuleRepository userRuleRepository;
+        private readonly IScheduleRepository scheduleRepository;
 
-        public DeleteWorkDayCommandHandler(IUserRuleRepository userRuleRepository)
+        public DeleteWorkDayCommandHandler(
+            IUserRuleRepository userRuleRepository,
+            IScheduleRepository scheduleRepository)
         {
             this.userRuleRepository = userRuleRepository;
+            this.scheduleRepository = scheduleRepository;
         }
 
         public async Task Handle(DeleteWorkDayCommand request, CancellationToken cancellationToken)
         {
-            string monthName = new DateTime(request.WorkDay.Year, request.WorkDay.Month, request.WorkDay.Day).ToString("MMMM", CultureInfo.CreateSpecificCulture("es"));
+            string monthName = new DateTime(request.WorkDay.Year, request.WorkDay.Month, request.WorkDay.Day)
+                .ToString("MMMM")
+                .ToLower();
 
-            var schedule = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName);
+            var scheduleRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName);
 
-            var dayToDelete = schedule.Schedule.Find(x => x.StartTime.Day == request.WorkDay.Day);
+            var daySchedule = await scheduleRepository.GetWorkDayAsync(scheduleRules.ScheduleId, request.WorkDay.Day)
+                ?? throw new InvalidOperationException("No work during day");
+
+            await scheduleRepository.DeleteWorkDayAsync(scheduleRules.ScheduleId, request.WorkDay.Day);
+
+
+            var dayToDelete = daySchedule.WorkDays.FirstOrDefault();
             if (dayToDelete != null)
             {
-                await userRuleRepository.DeleteWorkDayAsync(request.UserId, request.DepartmentId, monthName, request.WorkDay);
             }
             else
             {

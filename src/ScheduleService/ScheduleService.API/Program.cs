@@ -1,9 +1,8 @@
+using ScheduleService.API.Extensions;
 using ScheduleService.Application.Extensions;
 using ScheduleService.DataAccess.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 
 builder.Services.AddControllers();
 
@@ -17,6 +16,8 @@ builder.Services
     .AddDataAccessDependencis();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExeptionHadlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
