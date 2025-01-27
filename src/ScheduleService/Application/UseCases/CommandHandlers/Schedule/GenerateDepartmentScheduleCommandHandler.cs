@@ -17,22 +17,28 @@
     public class GenerateDepartmentScheduleCommandHandler : IRequestHandler<GenerateDepartmentScheduleCommand>
     {
         private readonly IUserRuleRepository userRuleRepository;
+        private readonly IScheduleRepository scheduleRepository;
 
-        public GenerateDepartmentScheduleCommandHandler(IUserRuleRepository userRuleRepository)
+        public GenerateDepartmentScheduleCommandHandler(
+            IUserRuleRepository userRuleRepository,
+            IScheduleRepository scheduleRepository)
         {
             this.userRuleRepository = userRuleRepository;
+            this.scheduleRepository = scheduleRepository;
         }
 
         public async Task Handle(GenerateDepartmentScheduleCommand request, CancellationToken cancellationToken)
         {
-            string monthName = new DateTime(request.Year, request.Month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("es"));
+            string monthName = new DateTime(request.Year, request.Month, 1)
+                .ToString("MMMM")
+                .ToLower();
 
             var usersRules = await userRuleRepository.GetUsersRulesByDepartment(request.DepartmentId, monthName);
 
             int daysInMonth = DateTime.DaysInMonth(request.Year, request.Month);
 
-            DateTime firstDayOfMonth = new DateTime(request.Year, request.Month, 1);
-            DayOfWeek dayOfWeek = firstDayOfMonth.DayOfWeek;
+            var currentDay = new DateTime(request.Year, request.Month, 1);
+            var dayOfWeek = currentDay.DayOfWeek;
 
             foreach (var userRules in usersRules)
             {
@@ -40,6 +46,7 @@
                 {
                    UserId = userRules.UserId,
                    DepartmentId = userRules.DepartmentId,
+                   ScheduleId = userRules.ScheduleId,
                    Year = request.Year,
                    Month = request.Month,
                    MonthName = monthName,
@@ -48,13 +55,16 @@
                 {
                     workDay.Day = i;
 
+                    currentDay = new DateTime(request.Year, request.Month, i);
+                    dayOfWeek = currentDay.DayOfWeek;
+
                     // проверка на гос выходной
                     if (dayOfWeek == DayOfWeek.Sunday || dayOfWeek == DayOfWeek.Saturday)
                     {
-                        dayOfWeek++;
                         continue;
                     }
 
+                    // if user works on first shift on even dayn of week
                     if (userRules.EvenDOW)
                     {
                         if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
@@ -64,7 +74,7 @@
 
                         if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
                         {
-                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
+                            await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
                         }
                     }
 
@@ -76,7 +86,7 @@
                         }
                         else
                         {
-                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
+                            await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
                         }
                     }
                 }
@@ -87,6 +97,7 @@
         {
             var workDay = new WorkDay
             {
+                Day = addWorkDay.Day,
                 StartTime = firstShift
                                 ? new DateTime(addWorkDay.Year, addWorkDay.Month, addWorkDay.Day, 8, 0, 0)
                                 : new DateTime(addWorkDay.Year, addWorkDay.Month, addWorkDay.Day, 14, 30, 0),
@@ -95,7 +106,7 @@
                                 : new DateTime(addWorkDay.Year, addWorkDay.Month, addWorkDay.Day, 21, 0, 0),
             };
 
-            await userRuleRepository.AddWorkDayAsync(addWorkDay.UserId, addWorkDay.DepartmentId, addWorkDay.MonthName, workDay);
+            await scheduleRepository.AddWorkDayAsync(addWorkDay.ScheduleId, workDay);
         }
     }
 }

@@ -36,5 +36,12 @@ namespace ScheduleService.API.Controllers
         {
             await mediator.Send(command);
         }
+
+        [HttpPost]
+        [Route("departmentId")]
+        public async Task GenerateMonthSchedule([FromBody] GenerateDepartmentScheduleCommand command)
+        {
+            await mediator.Send(command);
+        }
     }
 }

@@ -19,5 +19,7 @@
         public string UserId { get; set; }
 
         public string DepartmentId { get; set; }
+
+        public string ScheduleId { get; set; }
     }
 }
