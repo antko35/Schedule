@@ -26,6 +26,7 @@
         public async Task<IActionResult> GetAllDepartments()
         {
             var users = await mediator.Send(new GetAllDepartmentsQuery());
+
             return Ok(users);
         }
 
@@ -39,6 +40,7 @@
         public async Task<IActionResult> GetById(string id)
         {
             var result = await mediator.Send(new GetDepartmentByIdQuery(id));
+
             return Ok(result);
         }
 
@@ -60,6 +62,7 @@
         public async Task<IActionResult> CreateDepartment([FromBody] CreateDepartmentCommand command)
         {
             var createdDep = await mediator.Send(command);
+
             return Ok(createdDep);
         }
 
@@ -73,6 +76,7 @@
         public async Task<IActionResult> GetUsersByDepartment(string deparmtmentId)
         {
             var users = await mediator.Send(new GetUsersByDepartmentQuery(deparmtmentId));
+
             return Ok(users);
         }
 
@@ -98,8 +102,9 @@
         [Route("addUserToDepartment")]
          public async Task<IActionResult> AddUserToDepartment([FromBody] AddUserToDepartmentCommand command)
          {
-            await mediator.Send(command);
-            return Ok();
+            var result = await mediator.Send(command);
+
+            return Ok(result);
          }
 
         /// <summary>
@@ -111,9 +116,9 @@
         [Route("editUserInDepartment")]
         public async Task<IActionResult> EditUserInDepartment([FromBody] EditUserInDepartmentCommand command)
         {
-            await mediator.Send(command);
+            var result = await mediator.Send(command);
 
-            return Ok();
+            return Ok(result);
         }
 
         /// <summary>
@@ -127,6 +132,7 @@
         public async Task<IActionResult> RemoveUserFromDepartment(string userId, string departmentId)
         {
             var deletedUserJob = await mediator.Send(new RemoveUserFromDepartmentCommand(userId, departmentId));
+
             return Ok(deletedUserJob);
         }
     }

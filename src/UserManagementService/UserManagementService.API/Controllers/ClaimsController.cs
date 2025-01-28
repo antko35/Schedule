@@ -26,6 +26,7 @@ public class ClaimsController : ControllerBase
     public async Task<IActionResult> GetClaims([FromRoute] string email)
     {
         var response = await userClient.GetUserClaimsAsync(email);
+
         return Ok(response);
     }
 
@@ -47,9 +48,11 @@ public class ClaimsController : ControllerBase
     /// <returns></returns>
     [HttpPost]
     [Route("AddClaim")]
-    public async Task AddClaim(AddClaimRequest request)
+    public async Task<IActionResult> AddClaim(AddClaimRequest request)
     {
         await userClient.AddClaimAsync(request);
+
+        return Ok();
     }
 
     /// <summary>
@@ -70,8 +73,10 @@ public class ClaimsController : ControllerBase
     /// <returns></returns>
     [HttpPost]
     [Route("DeleteClaim")]
-    public async Task DeleteClaim(AddClaimRequest request)
+    public async Task<IActionResult> DeleteClaim(AddClaimRequest request)
     {
         await userClient.DeleteClaimAsync(request);
+
+        return Ok();
     }
 }

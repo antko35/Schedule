@@ -11,18 +11,21 @@
         public async Task ChangeRole(ChangeUserRole request)
         {
             var user = await userManager.FindByEmailAsync(request.Email);
+
             if (user == null)
             {
                 throw new InvalidOperationException($"email doesnt exist {request.Email}");
             }
 
             var role = await roleManager.FindByNameAsync(request.Role);
+
             if (role == null)
             {
                 throw new InvalidOperationException("Role " + request.Role + " doest exixt");
             }
 
             var result = await userManager.AddToRoleAsync(user, role.Name!);
+
             if (!result.Succeeded)
             {
                 throw new InvalidOperationException(

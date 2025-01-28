@@ -28,6 +28,7 @@
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await mediator.Send(new GetAllUsersQuery());
+
             return Ok(users);
         }
 
@@ -42,6 +43,7 @@
         public async Task<IActionResult> GetById(string id)
         {
             var response = await mediator.Send(new GetFullUserInfoQuery(id));
+
             return Ok(response);
         }
 
@@ -54,6 +56,7 @@
         public async Task<IActionResult> CreateUser([FromBody] CreateUserCommand command)
         {
             var result = await mediator.Send(command);
+
             return Ok(result);
         }
 
@@ -66,6 +69,7 @@
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserInfoCommand command)
         {
             var result = await mediator.Send(command);
+
             return Ok(result);
         }
 
@@ -79,6 +83,7 @@
         public async Task<IActionResult> DeleteUser(string id)
         {
             await mediator.Send(new DeleteUserCommand(id));
+
             return Ok();
         }
     }
