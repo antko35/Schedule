@@ -34,12 +34,15 @@
         [Fact]
         public async Task DeleteClaim_UserNotFound_ErrorResponse()
         {
+            // Arrange
             var email = "user@gmail.com";
             AddClaimRequest request = new AddClaimRequest { Email = email, ClaimType = "value", ClaimValue = "value" };
             userManagerMock.Setup(um => um.FindByEmailAsync(email)).ReturnsAsync((User)null);
 
+            // Act
             var result = await grpcService.DeletePersonClaim(request, context);
 
+            // Assert
             result.Success.Should().BeFalse();
             result.Message.Should().Be("No user with this email");
         }
@@ -47,6 +50,7 @@
         [Fact]
         public async Task DeleteClaim_ClaimNotFoud_ErrorResponse()
         {
+            // Arrange
             var email = "user@gmail.com";
             var claim = new System.Security.Claims.Claim("type", "value");
             User user = new User { Email = email };
@@ -55,8 +59,10 @@
             userManagerMock.Setup(um => um.FindByEmailAsync(email)).ReturnsAsync(user);
             userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync(new Claim[0]);
 
+            // Act
             var result = await grpcService.DeletePersonClaim(request, context);
 
+            // Assert
             result.Success.Should().BeFalse();
             result.Message.Should().Be("User doesnt have this claim");
         }
@@ -64,6 +70,7 @@
         [Fact]
         public async Task DeleteClaim_ReturnsSuccessResponse()
         {
+            // Arrange
             var email = "user@gmail.com";
             var claim = new Claim("type", "value");
             User user = new User { Email = email };
@@ -73,8 +80,10 @@
             userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync([claim]);
             userManagerMock.Setup(um => um.RemoveClaimAsync(It.IsAny<User>(), It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Success);
 
+            // Act
             var result = await grpcService.DeletePersonClaim(request, context);
 
+            // Assert
             result.Success.Should().BeTrue();
             result.Message.Should().Be("Claim successfully delited");
         }
@@ -82,6 +91,7 @@
         [Fact]
         public async Task DeleteClaim_RemoveError_ReturnsErrorResponse()
         {
+            // Arrange
             var email = "user@gmail.com";
             var claim = new Claim("type", "value");
             User user = new User { Email = email };
@@ -91,8 +101,10 @@
             userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync([claim]);
             userManagerMock.Setup(um => um.RemoveClaimAsync(It.IsAny<User>(), It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Failed());
 
+            // Act
             var result = await grpcService.DeletePersonClaim(request, context);
 
+            // Assert
             result.Success.Should().BeFalse();
         }
     }

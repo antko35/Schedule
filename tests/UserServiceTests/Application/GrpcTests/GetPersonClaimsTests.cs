@@ -32,14 +32,15 @@
         [Fact]
         public async Task GetClaims_UserNotFound_ErrorResponse()
         {
+            // Arrange
             var email = "user@gmail.com";
             var reqest = new GetClaimsRequest { Email = email};
             userManagerMock.Setup(um => um.FindByEmailAsync(reqest.Email)).ReturnsAsync((User)null);
 
-            //act
+            // Act
             var result = await grpcService.GetPersonClaims(reqest, context);
 
-            //assert
+            // Assert
             result.Success.Should().BeFalse();
             result.Message.Should().Be("No person with this email");
         }
@@ -47,6 +48,7 @@
         [Fact]
         public async Task GetClaims_SuccessResponse()
         {
+            // Arrange
             var email = "user@gmail.com";
             var reqest = new GetClaimsRequest { Email = email };
             User user = new User { Email = email };
@@ -58,10 +60,10 @@
             userManagerMock.Setup(um => um.FindByEmailAsync(reqest.Email)).ReturnsAsync(user);
             userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync(claims);
 
-            // act
+            // Act
             var result = await grpcService.GetPersonClaims(reqest, context);
 
-            // assert
+            // Assert
             result.Success.Should().BeTrue();
             result.Message.Should().Be("Claims retrieved successfully");
             result.Claims.Count.Should().Be(2);
