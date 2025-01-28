@@ -19,6 +19,9 @@
         public bool OfficialHoliday { get; set; }
 
         [BsonElement("transferDay")]
-        public DateOnly? TransferDay { get; set; } // перенос на какую дату
+        public DateOnly TransferDay { get; set; }
+
+        [BsonElement("holiday")]
+        public DateOnly Holiday { get; set; }
     }
 }

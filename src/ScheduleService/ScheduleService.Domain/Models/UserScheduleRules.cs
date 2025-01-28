@@ -42,7 +42,7 @@
         public bool EvenDOM { get; set; }
 
         /// <summary>
-        /// even Day of month.
+        /// Uneven Day of month.
         /// </summary>
         public bool UnEvenDOM { get; set; }
 

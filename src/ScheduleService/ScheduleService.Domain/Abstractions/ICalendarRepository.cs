@@ -4,5 +4,6 @@ namespace ScheduleService.Domain.Abstractions
 {
     public interface ICalendarRepository : IGenericRepository<Calendar>
     {
+        Task<List<Calendar>> GetMonthHolidays(int month);
     }
 }

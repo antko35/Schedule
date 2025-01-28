@@ -1,4 +1,4 @@
-﻿namespace ScheduleService.Application.UseCases.Commands.Calendar
+﻿namespace ScheduleService.Application.UseCases.CommandHandlers.Calendar
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +6,7 @@
     using System.Text;
     using System.Threading.Tasks;
     using MediatR;
-    using ScheduleService.Application.UseCases.CommandHandlers.Calendar;
+    using ScheduleService.Application.UseCases.Commands.Calendar;
     using ScheduleService.Domain.Abstractions;
     using ScheduleService.Domain.Models;
 
@@ -29,6 +29,7 @@
                 DayOfMonth = request.Holiday.Day,
                 DayOfWeek = dayOfWeek,
                 OfficialHoliday = true,
+                Holiday = request.Holiday,
                 TransferDay = request.TransferDay,
             };
 

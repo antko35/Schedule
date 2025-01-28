@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScheduleService.Application.UseCases.CommandHandlers.Calendar
+namespace ScheduleService.Application.UseCases.Commands.Calendar
 {
     public record AddOfficialHolidayCommand : IRequest
     {

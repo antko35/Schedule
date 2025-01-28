@@ -18,13 +18,16 @@
     {
         private readonly IUserRuleRepository userRuleRepository;
         private readonly IScheduleRepository scheduleRepository;
+        private readonly ICalendarRepository calendarRepository;
 
         public GenerateDepartmentScheduleCommandHandler(
             IUserRuleRepository userRuleRepository,
-            IScheduleRepository scheduleRepository)
+            IScheduleRepository scheduleRepository,
+            ICalendarRepository calendarRepository)
         {
             this.userRuleRepository = userRuleRepository;
             this.scheduleRepository = scheduleRepository;
+            this.calendarRepository = calendarRepository;
         }
 
         public async Task Handle(GenerateDepartmentScheduleCommand request, CancellationToken cancellationToken)
@@ -39,6 +42,8 @@
 
             var currentDay = new DateTime(request.Year, request.Month, 1);
             var dayOfWeek = currentDay.DayOfWeek;
+
+            //var officialHoliday = await calendarRepository.GetMonthHolidays(request.Month);
 
             foreach (var userRules in usersRules)
             {
@@ -64,7 +69,7 @@
                         continue;
                     }
 
-                    // if user works on first shift on even dayn of week
+                    // if user works first shift on even days of week
                     if (userRules.EvenDOW)
                     {
                         if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
@@ -78,9 +83,34 @@
                         }
                     }
 
+                    if (userRules.UnEvenDOW)
+                    {
+                        if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
+                        {
+                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
+                        }
+
+                        if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
+                        {
+                            await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
+                        }
+                    }
+
                     if (userRules.EvenDOM)
                     {
                         if (i % 2 == 0)
+                        {
+                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
+                        }
+                        else
+                        {
+                            await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
+                        }
+                    }
+
+                    if (userRules.UnEvenDOM)
+                    {
+                        if (i % 2 != 0)
                         {
                             await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
                         }
@@ -106,7 +136,18 @@
                                 : new DateTime(addWorkDay.Year, addWorkDay.Month, addWorkDay.Day, 21, 0, 0),
             };
 
-            await scheduleRepository.AddWorkDayAsync(addWorkDay.ScheduleId, workDay);
+            var existingWorkDay = await scheduleRepository.GetWorkDayAsync(addWorkDay.ScheduleId, addWorkDay.Day);
+
+            var isDayExist = existingWorkDay != null;
+
+            if (isDayExist)
+            {
+                await scheduleRepository.UpdateWorkDayAsync(addWorkDay.ScheduleId, workDay);
+            }
+            else
+            {
+                await scheduleRepository.AddWorkDayAsync(addWorkDay.ScheduleId, workDay);
+            }
         }
     }
 }
