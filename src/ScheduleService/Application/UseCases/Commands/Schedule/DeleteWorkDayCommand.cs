@@ -6,8 +6,9 @@
     using System.Text;
     using System.Threading.Tasks;
     using MediatR;
+    using ScheduleService.Domain.Models;
 
-    public record DeleteWorkDayCommand : IRequest
+    public record DeleteWorkDayCommand : IRequest<Schedule>
     {
         public string UserId { get; set; }
         public string DepartmentId { get; set; }

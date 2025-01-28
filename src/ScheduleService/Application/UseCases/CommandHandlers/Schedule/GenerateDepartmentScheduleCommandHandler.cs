@@ -14,7 +14,8 @@
     using ScheduleService.Domain.Abstractions;
     using ScheduleService.Domain.Models;
 
-    public class GenerateDepartmentScheduleCommandHandler : IRequestHandler<GenerateDepartmentScheduleCommand>
+    public class GenerateDepartmentScheduleCommandHandler
+        : IRequestHandler<GenerateDepartmentScheduleCommand>
     {
         private readonly IUserRuleRepository userRuleRepository;
         private readonly IScheduleRepository scheduleRepository;
@@ -139,7 +140,6 @@
             var existingWorkDay = await scheduleRepository.GetWorkDayAsync(addWorkDay.ScheduleId, addWorkDay.Day);
 
             var isDayExist = existingWorkDay != null;
-
             if (isDayExist)
             {
                 await scheduleRepository.UpdateWorkDayAsync(addWorkDay.ScheduleId, workDay);

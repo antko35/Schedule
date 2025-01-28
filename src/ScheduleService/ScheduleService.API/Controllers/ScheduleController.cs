@@ -21,9 +21,11 @@ namespace ScheduleService.API.Controllers
         /// <param name="command"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task CreateWorkDay([FromBody] CreateWorkDayManuallyCommand command)
+        public async Task<IActionResult> CreateWorkDay([FromBody] CreateWorkDayManuallyCommand command)
         {
-            await mediator.Send(command);
+            var result = await mediator.Send(command);
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -32,16 +34,20 @@ namespace ScheduleService.API.Controllers
         /// <param name="command"></param>
         /// <returns></returns>
         [HttpDelete]
-        public async Task DeleteWorkDay([FromBody] DeleteWorkDayCommand command)
+        public async Task<IActionResult> DeleteWorkDay([FromBody] DeleteWorkDayCommand command)
         {
-            await mediator.Send(command);
+            var result = await mediator.Send(command);
+
+            return Ok(result);
         }
 
         [HttpPost]
         [Route("departmentId")]
-        public async Task GenerateMonthSchedule([FromBody] GenerateDepartmentScheduleCommand command)
+        public async Task<IActionResult> GenerateMonthSchedule([FromBody] GenerateDepartmentScheduleCommand command)
         {
             await mediator.Send(command);
+
+            return Ok();
         }
     }
 }

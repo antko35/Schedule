@@ -11,7 +11,7 @@
     using ScheduleService.Domain.Models;
 
     public class AddOfficialHolidayCommandHandler
-        : IRequestHandler<AddOfficialHolidayCommand>
+        : IRequestHandler<AddOfficialHolidayCommand, Calendar>
     {
         private readonly ICalendarRepository calendarRepository;
 
@@ -20,7 +20,7 @@
             this.calendarRepository = calendarRepository;
         }
 
-        public async Task Handle(AddOfficialHolidayCommand request, CancellationToken cancellationToken)
+        public async Task<Calendar> Handle(AddOfficialHolidayCommand request, CancellationToken cancellationToken)
         {
             DayOfWeek dayOfWeek = request.Holiday.DayOfWeek;
 
@@ -34,6 +34,8 @@
             };
 
             await calendarRepository.AddAsync(holidayDay);
+
+            return holidayDay;
         }
     }
 }

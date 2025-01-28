@@ -7,8 +7,10 @@
     using ScheduleService.Application.UseCases.Commands.Schedule;
     using ScheduleService.DataAccess.Repository;
     using ScheduleService.Domain.Abstractions;
+    using ScheduleService.Domain.Models;
 
-    public class DeleteWorkDayCommandHandler : IRequestHandler<DeleteWorkDayCommand>
+    public class DeleteWorkDayCommandHandler
+        : IRequestHandler<DeleteWorkDayCommand, Schedule>
     {
         private readonly IUserRuleRepository userRuleRepository;
         private readonly IScheduleRepository scheduleRepository;
@@ -21,28 +23,23 @@
             this.scheduleRepository = scheduleRepository;
         }
 
-        public async Task Handle(DeleteWorkDayCommand request, CancellationToken cancellationToken)
+        public async Task<Schedule> Handle(DeleteWorkDayCommand request, CancellationToken cancellationToken)
         {
             string monthName = new DateTime(request.WorkDay.Year, request.WorkDay.Month, request.WorkDay.Day)
                 .ToString("MMMM")
                 .ToLower();
 
-            var scheduleRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName);
+            var scheduleRules = await userRuleRepository
+                .GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName)
+                ?? throw new KeyNotFoundException("Schedule for this user not found");
 
-            var daySchedule = await scheduleRepository.GetWorkDayAsync(scheduleRules.ScheduleId, request.WorkDay.Day)
+            var scheduleForDay = await scheduleRepository
+                .GetWorkDayAsync(scheduleRules.ScheduleId, request.WorkDay.Day)
                 ?? throw new InvalidOperationException("No work during day");
 
             await scheduleRepository.DeleteWorkDayAsync(scheduleRules.ScheduleId, request.WorkDay.Day);
 
-
-            var dayToDelete = daySchedule.WorkDays.FirstOrDefault();
-            if (dayToDelete != null)
-            {
-            }
-            else
-            {
-                throw new InvalidOperationException("Work in this day not found");
-            }
+            return scheduleForDay;
         }
     }
 }

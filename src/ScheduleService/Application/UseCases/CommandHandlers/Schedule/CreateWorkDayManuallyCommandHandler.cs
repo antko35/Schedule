@@ -10,7 +10,8 @@
     using ScheduleService.Domain.Abstractions;
     using ScheduleService.Domain.Models;
 
-    public class CreateWorkDayManuallyCommandHandler : IRequestHandler<CreateWorkDayManuallyCommand>
+    public class CreateWorkDayManuallyCommandHandler
+        : IRequestHandler<CreateWorkDayManuallyCommand, WorkDay>
     {
         private readonly IUserRuleRepository userRuleRepository;
         private readonly IScheduleRepository scheduleRepository;
@@ -23,7 +24,7 @@
             this.scheduleRepository = scheduleRepository;
         }
 
-        public async Task Handle(CreateWorkDayManuallyCommand request, CancellationToken cancellationToken)
+        public async Task<WorkDay> Handle(CreateWorkDayManuallyCommand request, CancellationToken cancellationToken)
         {
             string monthName = new DateTime(request.StartTime.Year, request.StartTime.Month, 1)
                 .ToString("MMMM")
@@ -49,6 +50,8 @@
             {
                 await scheduleRepository.UpdateWorkDayAsync(userSchedueRules.ScheduleId, newWorkDay);
             }
+
+            return newWorkDay;
         }
     }
 }

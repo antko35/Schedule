@@ -18,9 +18,9 @@ namespace ScheduleService.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateHoliday([FromBody] AddOfficialHolidayCommand command)
         {
-            await mediator.Send(command);
+            var result = await mediator.Send(command);
 
-            return Ok();
+            return Ok(result);
         }
     }
 }
