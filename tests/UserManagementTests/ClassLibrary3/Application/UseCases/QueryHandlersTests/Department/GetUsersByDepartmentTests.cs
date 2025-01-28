@@ -1,5 +1,6 @@
 ﻿namespace UserManagementService.Application.UseCases.QueryHandlersTests.Department
 {
+    using FluentAssertions;
     using Moq;
     using System;
     using System.Collections.Generic;
@@ -65,10 +66,10 @@
             var result = await handler.Handle(query, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(2, result.Count());
-            Assert.Contains(result, u => u.FirstName == "Alice" && u.Role == "Doctor");
-            Assert.Contains(result, u => u.FirstName == "Bob" && u.Role == "Head");
+            result.Should().NotBeNull();
+            result.Count().Should().Be(2);
+            result.Should().Contain(u => u.FirstName == "Alice" && u.Role == "Doctor");
+            result.Should().Contain(u => u.FirstName == "Bob" && u.Role == "Head");
 
             departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(query.departmentId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByDepartmentIdAsync(query.departmentId), Times.Once);
@@ -87,7 +88,7 @@
                 handler.Handle(query, CancellationToken.None));
 
             // Assert
-            Assert.Equal("Department doesnt exist", exception.Message);
+            exception.Message.Should().Be("Department doesnt exist");
 
             departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(query.departmentId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByDepartmentIdAsync(It.IsAny<string>()), Times.Never);
@@ -110,8 +111,7 @@
             var result = await handler.Handle(query, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Empty(result);
+            result.Should().BeEmpty();
 
             departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(query.departmentId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByDepartmentIdAsync(query.departmentId), Times.Once);

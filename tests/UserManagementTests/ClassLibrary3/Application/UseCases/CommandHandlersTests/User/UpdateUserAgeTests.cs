@@ -12,6 +12,7 @@
     using Xunit;
     using Domain.Models;
     using MongoDB.Bson;
+    using FluentAssertions;
 
     public class UpdateUserAgeTests
     {
@@ -65,8 +66,8 @@
             userRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
             userRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<User>()), Times.Exactly(users.Count));
 
-            Assert.Equal(DateTime.Today.Year - 1990 - (DateTime.Today < new DateTime(DateTime.Today.Year, 1, 1) ? 1 : 0), users[0].Age);
-            Assert.Equal(DateTime.Today.Year - 1985 - (DateTime.Today < new DateTime(DateTime.Today.Year, 5, 15) ? 1 : 0), users[1].Age);
+            users[0].Age.Should().Be(CalculateAge(users[0].DateOfBirth));
+            users[1].Age.Should().Be(CalculateAge(users[1].DateOfBirth));
         }
 
         [Fact]
@@ -85,6 +86,19 @@
             // Assert
             userRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
             userRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<User>()), Times.Never);
+        }
+
+        private int CalculateAge(DateOnly dateOfBirth)
+        {
+            var today = DateTime.Today;
+            var age = today.Year - dateOfBirth.Year;
+
+            if (today < new DateTime(today.Year, dateOfBirth.Month, dateOfBirth.Day))
+            {
+                age--;
+            }
+
+            return age;
         }
     }
 }

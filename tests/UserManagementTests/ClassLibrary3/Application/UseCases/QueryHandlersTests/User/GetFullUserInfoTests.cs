@@ -1,5 +1,6 @@
 ﻿namespace UserManagementService.Application.UseCases.QueryHandlersTests.User
 {
+    using FluentAssertions;
     using Moq;
     using System;
     using System.Collections.Generic;
@@ -63,14 +64,14 @@
             var result = await handler.Handle(query, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(user.Id, result.Id);
-            Assert.Equal(user.FirstName, result.FirstName);
-            Assert.Equal(user.LastName, result.LastName);
-            Assert.Equal(user.Patronymic, result.Patronymic);
-            Assert.Equal(user.Age, result.Age);
-            Assert.Equal(user.Gender, result.Gender);
-            Assert.Equal(userJobs, result.Jobs);
+            result.Should().NotBeNull();
+            result.Id.Should().Be(user.Id);
+            result.FirstName.Should().Be(user.FirstName);
+            result.LastName.Should().Be(user.LastName);
+            result.Patronymic.Should().Be(user.Patronymic);
+            result.Age.Should().Be(user.Age);
+            result.Gender.Should().Be(user.Gender);
+            result.Jobs.Should().Equal(userJobs);
 
             userRepositoryMock.Verify(repo => repo.GetByIdAsync(query.userId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByUserIdAsync(query.userId), Times.Once);
@@ -84,11 +85,11 @@
                 .ReturnsAsync((User)null);
 
             // Act
-            var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-                handler.Handle(query, CancellationToken.None));
+            var act = async () => await handler.Handle(query, CancellationToken.None);
 
             // Assert
-            Assert.Equal("User not found", exception.Message);
+            await act.Should().ThrowAsync<KeyNotFoundException>()
+                .WithMessage("User not found");
 
             userRepositoryMock.Verify(repo => repo.GetByIdAsync(query.userId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByUserIdAsync(It.IsAny<string>()), Times.Never);
@@ -118,14 +119,14 @@
             var result = await handler.Handle(query, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(user.Id, result.Id);
-            Assert.Equal(user.FirstName, result.FirstName);
-            Assert.Equal(user.LastName, result.LastName);
-            Assert.Equal(user.Patronymic, result.Patronymic);
-            Assert.Equal(user.Age, result.Age);
-            Assert.Equal(user.Gender, result.Gender);
-            Assert.Empty(result.Jobs);
+            result.Should().NotBeNull();
+            result.Id.Should().Be(user.Id);
+            result.FirstName.Should().Be(user.FirstName);
+            result.LastName.Should().Be(user.LastName);
+            result.Patronymic.Should().Be(user.Patronymic);
+            result.Age.Should().Be(user.Age);
+            result.Gender.Should().Be(user.Gender);
+            result.Jobs.Should().BeEmpty();
 
             userRepositoryMock.Verify(repo => repo.GetByIdAsync(query.userId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByUserIdAsync(query.userId), Times.Once);

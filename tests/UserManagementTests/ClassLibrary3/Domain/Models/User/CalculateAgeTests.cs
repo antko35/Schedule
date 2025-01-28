@@ -7,6 +7,7 @@
     using System.Text;
     using System.Threading.Tasks;
     using Domain.Models;
+    using FluentAssertions;
     using Xunit;
 
     public class CalculateAgeTests
@@ -25,7 +26,7 @@
             var calculatedAge = user.CalculateAge();
 
             // Assert
-            Assert.Equal(expectedAge, calculatedAge);
+            calculatedAge.Should().Be(expectedAge);
         }
 
         [Fact]
@@ -39,7 +40,7 @@
             var calculatedAge = user.CalculateAge();
 
             // Assert
-            Assert.Equal(20, calculatedAge); // пользователю должно быть 20 лет
+            calculatedAge.Should().Be(20);
         }
     }
 }

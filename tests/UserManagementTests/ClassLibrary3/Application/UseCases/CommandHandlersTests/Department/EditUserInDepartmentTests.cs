@@ -3,9 +3,9 @@
     using Moq;
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
+    using FluentAssertions;
     using UserManagementService.Application.UseCases.CommandHandlers.Department;
     using UserManagementService.Application.UseCases.Commands.Department;
     using UserManagementService.Domain.Abstractions.IRepository;
@@ -65,13 +65,13 @@
             var result = await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(command.UserId, result.UserId);
-            Assert.Equal(command.DepartmentId, result.DepartmentId);
-            Assert.Equal(command.Role, result.Role);
-            Assert.Equal(command.Status, result.Status);
-            Assert.Equal(command.PhoneNumber, result.PhoneNumber);
-            Assert.Equal(command.Email, result.Email);
+            result.Should().NotBeNull();
+            result.UserId.Should().Be(command.UserId);
+            result.DepartmentId.Should().Be(command.DepartmentId);
+            result.Role.Should().Be(command.Role);
+            result.Status.Should().Be(command.Status);
+            result.Email.Should().Be(command.Email);
+            result.PhoneNumber.Should().Be(command.PhoneNumber);
 
             userJobsRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<UserJob>()), Times.Once);
         }
@@ -83,11 +83,12 @@
             userRepositoryMock.Setup(repo => repo.GetByIdAsync(command.UserId))
                 .ReturnsAsync((User)null);
 
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-                handler.Handle(command, CancellationToken.None));
+            // Act
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
-            Assert.Equal("User not found", exception.Message);
+            // Assert
+            await act.Should().ThrowAsync<KeyNotFoundException>()
+                .WithMessage("User not found");
         }
 
         [Fact]
@@ -100,11 +101,11 @@
                 .ReturnsAsync((Department)null);
 
             // Act
-            var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-                handler.Handle(command, CancellationToken.None));
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.Equal("Department not found", exception.Message);
+            await act.Should().ThrowAsync<KeyNotFoundException>()
+                .WithMessage("Department not found");
         }
 
         [Fact]
@@ -119,11 +120,11 @@
                 .ReturnsAsync((UserJob)null);
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                handler.Handle(command, CancellationToken.None));
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.Equal("User not found in this department", exception.Message);
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("User not found in this department");
         }
     }
 }

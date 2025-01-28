@@ -1,17 +1,17 @@
 ﻿namespace UserManagementService.Application.UseCases.QueryHandlersTests.Department
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
+    using FluentAssertions;
+    using MongoDB.Bson;
     using Moq;
     using UserManagementService.Application.UseCases.Queries.Department;
     using UserManagementService.Application.UseCases.QueryHandlers.Department;
     using UserManagementService.Domain.Abstractions.IRepository;
+    using UserManagementService.Domain.Models;
     using Xunit;
-    using Domain.Models;
-    using MongoDB.Bson;
 
     public class GetAllDepartmentsTests
     {
@@ -25,15 +25,10 @@
         }
 
         [Fact]
-        public async Task Handle_ShouldReturnAllDepartments_WhenDepartmentsExists()
+        public async Task Handle_ShouldReturnAllDepartments_WhenDepartmentsExist()
         {
             // Arrange
-            var departments = new List<Department>
-            {
-                new Department { Id = ObjectId.GenerateNewId().ToString(), DepartmentName = "Department 1" },
-                new Department { Id = ObjectId.GenerateNewId().ToString(), DepartmentName = "Department 2" }
-            };
-
+            var departments = CreateTestDepartments(2);
             departmentRepositoryMock
                 .Setup(repo => repo.GetAllAsync())
                 .ReturnsAsync(departments);
@@ -45,9 +40,10 @@
 
             // Assert
             departmentRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
-            Assert.NotNull(result);
-            Assert.Equal(departments.Count, result.Count());
-            Assert.Equal(departments, result);
+
+            result.Should().NotBeNull()
+                  .And.HaveCount(departments.Count)
+                  .And.BeEquivalentTo(departments);
         }
 
         [Fact]
@@ -65,8 +61,24 @@
 
             // Assert
             departmentRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
-            Assert.NotNull(result);
-            Assert.Empty(result);
+
+            result.Should().NotBeNull().And.BeEmpty();
+        }
+
+        private List<Department> CreateTestDepartments(int count)
+        {
+            var departments = new List<Department>();
+
+            for (int i = 1; i <= count; i++)
+            {
+                departments.Add(new Department
+                {
+                    Id = ObjectId.GenerateNewId().ToString(),
+                    DepartmentName = $"Department {i}"
+                });
+            }
+
+            return departments;
         }
     }
 }

@@ -2,6 +2,7 @@ using Hangfire;
 using MediatR;
 using System.Reflection;
 using UserManagementService.API.Extensions;
+using UserManagementService.API.Extensions.AppExtensions;
 using UserManagementService.API.Extensions.AppExtensions.Hangfire;
 using UserManagementService.Application.Extensions;
 using UserManagementService.Application.UseCases.Commands.User;
@@ -38,15 +39,7 @@ var app = builder.Build();
 
 app.UseMiddleware<ExeptionHadlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(options => // UseSwaggerUI is called only in Development.
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-        options.RoutePrefix = string.Empty;
-    });
-}
+app.ConfigureSwagger();
 
 app.ConfigureHangfire();
 

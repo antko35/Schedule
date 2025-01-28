@@ -1,5 +1,6 @@
 ﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
 {
+    using FluentAssertions;
     using MongoDB.Driver;
     using Moq;
     using System;
@@ -64,15 +65,16 @@
                 .ReturnsAsync((User)null);
 
             // Act
-            var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-                handler.Handle(command, CancellationToken.None));
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.Equal("User not found", exception.Message);
+            await act.Should().ThrowAsync<KeyNotFoundException>()
+                .WithMessage("User not found");
 
             userRepositoryMock.Verify(repo => repo.GetByIdAsync(command.userId), Times.Once);
             userRepositoryMock.Verify(repo => repo.RemoveAsync(It.IsAny<string>()), Times.Never);
             userJobsRepositoryMock.Verify(repo => repo.DeleteByUserId(It.IsAny<string>()), Times.Never);
+
         }
     }
 }

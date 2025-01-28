@@ -1,5 +1,6 @@
 ﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.Department
 {
+    using FluentAssertions;
     using Moq;
     using System;
     using System.Collections.Generic;
@@ -46,9 +47,9 @@
             var result = await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(command.userId, result.UserId);
-            Assert.Equal(command.departmentId, result.DepartmentId);
+            result.Should().NotBeNull();
+            result.UserId.Should().Be(command.userId);
+            result.DepartmentId.Should().Be(command.departmentId);
 
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobAsync(command.userId, command.departmentId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.RemoveAsync(existingUserJob.Id), Times.Once);
@@ -62,11 +63,12 @@
                 .ReturnsAsync((UserJob)null);
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                handler.Handle(command, CancellationToken.None));
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.Equal("User doesnt found in this department", exception.Message);
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("User doesnt found in this department");
+
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobAsync(command.userId, command.departmentId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.RemoveAsync(It.IsAny<string>()), Times.Never);
         }

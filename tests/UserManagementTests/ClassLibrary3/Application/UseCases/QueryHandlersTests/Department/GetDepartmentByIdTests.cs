@@ -12,6 +12,7 @@
     using Xunit;
     using Domain.Models;
     using MongoDB.Bson;
+    using FluentAssertions;
 
     public class GetDepartmentByIdTests
     {
@@ -46,9 +47,9 @@
 
             // Assert
             departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(departmentId), Times.Once);
-            Assert.NotNull(result);
-            Assert.Equal(department.Id, result.Id);
-            Assert.Equal(department.DepartmentName, result.DepartmentName);
+            result.Should().NotBeNull();
+            result.Id.Should().Be(department.Id);
+            result.DepartmentName.Should().Be(department.DepartmentName);
         }
 
         [Fact]
@@ -65,9 +66,9 @@
 
             // Act
             var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(query, CancellationToken.None));
-            Assert.Equal("Department not found", exception.Message);
 
             // Assert
+            exception.Message.Should().Be("Department not found");
             departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(departmentId), Times.Once);
         }
     }

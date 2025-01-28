@@ -1,16 +1,15 @@
 ﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
+    using FluentAssertions;
     using Moq;
     using UserManagementService.Application.UseCases.CommandHandlers.User;
     using UserManagementService.Application.UseCases.Commands.User;
     using UserManagementService.Domain.Abstractions.IRepository;
+    using UserManagementService.Domain.Models;
     using Xunit;
-    using Domain.Models;
 
     public class CreateUserTests
     {
@@ -48,15 +47,20 @@
 
             // Assert
             userRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<User>()), Times.Once);
-            Assert.NotNull(result);
-            Assert.Equal("John", result.FirstName);
-            Assert.Equal("Doe", result.LastName);
-            Assert.Equal("Middle", result.Patronymic);
-            Assert.Equal("Male", result.Gender);
-            Assert.Equal(new DateOnly(1990, 1, 1), result.DateOfBirth);
-            Assert.Equal(DateTime.Today.Year - command.DateOfBirth.Year - (DateTime.Today < new DateTime(DateTime.Today.Year, 1, 11) ? 1 : 0), result.Age);
-            Assert.NotNull(createdUser);
-            Assert.Equal(result, createdUser);
+
+            createdUser.Should().NotBeNull();
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(createdUser);
+
+            result.FirstName.Should().Be("John");
+            result.LastName.Should().Be("Doe");
+            result.Patronymic.Should().Be("Middle");
+            result.Gender.Should().Be("Male");
+            result.DateOfBirth.Should().Be(new DateOnly(1990, 1, 1));
+
+            var expectedAge = DateTime.Today.Year - command.DateOfBirth.Year -
+                              (DateTime.Today < new DateTime(DateTime.Today.Year, command.DateOfBirth.Month, command.DateOfBirth.Day) ? 1 : 0);
+            result.Age.Should().Be(expectedAge);
         }
     }
 }

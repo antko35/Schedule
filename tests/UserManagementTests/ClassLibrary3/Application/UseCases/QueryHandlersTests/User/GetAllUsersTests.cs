@@ -12,6 +12,7 @@
     using Xunit;
     using Domain.Models;
     using MongoDB.Bson;
+    using FluentAssertions;
 
     public class GetAllUsersTests
     {
@@ -63,9 +64,9 @@
 
             // Assert
             userRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
-            Assert.NotNull(result);
-            Assert.Equal(users.Count, result.Count());
-            Assert.Equal(users, result);
+            result.Should().NotBeNullOrEmpty();
+            result.Count().Should().Be(users.Count());
+            result.Should().Equal(users);
         }
 
         [Fact]
@@ -83,8 +84,7 @@
 
             // Assert
             userRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
-            Assert.NotNull(result);
-            Assert.Empty(result);
+            result.Should().BeEmpty();
         }
     }
 }
