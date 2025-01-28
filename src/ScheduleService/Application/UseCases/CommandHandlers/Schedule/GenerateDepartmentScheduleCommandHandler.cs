@@ -2,8 +2,10 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
+    //using System.Globalization;
     using System.Linq;
+    using System.Security.Cryptography;
+    using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading.Tasks;
     using MediatR;
@@ -20,6 +22,8 @@
         private readonly IUserRuleRepository userRuleRepository;
         private readonly IScheduleRepository scheduleRepository;
         private readonly ICalendarRepository calendarRepository;
+
+        private List<Calendar> officialHolidays;
 
         public GenerateDepartmentScheduleCommandHandler(
             IUserRuleRepository userRuleRepository,
@@ -44,7 +48,9 @@
             var currentDay = new DateTime(request.Year, request.Month, 1);
             var dayOfWeek = currentDay.DayOfWeek;
 
-            //var officialHoliday = await calendarRepository.GetMonthHolidays(request.Month);
+            officialHolidays = await calendarRepository.GetMonthHolidays(request.Month);
+
+            //var transferDays = await calendarRepository.GetTransferDays(request.Month);
 
             foreach (var userRules in usersRules)
             {
@@ -64,7 +70,12 @@
                     currentDay = new DateTime(request.Year, request.Month, i);
                     dayOfWeek = currentDay.DayOfWeek;
 
-                    // проверка на гос выходной
+                    var officialHoliday = ChekIfOfficialHoliday(i);
+                    if (officialHoliday)
+                    {
+                        continue;
+                    }
+
                     if (dayOfWeek == DayOfWeek.Sunday || dayOfWeek == DayOfWeek.Saturday)
                     {
                         continue;
@@ -122,6 +133,24 @@
                     }
                 }
             }
+        }
+
+        private bool ChekIfOfficialHoliday(int i)
+        {
+            if (officialHolidays != null)
+            {
+                return false;
+            }
+
+            foreach(var day in officialHolidays)
+            {
+                if (day.Holiday.Day == i)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private async Task CreateAndAddWorkDay(AddWorkDayDto addWorkDay, bool firstShift)
