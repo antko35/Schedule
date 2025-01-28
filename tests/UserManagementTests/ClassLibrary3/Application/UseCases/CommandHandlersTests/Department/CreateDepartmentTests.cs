@@ -34,6 +34,7 @@
         [Fact]
         public async Task CreateDepartment_Success_ReturnNewDepartment()
         {
+            // Arrange
             departmentRepositoryMock.Setup(repo => repo.GetByClinicId(command.ClinicId))
          .ReturnsAsync(new List<Department>()); // No existing departments
 
@@ -90,12 +91,12 @@
             departmentRepositoryMock.Setup(repo => repo.GetByClinicId(command.ClinicId))
                 .ReturnsAsync(existingDepartments);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 handler.Handle(command, CancellationToken.None));
 
+            // Assert
             Assert.Equal("This department already exist", exception.Message);
         }
-
     }
 }

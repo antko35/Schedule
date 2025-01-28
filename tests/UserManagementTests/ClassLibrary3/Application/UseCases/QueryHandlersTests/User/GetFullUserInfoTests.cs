@@ -83,10 +83,11 @@
             userRepositoryMock.Setup(repo => repo.GetByIdAsync(query.userId))
                 .ReturnsAsync((User)null);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
                 handler.Handle(query, CancellationToken.None));
 
+            // Assert
             Assert.Equal("User not found", exception.Message);
 
             userRepositoryMock.Verify(repo => repo.GetByIdAsync(query.userId), Times.Once);

@@ -82,10 +82,11 @@
             departmentRepositoryMock.Setup(repo => repo.GetByIdAsync(query.departmentId))
                 .ReturnsAsync((Department)null);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
                 handler.Handle(query, CancellationToken.None));
 
+            // Assert
             Assert.Equal("Department doesnt exist", exception.Message);
 
             departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(query.departmentId), Times.Once);

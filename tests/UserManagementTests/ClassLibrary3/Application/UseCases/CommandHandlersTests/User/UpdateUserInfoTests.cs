@@ -90,13 +90,12 @@
                 DateOfBirth = new DateOnly(2000, 6, 30)
             };
 
-            userRepositoryMock
-                .Setup(repo => repo.GetByIdAsync(userId))
-                .ReturnsAsync((User)null);
+            userRepositoryMock.Setup(repo => repo.GetByIdAsync(userId)).ReturnsAsync((User)null);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(command, CancellationToken.None));
 
+            // Assert
             Assert.Equal("User not found", exception.Message);
             userRepositoryMock.Verify(repo => repo.GetByIdAsync(userId), Times.Once);
             userRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<User>()), Times.Never);

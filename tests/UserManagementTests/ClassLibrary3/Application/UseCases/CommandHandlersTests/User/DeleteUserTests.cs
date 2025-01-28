@@ -35,6 +35,7 @@
         [Fact]
         public async Task DeleteDepartment_Success()
         {
+            // Arrange
             var user = new User { Id = command.userId, FirstName = "John" };
 
             userRepositoryMock.Setup(repo => repo.GetByIdAsync(command.userId))
@@ -62,10 +63,11 @@
             userRepositoryMock.Setup(repo => repo.GetByIdAsync(command.userId))
                 .ReturnsAsync((User)null);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
                 handler.Handle(command, CancellationToken.None));
 
+            // Assert
             Assert.Equal("User not found", exception.Message);
 
             userRepositoryMock.Verify(repo => repo.GetByIdAsync(command.userId), Times.Once);

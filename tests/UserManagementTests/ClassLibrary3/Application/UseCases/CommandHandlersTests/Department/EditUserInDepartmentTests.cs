@@ -99,10 +99,11 @@
             departmentRepositoryMock.Setup(repo => repo.GetByIdAsync(command.DepartmentId))
                 .ReturnsAsync((Department)null);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
                 handler.Handle(command, CancellationToken.None));
 
+            // Assert
             Assert.Equal("Department not found", exception.Message);
         }
 
@@ -117,10 +118,11 @@
             userJobsRepositoryMock.Setup(repo => repo.GetUserJobAsync(command.UserId, command.DepartmentId))
                 .ReturnsAsync((UserJob)null);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 handler.Handle(command, CancellationToken.None));
 
+            // Assert
             Assert.Equal("User not found in this department", exception.Message);
         }
     }

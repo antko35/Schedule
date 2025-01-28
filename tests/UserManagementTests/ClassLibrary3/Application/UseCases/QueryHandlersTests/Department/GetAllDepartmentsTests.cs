@@ -27,6 +27,7 @@
         [Fact]
         public async Task Handle_ShouldReturnAllDepartments_WhenDepartmentsExists()
         {
+            // Arrange
             var departments = new List<Department>
             {
                 new Department { Id = ObjectId.GenerateNewId().ToString(), DepartmentName = "Department 1" },

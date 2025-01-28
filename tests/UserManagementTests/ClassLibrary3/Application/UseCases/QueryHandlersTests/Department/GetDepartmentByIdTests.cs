@@ -63,10 +63,11 @@
 
             var query = new GetDepartmentByIdQuery(departmentId);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(query, CancellationToken.None));
             Assert.Equal("Department not found", exception.Message);
 
+            // Assert
             departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(departmentId), Times.Once);
         }
     }

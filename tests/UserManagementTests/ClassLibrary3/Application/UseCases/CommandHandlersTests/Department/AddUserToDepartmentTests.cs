@@ -79,10 +79,11 @@
             userRepositoryMock.Setup(repo => repo.GetByIdAsync(command.UserId))
                 .ReturnsAsync((User)null);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
                 handler.Handle(command, CancellationToken.None));
 
+            // Assert
             Assert.Equal("User doesnt exist", exception.Message);
         }
 
@@ -98,10 +99,11 @@
             departmentRepositoryMock.Setup(repo => repo.GetByIdAsync(command.DepartmentId))
                 .ReturnsAsync((Department)null);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
                 handler.Handle(command, CancellationToken.None));
 
+            // Assert
             Assert.Equal("Department doesnt exist", exception.Message);
         }
 
@@ -122,10 +124,11 @@
             userJobsRepositoryMock.Setup(repo => repo.GetUserJobAsync(command.UserId, command.DepartmentId))
                 .ReturnsAsync(existingUserJob);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 handler.Handle(command, CancellationToken.None));
 
+            // Assert
             Assert.Equal($"User {command.UserId} already in department {command.DepartmentId}", exception.Message);
         }
     }

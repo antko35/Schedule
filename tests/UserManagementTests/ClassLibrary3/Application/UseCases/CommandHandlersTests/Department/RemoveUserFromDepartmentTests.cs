@@ -61,10 +61,11 @@
             userJobsRepositoryMock.Setup(repo => repo.GetUserJobAsync(command.userId, command.departmentId))
                 .ReturnsAsync((UserJob)null);
 
-            // Act & Assert
+            // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 handler.Handle(command, CancellationToken.None));
 
+            // Assert
             Assert.Equal("User doesnt found in this department", exception.Message);
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobAsync(command.userId, command.departmentId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.RemoveAsync(It.IsAny<string>()), Times.Never);
