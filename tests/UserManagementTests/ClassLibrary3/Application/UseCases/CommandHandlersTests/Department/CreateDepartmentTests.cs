@@ -3,10 +3,9 @@
     using Moq;
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection.Metadata;
-    using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
+    using FluentAssertions;
     using UserManagementService.Application.UseCases.CommandHandlers.Department;
     using UserManagementService.Application.UseCases.Commands.Department;
     using UserManagementService.Domain.Abstractions.IRepository;
@@ -36,7 +35,7 @@
         {
             // Arrange
             departmentRepositoryMock.Setup(repo => repo.GetByClinicId(command.ClinicId))
-         .ReturnsAsync(new List<Department>()); // No existing departments
+                .ReturnsAsync(new List<Department>()); // No existing departments
 
             departmentRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<Department>()))
                 .Returns(Task.CompletedTask);
@@ -45,9 +44,9 @@
             var result = await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(command.ClinicId, result.ClinicId);
-            Assert.Equal(command.DeartmentName, result.DepartmentName);
+            result.Should().NotBeNull();
+            result.ClinicId.Should().Be(command.ClinicId);
+            result.DepartmentName.Should().Be(command.DeartmentName);
 
             departmentRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Department>()), Times.Once);
         }
@@ -72,9 +71,9 @@
             var result = await handler.Handle(customCommand, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.False(string.IsNullOrEmpty(result.ClinicId)); // Check that ClinicId is generated
-            Assert.Equal(customCommand.DeartmentName, result.DepartmentName);
+            result.Should().NotBeNull();
+            result.ClinicId.Should().NotBeNullOrEmpty(); // Check that ClinicId is generated
+            result.DepartmentName.Should().Be(customCommand.DeartmentName);
 
             departmentRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Department>()), Times.Once);
         }
@@ -92,11 +91,11 @@
                 .ReturnsAsync(existingDepartments);
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                handler.Handle(command, CancellationToken.None));
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.Equal("This department already exist", exception.Message);
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("This department already exist");
         }
     }
 }

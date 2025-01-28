@@ -2,7 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
+    using FluentAssertions;
     using Moq;
     using UserManagementService.Application.UseCases.CommandHandlers.Department;
     using UserManagementService.Application.UseCases.Commands.Department;
@@ -63,11 +65,11 @@
             var result = await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(command.UserId, result.UserId);
-            Assert.Equal(command.DepartmentId, result.DepartmentId);
-            Assert.Equal(command.Role, result.Role);
-            Assert.Equal(command.Status, result.Status);
+            result.Should().NotBeNull();
+            result.UserId.Should().Be(command.UserId);
+            result.DepartmentId.Should().Be(command.DepartmentId);
+            result.Role.Should().Be(command.Role);
+            result.Status.Should().Be(command.Status);
 
             userJobsRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<UserJob>()), Times.Once);
         }
@@ -80,11 +82,11 @@
                 .ReturnsAsync((User)null);
 
             // Act
-            var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-                handler.Handle(command, CancellationToken.None));
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.Equal("User doesnt exist", exception.Message);
+            await act.Should().ThrowAsync<KeyNotFoundException>()
+                .WithMessage("User doesnt exist");
         }
 
         [Fact]
@@ -100,15 +102,15 @@
                 .ReturnsAsync((Department)null);
 
             // Act
-            var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-                handler.Handle(command, CancellationToken.None));
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.Equal("Department doesnt exist", exception.Message);
+            await act.Should().ThrowAsync<KeyNotFoundException>()
+                .WithMessage("Department doesnt exist");
         }
 
         [Fact]
-        public async Task AddUserToDepartment_AlreadyInDepartment_ThrowKeyNotFoundException()
+        public async Task AddUserToDepartment_AlreadyInDepartment_ThrowInvalidOperationException()
         {
             // Arrange
             var user = new User { Id = command.UserId };
@@ -125,11 +127,11 @@
                 .ReturnsAsync(existingUserJob);
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                handler.Handle(command, CancellationToken.None));
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.Equal($"User {command.UserId} already in department {command.DepartmentId}", exception.Message);
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage($"User {command.UserId} already in department {command.DepartmentId}");
         }
     }
 }
