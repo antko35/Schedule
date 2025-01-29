@@ -38,6 +38,7 @@
 
             HttpStatusCode status;
             string message;
+            string source;
             Dictionary<string, string[]>? errors = null;
 
             switch (exception)
@@ -45,16 +46,19 @@
                 case ArgumentNullException argumentNull:
                     status = HttpStatusCode.NotFound;
                     message = argumentNull.Message;
+                    source = exception.Message;
                     break;
 
                 case InvalidOperationException invalidOperation:
                     status = HttpStatusCode.NotFound;
                     message = invalidOperation.Message;
+                    source = invalidOperation.Source;
                     break;
 
                 case KeyNotFoundException keyNotFound:
                     status = HttpStatusCode.NotFound;
                     message = keyNotFound.Message;
+                    source = keyNotFound.Source;
                     break;
 
                 //case ValidationException validationException:
@@ -66,6 +70,7 @@
                 default:
                     status = HttpStatusCode.InternalServerError;
                     message = exception.Message;
+                    source = exception.Source;
                     break;
             }
 
@@ -73,6 +78,7 @@
             {
                 error = message,
                 errors,
+                source = source,
             });
             context.Response.StatusCode = (int)status;
 

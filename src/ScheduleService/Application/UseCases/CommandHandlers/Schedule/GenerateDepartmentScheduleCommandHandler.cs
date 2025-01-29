@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.Metrics;
     //using System.Globalization;
     using System.Linq;
     using System.Security.Cryptography;
@@ -23,7 +24,9 @@
         private readonly IScheduleRepository scheduleRepository;
         private readonly ICalendarRepository calendarRepository;
 
-        private List<Calendar> officialHolidays;
+        private IEnumerable<UserScheduleRules?> usersRules = new List<UserScheduleRules?>();
+        private List<Calendar?> officialHolidays = new List<Calendar?>();
+        private List<Calendar?> transferDays = new List<Calendar?>();
 
         public GenerateDepartmentScheduleCommandHandler(
             IUserRuleRepository userRuleRepository,
@@ -41,7 +44,8 @@
                 .ToString("MMMM")
                 .ToLower();
 
-            var usersRules = await userRuleRepository.GetUsersRulesByDepartment(request.DepartmentId, monthName);
+            usersRules = await userRuleRepository.GetUsersRulesByDepartment(request.DepartmentId, monthName)
+                ?? throw new KeyNotFoundException("Schedule rules fro this department not found");
 
             int daysInMonth = DateTime.DaysInMonth(request.Year, request.Month);
 
@@ -50,7 +54,7 @@
 
             officialHolidays = await calendarRepository.GetMonthHolidays(request.Month);
 
-            //var transferDays = await calendarRepository.GetTransferDays(request.Month);
+            transferDays = await calendarRepository.GetMonthTransferDays(request.Month);
 
             foreach (var userRules in usersRules)
             {
@@ -63,91 +67,81 @@
                    Month = request.Month,
                    MonthName = monthName,
                 };
-                for (int i = 1; i <= daysInMonth; i++)
+                for (int day = 1; day <= daysInMonth; day++)
                 {
-                    workDay.Day = i;
+                    workDay.Day = day;
 
-                    currentDay = new DateTime(request.Year, request.Month, i);
+                    currentDay = new DateTime(request.Year, request.Month, day);
                     dayOfWeek = currentDay.DayOfWeek;
 
-                    var officialHoliday = ChekIfOfficialHoliday(i);
-                    if (officialHoliday)
+                    var officialHoliday = ChekIfOfficialHoliday(day);
+                    if (officialHoliday == true)
                     {
                         continue;
                     }
 
-                    if (dayOfWeek == DayOfWeek.Sunday || dayOfWeek == DayOfWeek.Saturday)
+                    var isTransferDay = ChekIfTransferDay(day);
+                    if ((dayOfWeek == DayOfWeek.Sunday || dayOfWeek == DayOfWeek.Saturday) && !isTransferDay)
                     {
                         continue;
                     }
 
-                    // if user works first shift on even days of week
-                    if (userRules.EvenDOW)
+                    await CreateWorkDay(userRules, workDay, dayOfWeek, day);
+
+                    if (isTransferDay)
                     {
-                        if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
+                        var replacedDay = GetReplacedDay(day);
+                        if (replacedDay.Month != request.Month)
                         {
-                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
-                        }
-
-                        if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
-                        {
-                            await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
-                        }
-                    }
-
-                    if (userRules.UnEvenDOW)
-                    {
-                        if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
-                        {
-                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
-                        }
-
-                        if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
-                        {
-                            await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
-                        }
-                    }
-
-                    if (userRules.EvenDOM)
-                    {
-                        if (i % 2 == 0)
-                        {
-                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
+                            continue;
                         }
                         else
                         {
-                            await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
-                        }
-                    }
-
-                    if (userRules.UnEvenDOM)
-                    {
-                        if (i % 2 != 0)
-                        {
-                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
-                        }
-                        else
-                        {
-                            await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
+                            await CreateWorkDay(userRules, workDay, replacedDay.DayOfWeek, replacedDay.Day);
                         }
                     }
                 }
             }
         }
 
-        private bool ChekIfOfficialHoliday(int i)
+        private DateOnly GetReplacedDay(int i)
         {
-            if (officialHolidays != null)
+            var day = transferDays.First(x => x?.HolidayDate.Day == i);
+            var replacedDay = day.HolidayDate;
+
+            return replacedDay;
+        }
+
+        private bool ChekIfTransferDay(int i)
+        {
+            if (transferDays == null)
             {
                 return false;
             }
 
-            foreach(var day in officialHolidays)
+            foreach (var day in transferDays)
             {
-                if (day.Holiday.Day == i)
+                if (day?.TransferDate?.Day == i)
                 {
                     return true;
                 }
+            }
+
+            return false;
+        }
+
+        private bool ChekIfOfficialHoliday(int i)
+        {
+            if (officialHolidays.Count == 0)
+            {
+                return false;
+            }
+
+            var holiday = officialHolidays.Where(x => x.HolidayDayOfMonth == i).FirstOrDefault();
+
+            if (holiday != null)
+            {
+                return true;
             }
 
             return false;
@@ -176,6 +170,59 @@
             else
             {
                 await scheduleRepository.AddWorkDayAsync(addWorkDay.ScheduleId, workDay);
+            }
+        }
+
+        private async Task CreateWorkDay(UserScheduleRules userRules, AddWorkDayDto workDay, DayOfWeek dayOfWeek, int dayOfMonth)
+        {
+            if (userRules.EvenDOW)
+            {
+                if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
+                {
+                    await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
+                }
+
+                if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
+                {
+                    await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
+                }
+            }
+
+            if (userRules.UnEvenDOW)
+            {
+                if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
+                {
+                    await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
+                }
+
+                if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
+                {
+                    await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
+                }
+            }
+
+            if (userRules.EvenDOM)
+            {
+                if (dayOfMonth % 2 == 0)
+                {
+                    await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
+                }
+                else
+                {
+                    await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
+                }
+            }
+
+            if (userRules.UnEvenDOM)
+            {
+                if (dayOfMonth % 2 != 0)
+                {
+                    await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
+                }
+                else
+                {
+                    await this.CreateAndAddWorkDay(workDay, userRules.SecondShift);
+                }
             }
         }
     }

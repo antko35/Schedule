@@ -26,12 +26,20 @@
 
             var holidayDay = new Calendar()
             {
-                DayOfMonth = request.Holiday.Day,
+                HolidayDayOfMonth = request.Holiday.Day,
                 DayOfWeek = dayOfWeek,
-                OfficialHoliday = true,
-                Holiday = request.Holiday,
-                TransferDay = request.TransferDay,
+                HolidayDate = request.Holiday,
+                MonthOfHoliday = request.Holiday.Month,
+                MonthOfTransferDay = request.TransferDay.Month,
             };
+
+            if (request.TransferDay.Year == 0001)
+            {
+                holidayDay.TransferDate = null;            }
+            else
+            {
+                holidayDay.TransferDate = request.TransferDay;
+            }
 
             await calendarRepository.AddAsync(holidayDay);
 

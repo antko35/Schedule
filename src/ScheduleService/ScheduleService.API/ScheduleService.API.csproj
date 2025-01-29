@@ -21,5 +21,9 @@
     <ProjectReference Include="..\Application\ScheduleService.Application.csproj" />
     <ProjectReference Include="..\ScheduleService.DataAccess\ScheduleService.DataAccess.csproj" />
   </ItemGroup>
+	
+    <PropertyGroup>
+	    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
 
 </Project>

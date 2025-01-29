@@ -15,6 +15,28 @@ namespace ScheduleService.API.Controllers
             this.mediator = mediator;
         }
 
+        /// <summary>
+        /// Add official holiday.
+        /// </summary>
+        /// <param name="command"></param>
+        /// <remarks>
+        /// If it is holiday with transer day:
+        /// ```
+        /// POST
+        /// {
+        ///    "holiday": "2025-01-29",
+        ///    "transferDay": "2025-01-29"
+        /// }
+        ///
+        /// If it is holiday without transer day:
+        ///
+        /// POST
+        /// {
+        ///    "holiday": "2025-01-29",
+        /// }.
+        ///
+        /// </remarks>
+        /// <returns>Calendar entity.</returns>
         [HttpPost]
         public async Task<IActionResult> CreateHoliday([FromBody] AddOfficialHolidayCommand command)
         {

@@ -20,9 +20,16 @@
 
         public async Task<List<Calendar>> GetMonthHolidays(int month)
         {
-            var filter = Builders<Calendar>.Filter.And(
-                Builders<Calendar>.Filter.Eq(x => x.Holiday.Month, month),
-                Builders<Calendar>.Filter.Eq(x => x.TransferDay.Month, month));
+            var filter = Builders<Calendar>.Filter.Eq(x => x.MonthOfHoliday, month);
+
+            var result = await dbSet.Find(filter).ToListAsync();
+
+            return result;
+        }
+
+        public async Task<List<Calendar>> GetMonthTransferDays(int month)
+        {
+            var filter = Builders<Calendar>.Filter.Eq(x => x.MonthOfTransferDay, month);
 
             var result = await dbSet.Find(filter).ToListAsync();
 

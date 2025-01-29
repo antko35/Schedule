@@ -1,9 +1,9 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using ScheduleService.Application.UseCases.Commands.Schedule;
-
-namespace ScheduleService.API.Controllers
+﻿namespace ScheduleService.API.Controllers
 {
+    using MediatR;
+    using Microsoft.AspNetCore.Mvc;
+    using ScheduleService.Application.UseCases.Commands.Schedule;
+
     [ApiController]
     [Route("[controller]")]
     public class ScheduleController : ControllerBase
