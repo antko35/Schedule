@@ -2,6 +2,7 @@
 {
     using MongoDB.Bson;
     using MongoDB.Bson.Serialization.Attributes;
+    using MongoDB.Driver;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -18,6 +19,8 @@
         public string DepartmentId { get; set; }
 
         public string Month { get; set; } = string.Empty;
+
+        public int Year { get; set; }
 
         public float HoursPerMonth { get; set; }
 
@@ -52,8 +55,5 @@
 
         [BsonRepresentation(BsonType.ObjectId)]
         public string ScheduleId { get; set; }
-
-        // вынести
-        public List<WorkDay> Schedule = new List<WorkDay>();
     }
 }

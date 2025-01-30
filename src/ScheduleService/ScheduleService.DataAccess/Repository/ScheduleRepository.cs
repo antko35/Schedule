@@ -50,6 +50,15 @@
             return result;
         }
 
+        public async Task<Schedule> GetMonthSchedule(string scheduleId)
+        {
+            var filter = Builders<Schedule>.Filter.Eq(x => x.Id, scheduleId);
+
+            var result = await dbSet.FindAsync(filter);
+
+            return await result.FirstOrDefaultAsync();
+        }
+
         public async Task UpdateWorkDayAsync(string scheduleId, WorkDay newWorkDay)
         {
             var filter = Builders<Schedule>.Filter.And(
@@ -61,6 +70,16 @@
                 .Set("WorkDays.$.EndTime", newWorkDay.EndTime);
 
             await dbSet.UpdateOneAsync(filter, update);
+        }
+
+        public async Task<UpdateResult?> DeleteMonthSchedule(string scheduleId)
+        {
+            var filter = Builders<Schedule>.Filter.Eq(x => x.Id, scheduleId);
+            var update = Builders<Schedule>.Update.Set(x => x.WorkDays, new List<WorkDay>());
+
+            var result = await dbSet.UpdateOneAsync(filter, update);
+
+            return result;
         }
     }
 }

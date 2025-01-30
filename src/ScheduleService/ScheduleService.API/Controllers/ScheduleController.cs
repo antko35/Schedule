@@ -16,6 +16,20 @@
         }
 
         /// <summary>
+        /// Get user`s month schedule.
+        /// </summary>
+        /// <returns>Schedule.</returns>
+        [HttpGet]
+        [Route("schedule/{userId}/{departmentId}/{year:int}/{month:int}")]
+        public async Task<IActionResult> GetMonthSchedule(string userId, string departmentId, int year, int month)
+        {
+            var command = new GetUserMonthScheduleCommand(userId, departmentId, year, month);
+            var result = await mediator.Send(command);
+
+            return Ok(result);
+        }
+
+        /// <summary>
         /// Create or replace work day.
         /// </summary>
         /// <param name="command"></param>
@@ -41,13 +55,32 @@
             return Ok(result);
         }
 
+        /// <summary>
+        /// Generate schedule for department by month.
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
         [HttpPost]
-        [Route("departmentId")]
+        [Route("generate")]
         public async Task<IActionResult> GenerateMonthSchedule([FromBody] GenerateDepartmentScheduleCommand command)
         {
             await mediator.Send(command);
 
             return Ok();
+        }
+
+        /// <summary>
+        /// Delete user`s schedule.
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns>Status.</returns>
+        [HttpDelete]
+        [Route("deleteMonthSchedule")]
+        public async Task<IActionResult> DeleteMonthSchedule([FromBody] DeleteUserMonthScheduleCommand command)
+        {
+            var result = await mediator.Send(command);
+
+            return Ok(result);
         }
     }
 }

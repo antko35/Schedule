@@ -22,14 +22,17 @@
         {
             var filter = Builders<Calendar>.Filter.Eq(x => x.MonthOfHoliday, month);
 
-            var result = await dbSet.Find(filter).ToListAsync();
+            var result = await dbSet.FindAsync(filter);
 
-            return result;
+            return await result.ToListAsync();
         }
 
         public async Task<List<Calendar>> GetMonthTransferDays(int month)
         {
-            var filter = Builders<Calendar>.Filter.Eq(x => x.MonthOfTransferDay, month);
+            var filter = Builders<Calendar>.Filter
+                .And(
+                Builders<Calendar>.Filter.Eq(x => x.MonthOfTransferDay, month),
+                Builders<Calendar>.Filter.Ne(x => x.MonthOfTransferDay, 0));
 
             var result = await dbSet.Find(filter).ToListAsync();
 

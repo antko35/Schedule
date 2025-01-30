@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Metrics;
-    //using System.Globalization;
     using System.Linq;
     using System.Security.Cryptography;
     using System.Security.Cryptography.X509Certificates;
@@ -24,7 +23,7 @@
         private readonly IScheduleRepository scheduleRepository;
         private readonly ICalendarRepository calendarRepository;
 
-        private IEnumerable<UserScheduleRules?> usersRules = new List<UserScheduleRules?>();
+        private IEnumerable<UserScheduleRules>? usersRules;
         private List<Calendar?> officialHolidays = new List<Calendar?>();
         private List<Calendar?> transferDays = new List<Calendar?>();
 
@@ -44,8 +43,12 @@
                 .ToString("MMMM")
                 .ToLower();
 
-            usersRules = await userRuleRepository.GetUsersRulesByDepartment(request.DepartmentId, monthName)
-                ?? throw new KeyNotFoundException("Schedule rules fro this department not found");
+            usersRules = await userRuleRepository.GetUsersRulesByDepartment(request.DepartmentId, monthName);
+
+            if (!usersRules.Any())
+            {
+                throw new InvalidOperationException("Schedule rules for this department not found");
+            }
 
             int daysInMonth = DateTime.DaysInMonth(request.Year, request.Month);
 
@@ -74,13 +77,13 @@
                     currentDay = new DateTime(request.Year, request.Month, day);
                     dayOfWeek = currentDay.DayOfWeek;
 
-                    var officialHoliday = ChekIfOfficialHoliday(day);
-                    if (officialHoliday == true)
+                    var officialHoliday = IsHoliday(officialHolidays, day);
+                    if (officialHoliday)
                     {
                         continue;
                     }
 
-                    var isTransferDay = ChekIfTransferDay(day);
+                    var isTransferDay = IsTransferDay(day);
                     if ((dayOfWeek == DayOfWeek.Sunday || dayOfWeek == DayOfWeek.Saturday) && !isTransferDay)
                     {
                         continue;
@@ -91,60 +94,34 @@
                     if (isTransferDay)
                     {
                         var replacedDay = GetReplacedDay(day);
-                        if (replacedDay.Month != request.Month)
+                        if (replacedDay?.HolidayDate.Month != request.Month)
                         {
                             continue;
                         }
                         else
                         {
-                            await CreateWorkDay(userRules, workDay, replacedDay.DayOfWeek, replacedDay.Day);
+                            await CreateWorkDay(userRules, workDay, replacedDay.DayOfWeek, replacedDay.HolidayDate.Day);
                         }
                     }
                 }
             }
         }
 
-        private DateOnly GetReplacedDay(int i)
+        private Calendar? GetReplacedDay(int i)
         {
-            var day = transferDays.First(x => x?.HolidayDate.Day == i);
-            var replacedDay = day.HolidayDate;
+            var day = transferDays.FirstOrDefault(x => x.HolidayDayOfMonth == i);
 
-            return replacedDay;
+            return day;
         }
 
-        private bool ChekIfTransferDay(int i)
+        private bool IsHoliday(IEnumerable<Calendar> holidays, int day)
         {
-            if (transferDays == null)
-            {
-                return false;
-            }
-
-            foreach (var day in transferDays)
-            {
-                if (day?.TransferDate?.Day == i)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return holidays.Any(x => x.HolidayDayOfMonth == day);
         }
 
-        private bool ChekIfOfficialHoliday(int i)
+        private bool IsTransferDay(int i)
         {
-            if (officialHolidays.Count == 0)
-            {
-                return false;
-            }
-
-            var holiday = officialHolidays.Where(x => x.HolidayDayOfMonth == i).FirstOrDefault();
-
-            if (holiday != null)
-            {
-                return true;
-            }
-
-            return false;
+            return transferDays.Any(x => x?.TransferDate?.Day == i);
         }
 
         private async Task CreateAndAddWorkDay(AddWorkDayDto addWorkDay, bool firstShift)
