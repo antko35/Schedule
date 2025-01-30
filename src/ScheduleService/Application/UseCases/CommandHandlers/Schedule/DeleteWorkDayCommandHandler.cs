@@ -30,7 +30,7 @@
                 .ToLower();
 
             var scheduleRules = await userRuleRepository
-                .GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName)
+                .GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.WorkDay.Year)
                 ?? throw new KeyNotFoundException("Schedule for this user not found");
 
             var scheduleForDay = await scheduleRepository

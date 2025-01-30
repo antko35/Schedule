@@ -33,7 +33,7 @@
                 .ToString("MMMM")
                 .ToLower();
 
-            var userRules = await  userRuleRepository.GetMonthScheduleRules(request.UserId, request.departmentId, monthName, request.year);
+            var userRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.departmentId, monthName, request.year);
             throw new NotImplementedException();
         }
     }

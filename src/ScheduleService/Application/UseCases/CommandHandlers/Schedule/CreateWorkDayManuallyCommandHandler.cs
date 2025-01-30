@@ -30,7 +30,7 @@
                 .ToString("MMMM")
                 .ToLower();
 
-            var userSchedueRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName)
+            var userSchedueRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.StartTime.Year)
                 ?? throw new InvalidOperationException($"Schedule rules not found, {monthName}");
 
             var dailySchedule = await scheduleRepository.GetWorkDayAsync(userSchedueRules.ScheduleId, request.StartTime.Day);

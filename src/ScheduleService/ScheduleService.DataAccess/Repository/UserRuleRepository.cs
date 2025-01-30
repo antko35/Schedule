@@ -29,19 +29,7 @@ namespace ScheduleService.DataAccess.Repository
             return rules;
         }
 
-        public async Task AddWorkDayAsync(string userId, string departmentId, string month, WorkDay workDay)
-        {
-            var filter = Builders<UserScheduleRules>.Filter.And(
-               Builders<UserScheduleRules>.Filter.Eq(x => x.UserId, userId),
-               Builders<UserScheduleRules>.Filter.Eq(x => x.DepartmentId, departmentId),
-               Builders<UserScheduleRules>.Filter.Eq(x => x.Month, month));
-
-            var update = Builders<UserScheduleRules>.Update.Push(s => s.Schedule, workDay);
-
-            var result = await dbSet.UpdateOneAsync(filter, update);
-        }
-
-        public async Task<UserScheduleRules> GetMonthScheduleRules(string userId, string departmentId, string monthName)
+        public async Task<UserScheduleRules> GetMonthScheduleRules(string userId, string departmentId, string monthName, int year)
         {
             var filter = Builders<UserScheduleRules>.Filter.And(
                Builders<UserScheduleRules>.Filter.Eq(x => x.UserId, userId),
@@ -51,47 +39,6 @@ namespace ScheduleService.DataAccess.Repository
             var result = await dbSet.Find(filter).FirstOrDefaultAsync();
 
             return result;
-        }
-
-        public async Task UpdateWorkDayAsync(string userId, string departmentId, string month, WorkDay updatedWorkDay)
-        {
-            var filter = Builders<UserScheduleRules>.Filter.And(
-                Builders<UserScheduleRules>.Filter.Eq(x => x.UserId, userId),
-                Builders<UserScheduleRules>.Filter.Eq(x => x.DepartmentId, departmentId),
-                Builders<UserScheduleRules>.Filter.Eq(x => x.Month, month),
-                Builders<UserScheduleRules>.Filter.ElemMatch(x => x.Schedule, day => day.StartTime.Day == updatedWorkDay.StartTime.Day));
-
-            var update = Builders<UserScheduleRules>.Update.Set(x => x.Schedule[-1], updatedWorkDay);
-
-            var result = await dbSet.UpdateOneAsync(filter, update);
-        }
-
-        public async Task DeleteWorkDayAsync(string userId, string departmentId, string month, DateTime workDayToDelete)
-        {
-            var filter = Builders<UserScheduleRules>.Filter.And(
-                Builders<UserScheduleRules>.Filter.Eq(x => x.UserId, userId),
-                Builders<UserScheduleRules>.Filter.Eq(x => x.DepartmentId, departmentId),
-                Builders<UserScheduleRules>.Filter.Eq(x => x.Month, month));
-
-            var update = Builders<UserScheduleRules>.Update.PullFilter(
-                x => x.Schedule,
-                day => day.StartTime.Day == workDayToDelete.Day);
-
-            var result = await dbSet.UpdateOneAsync(filter, update);
-        }
-
-        public async Task<WorkDay?> GetWorkDayAsync(string userId, string departmentId, string monthName, int day)
-        {
-            var filter = Builders<UserScheduleRules>.Filter.And(
-              Builders<UserScheduleRules>.Filter.Eq(x => x.UserId, userId),
-              Builders<UserScheduleRules>.Filter.Eq(x => x.DepartmentId, departmentId),
-              Builders<UserScheduleRules>.Filter.Eq(x => x.Month, monthName));
-
-            var userScheduleRules = await dbSet.Find(filter).FirstOrDefaultAsync();
-
-            var workDay = userScheduleRules.Schedule.FirstOrDefault(wd => wd.StartTime.Day == day);
-
-            return workDay;
         }
     }
 }

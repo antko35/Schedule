@@ -30,7 +30,7 @@ namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
                 .ToString("MMMM")
                 .ToLower();
 
-            var userRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName)
+            var userRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.Year)
                 ?? throw new InvalidOperationException("Invalid input");
 
             var scheduleId = userRules.ScheduleId;
