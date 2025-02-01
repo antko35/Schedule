@@ -24,9 +24,19 @@
         public async Task<IActionResult> GetMonthSchedule(string userId, string departmentId, int year, int month)
         {
             var command = new GetUserMonthScheduleCommand(userId, departmentId, year, month);
+
             var result = await mediator.Send(command);
 
             return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("schedule/{departmentId}/{year:int}/{month:int}")]
+        public async Task GetDepartmentSchedule(string departmentId, int year, int month)
+        {
+            var command = new GetMonthScheduleCommand(departmentId, year, month);
+
+            //var result = await mediator.Send(command);
         }
 
         /// <summary>
@@ -36,19 +46,6 @@
         /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> CreateWorkDay([FromBody] CreateWorkDayManuallyCommand command)
-        {
-            var result = await mediator.Send(command);
-
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Delete work day.
-        /// </summary>
-        /// <param name="command"></param>
-        /// <returns></returns>
-        [HttpDelete]
-        public async Task<IActionResult> DeleteWorkDay([FromBody] DeleteWorkDayCommand command)
         {
             var result = await mediator.Send(command);
 
@@ -67,6 +64,19 @@
             await mediator.Send(command);
 
             return Ok();
+        }
+
+        /// <summary>
+        /// Delete work day.
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        public async Task<IActionResult> DeleteWorkDay([FromBody] DeleteWorkDayCommand command)
+        {
+            var result = await mediator.Send(command);
+
+            return Ok(result);
         }
 
         /// <summary>

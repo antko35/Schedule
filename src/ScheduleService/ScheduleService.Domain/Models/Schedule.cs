@@ -13,6 +13,6 @@
         public string MonthName { get; set; }
 
         [BsonElement("workDays")]
-        public List<WorkDay> WorkDays = new List<WorkDay>();
+        public List<WorkDay> WorkDays { get; set; } = new List<WorkDay>();
     }
 }

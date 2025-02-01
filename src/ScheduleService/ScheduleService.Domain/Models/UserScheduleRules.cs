@@ -10,7 +10,7 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Contains rules for schedule generation and schedule.
+    /// Contains rules for schedule generation.
     /// </summary>
     public class UserScheduleRules : Entity
     {

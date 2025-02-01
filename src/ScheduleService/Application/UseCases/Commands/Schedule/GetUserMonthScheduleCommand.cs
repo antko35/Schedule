@@ -9,18 +9,10 @@
     using ScheduleService.Domain.Models;
 
     public record GetUserMonthScheduleCommand(
-        string userId,
-        string departmentId,
-        int year,
-        int month)
+        string UserId,
+        string DepartmentId,
+        int Year,
+        int Month)
         : IRequest<Schedule>
-    {
-        public string UserId { get; } = userId;
-
-        public string DepartmentId { get; } = departmentId;
-
-        public int Year { get; } = year;
-
-        public int Month { get; } = month;
-    }
+    { }
 }

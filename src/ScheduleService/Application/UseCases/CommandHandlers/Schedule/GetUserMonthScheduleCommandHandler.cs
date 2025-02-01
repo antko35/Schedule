@@ -29,12 +29,18 @@
 
         public async Task<Schedule> Handle(GetUserMonthScheduleCommand request, CancellationToken cancellationToken)
         {
-            var monthName = new DateOnly(request.year, request.month, 1)
+            var monthName = new DateOnly(request.Year, request.Month, 1)
                 .ToString("MMMM")
                 .ToLower();
 
-            var userRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.departmentId, monthName, request.year);
-            throw new NotImplementedException();
+            var userRules = await userRuleRepository
+                .GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.Year)
+                ?? throw new KeyNotFoundException("Invalid input");
+
+            var schedule = await scheduleRepository.GetByIdAsync(userRules.ScheduleId)
+                ?? throw new KeyNotFoundException("Error while getting schedule");
+
+            return schedule;
         }
     }
 }

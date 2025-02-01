@@ -55,9 +55,9 @@
             var currentDay = new DateTime(request.Year, request.Month, 1);
             var dayOfWeek = currentDay.DayOfWeek;
 
-            officialHolidays = await calendarRepository.GetMonthHolidays(request.Month);
+            this.officialHolidays = await calendarRepository.GetMonthHolidays(request.Month);
 
-            transferDays = await calendarRepository.GetMonthTransferDays(request.Month);
+            this.transferDays = await calendarRepository.GetMonthTransferDays(request.Month);
 
             foreach (var userRules in usersRules)
             {
@@ -89,8 +89,6 @@
                         continue;
                     }
 
-                    await CreateWorkDay(userRules, workDay, dayOfWeek, day);
-
                     if (isTransferDay)
                     {
                         var replacedDay = GetReplacedDay(day);
@@ -102,6 +100,10 @@
                         {
                             await CreateWorkDay(userRules, workDay, replacedDay.DayOfWeek, replacedDay.HolidayDate.Day);
                         }
+                    }
+                    else
+                    {
+                        await CreateWorkDay(userRules, workDay, dayOfWeek, day);
                     }
                 }
             }
