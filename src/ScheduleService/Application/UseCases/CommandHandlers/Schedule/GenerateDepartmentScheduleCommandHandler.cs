@@ -8,6 +8,7 @@
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading.Tasks;
+    using global::Application.Services;
     using MediatR;
     using Microsoft.VisualBasic;
     using ScheduleService.Application.DTOs;
@@ -50,61 +51,24 @@
                 throw new InvalidOperationException("Schedule rules for this department not found");
             }
 
-            int daysInMonth = DateTime.DaysInMonth(request.Year, request.Month);
-
-            var currentDay = new DateTime(request.Year, request.Month, 1);
-            var dayOfWeek = currentDay.DayOfWeek;
-
             this.officialHolidays = await calendarRepository.GetMonthHolidays(request.Month);
 
             this.transferDays = await calendarRepository.GetMonthTransferDays(request.Month);
 
             foreach (var userRules in usersRules)
             {
-                var workDay = new AddWorkDayDto
+                await scheduleRepository.DeleteMonthSchedule(userRules.ScheduleId);
+
+                var generatedDays = ScheduleGenerator.GenerateWorkDaysForUser(
+                   userRules,
+                   request.Year,
+                   request.Month,
+                   officialHolidays,
+                   transferDays);
+
+                foreach (var workDay in generatedDays)
                 {
-                   UserId = userRules.UserId,
-                   DepartmentId = userRules.DepartmentId,
-                   ScheduleId = userRules.ScheduleId,
-                   Year = request.Year,
-                   Month = request.Month,
-                   MonthName = monthName,
-                };
-                for (int day = 1; day <= daysInMonth; day++)
-                {
-                    workDay.Day = day;
-
-                    currentDay = new DateTime(request.Year, request.Month, day);
-                    dayOfWeek = currentDay.DayOfWeek;
-
-                    var officialHoliday = IsHoliday(officialHolidays, day);
-                    if (officialHoliday)
-                    {
-                        continue;
-                    }
-
-                    var isTransferDay = IsTransferDay(day);
-                    if ((dayOfWeek == DayOfWeek.Sunday || dayOfWeek == DayOfWeek.Saturday) && !isTransferDay)
-                    {
-                        continue;
-                    }
-
-                    if (isTransferDay)
-                    {
-                        var replacedDay = GetReplacedDay(day);
-                        if (replacedDay?.HolidayDate.Month != request.Month)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            await CreateWorkDay(userRules, workDay, replacedDay.DayOfWeek, replacedDay.HolidayDate.Day);
-                        }
-                    }
-                    else
-                    {
-                        await CreateWorkDay(userRules, workDay, dayOfWeek, day);
-                    }
+                    await scheduleRepository.AddWorkDayAsync(userRules.ScheduleId, workDay);
                 }
             }
         }

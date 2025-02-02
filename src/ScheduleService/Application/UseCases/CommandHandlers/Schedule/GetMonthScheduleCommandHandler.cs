@@ -1,15 +1,16 @@
-﻿using MediatR;
-using ScheduleService.Application.UseCases.Commands.Schedule;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
+﻿namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using MediatR;
+    using ScheduleService.Application.UseCases.Commands.Schedule;
+    using ScheduleService.DataAccess.Repository;
+    using ScheduleService.Domain.Abstractions;
+    using ScheduleService.Domain.Models;
+
     public class GetMonthScheduleCommandHandler
         : IRequestHandler<GetMonthScheduleCommand>
     {
@@ -30,7 +31,7 @@ namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
                 .ToString("MMMM")
                 .ToLower();
 
-            var response = new List<string>();
+            var response = new List<Schedule>();
 
             var userRules = await userRuleRepository.GetUsersRulesByDepartment(request.DepartmentId, monthName)
                 ?? throw new InvalidOperationException("Schedule rules not found");

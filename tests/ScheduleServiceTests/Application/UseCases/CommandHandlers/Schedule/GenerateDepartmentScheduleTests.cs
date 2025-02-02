@@ -43,7 +43,7 @@ namespace Application.UseCases.CommandHandlers.Schedule
         }
 
         [Fact]
-        public async Task GenerateSchedule_EvenDOW_FirstShift()
+        public async Task GenerateSchedule_EvenDOW_FirstShift_WithoutHoliday()
         {
             // Arrange
             var usersRules = new List<UserScheduleRules>
@@ -51,43 +51,48 @@ namespace Application.UseCases.CommandHandlers.Schedule
                 new UserScheduleRules
                 {
                     UserId = ObjectId.GenerateNewId().ToString(),
+                    DepartmentId = ObjectId.GenerateNewId().ToString(),
+                    ScheduleId = ObjectId.GenerateNewId().ToString(),
                     EvenDOW = true,
                     FirstShift = true,
                     SecondShift = false,
                 },
             };
 
-            var holidays = new List<Calendar>
-            {
-                new Calendar
-                {
-                    HolidayDate = new DateOnly(2025, 1, 1),
-                    TransferDate = null,
-                    MonthOfTransferDay = 1,
-                    MonthOfHoliday = 1,
-                    HolidayDayOfMonth = 1,
-                },
-                new Calendar
-                {
-                    HolidayDate = new DateOnly(2025, 1, 6),
-                    TransferDate = new DateOnly(2025, 11, 1),
-                    MonthOfTransferDay = 1,
-                    MonthOfHoliday = 1,
-                    HolidayDayOfMonth = 1,
-                },
-            };
+            // var holidays = new List<Calendar>
+            // {
+            //     new Calendar
+            //     {
+            //         HolidayDate = new DateOnly(2025, 1, 1),
+            //         TransferDate = null,
+            //         MonthOfTransferDay = 1,
+            //         MonthOfHoliday = 1,
+            //         HolidayDayOfMonth = 1,
+            //     },
+            //     new Calendar
+            //     {
+            //         HolidayDate = new DateOnly(2025, 1, 6),
+            //         TransferDate = new DateOnly(2025, 11, 1),
+            //         MonthOfTransferDay = 1,
+            //         MonthOfHoliday = 1,
+            //         HolidayDayOfMonth = 1,
+            //     },
+            // };
+            var holidays = new List<Calendar>();
+            var transferDays = new List<Calendar>();
 
-            var transferDays = new List<Calendar>
-            {
-                new Calendar
-                {
-                     HolidayDate = new DateOnly(2025, 7, 1),
-                     TransferDate = new DateOnly(2025, 11, 1),
-                     MonthOfTransferDay = 1,
-                     MonthOfHoliday = 1,
-                     HolidayDayOfMonth = 1,
-                },
-            };
+            // var transferDays = new List<Calendar>
+            // {
+            //     new Calendar
+            //     {
+            //          HolidayDate = new DateOnly(2025, 7, 1),
+            //          TransferDate = new DateOnly(2025, 11, 1),
+            //          MonthOfTransferDay = 1,
+            //          MonthOfHoliday = 1,
+            //          HolidayDayOfMonth = 1,
+            //     },
+            // };
+
             userRuleRepositoryMock
                 .Setup(x => x.GetUsersRulesByDepartment(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(usersRules);
@@ -103,6 +108,31 @@ namespace Application.UseCases.CommandHandlers.Schedule
 
             var a = 0;
             // Assert
+        }
+
+        [Fact]
+        public async Task GenerateSchedule_UnevenDOW_FirstShift_WithoutHoliday()
+        {
+        }
+
+        [Fact]
+        public async Task GenerateSchedule_EvenDOM_FirstShift_WithoutHoliday()
+        {
+        }
+
+        [Fact]
+        public async Task GenerateSchedule_UnevenDOM_FirstShift_WithoutHoliday()
+        {
+        }
+
+        [Fact]
+        public async Task GenerateSchedule_EvenDOW_SecondShift_WithHoliday()
+        {
+        }
+
+        [Fact]
+        public async Task GenerateSchedule_EvenDOM_SecondShift_WithHoliday()
+        {
         }
     }
 }
