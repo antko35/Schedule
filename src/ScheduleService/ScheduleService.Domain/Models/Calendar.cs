@@ -9,6 +9,9 @@
 
     public class Calendar : Entity
     {
+        [BsonElement("year")]
+        public int Year { get; set; }
+
         [BsonElement("holiday")]
         public DateOnly HolidayDate { get; set; }
 

@@ -16,6 +16,36 @@ namespace ScheduleService.API.Controllers
         }
 
         /// <summary>
+        /// Get holidays with transfer days for month.
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="month"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("holidays/{year:int}/{month:int}")]
+        public async Task<IActionResult> GetMonthHolidays(int year, int month)
+        {
+            var responce = await mediator.Send(new GetMonthHolidaysCommand(year, month));
+
+            return Ok(responce);
+        }
+
+        /// <summary>
+        /// Get transfer days for month.
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="month"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("transferDays/{year:int}/{month:int}")]
+        public async Task<IActionResult> GetYearHolidays(int year, int month)
+        {
+            var responce = await mediator.Send(new GetMonthTransferDaysCommand(year, month));
+
+            return Ok(responce);
+        }
+
+        /// <summary>
         /// Add official holiday.
         /// </summary>
         /// <param name="command"></param>
