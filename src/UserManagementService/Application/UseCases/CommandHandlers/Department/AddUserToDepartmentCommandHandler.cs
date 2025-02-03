@@ -11,17 +11,14 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
     private readonly IUserRepository userRepository;
     private readonly IDepartmentRepository departmentRepository;
     private readonly IUserJobsRepository userJobsRepository;
-    private readonly IClinicRepository clinicRepository;
 
     public AddUserToDepartmentCommandHandler(IUserRepository userRepository,
                                              IDepartmentRepository departmentRepository,
-                                             IUserJobsRepository userJobsRepository,
-                                             IClinicRepository clinicRepository)
+                                             IUserJobsRepository userJobsRepository)
     {
         this.userRepository = userRepository;
         this.departmentRepository = departmentRepository;
         this.userJobsRepository = userJobsRepository;
-        this.clinicRepository = clinicRepository;
     }
 
     public async Task<UserJob> Handle(AddUserToDepartmentCommand request, CancellationToken cancellationToken)

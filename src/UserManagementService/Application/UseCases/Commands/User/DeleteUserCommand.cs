@@ -10,9 +10,7 @@
     /// <summary>
     /// Delete User and his UserJods
     /// </summary>
-    /// <param name="userId"></param>
-    public record DeleteUserCommand(string userId)
-        : IRequest
-    {
-    }
+    /// <param name="UserId"></param>
+    public record DeleteUserCommand(string UserId)
+        : IRequest;
 }

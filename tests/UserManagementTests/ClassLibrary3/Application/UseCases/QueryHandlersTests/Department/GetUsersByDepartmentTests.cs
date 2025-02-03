@@ -39,11 +39,11 @@
         public async Task GetUsersByDepartment_DepartmentExists_ReturnsUsers()
         {
             // Arrange
-            var department = new Department { Id = query.departmentId, DepartmentName = "depName" };
+            var department = new Department { Id = query.DepartmentId, DepartmentName = "depName" };
             var userJobs = new List<UserJob>
             {
-                new UserJob { UserId = "1", DepartmentId = query.departmentId, Role = "Doctor" },
-                new UserJob { UserId = "2", DepartmentId = query.departmentId, Role = "Head" }
+                new UserJob { UserId = "1", DepartmentId = query.DepartmentId, Role = "Doctor" },
+                new UserJob { UserId = "2", DepartmentId = query.DepartmentId, Role = "Head" }
             };
             var users = new List<User>
             {
@@ -51,10 +51,10 @@
                 new User { Id = "2", FirstName = "Bob" }
             };
 
-            departmentRepositoryMock.Setup(repo => repo.GetByIdAsync(query.departmentId))
+            departmentRepositoryMock.Setup(repo => repo.GetByIdAsync(query.DepartmentId))
                 .ReturnsAsync(department);
 
-            userJobsRepositoryMock.Setup(repo => repo.GetUserJobsByDepartmentIdAsync(query.departmentId))
+            userJobsRepositoryMock.Setup(repo => repo.GetUserJobsByDepartmentIdAsync(query.DepartmentId))
                 .ReturnsAsync(userJobs);
 
             userRepositoryMock.Setup(repo => repo.GetByIdAsync("1"))
@@ -71,8 +71,8 @@
             result.Should().Contain(u => u.FirstName == "Alice" && u.Role == "Doctor");
             result.Should().Contain(u => u.FirstName == "Bob" && u.Role == "Head");
 
-            departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(query.departmentId), Times.Once);
-            userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByDepartmentIdAsync(query.departmentId), Times.Once);
+            departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(query.DepartmentId), Times.Once);
+            userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByDepartmentIdAsync(query.DepartmentId), Times.Once);
             userRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<string>()), Times.Exactly(2));
         }
 
@@ -80,7 +80,7 @@
         public async Task GetUsersByDepartment_DepartmentDoesNotExist_ThrowsKeyNotFoundException()
         {
             // Arrange
-            departmentRepositoryMock.Setup(repo => repo.GetByIdAsync(query.departmentId))
+            departmentRepositoryMock.Setup(repo => repo.GetByIdAsync(query.DepartmentId))
                 .ReturnsAsync((Department)null);
 
             // Act
@@ -90,7 +90,7 @@
             // Assert
             exception.Message.Should().Be("Department doesnt exist");
 
-            departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(query.departmentId), Times.Once);
+            departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(query.DepartmentId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByDepartmentIdAsync(It.IsAny<string>()), Times.Never);
             userRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<string>()), Times.Never);
         }
@@ -99,12 +99,12 @@
         public async Task GetUsersByDepartment_NoUsersInDepartment_ReturnsEmptyList()
         {
             // Arrange
-            var department = new Department { Id = query.departmentId, DepartmentName = "dep" };
+            var department = new Department { Id = query.DepartmentId, DepartmentName = "dep" };
 
-            departmentRepositoryMock.Setup(repo => repo.GetByIdAsync(query.departmentId))
+            departmentRepositoryMock.Setup(repo => repo.GetByIdAsync(query.DepartmentId))
                 .ReturnsAsync(department);
 
-            userJobsRepositoryMock.Setup(repo => repo.GetUserJobsByDepartmentIdAsync(query.departmentId))
+            userJobsRepositoryMock.Setup(repo => repo.GetUserJobsByDepartmentIdAsync(query.DepartmentId))
                 .ReturnsAsync(new List<UserJob>());
 
             // Act
@@ -113,8 +113,8 @@
             // Assert
             result.Should().BeEmpty();
 
-            departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(query.departmentId), Times.Once);
-            userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByDepartmentIdAsync(query.departmentId), Times.Once);
+            departmentRepositoryMock.Verify(repo => repo.GetByIdAsync(query.DepartmentId), Times.Once);
+            userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByDepartmentIdAsync(query.DepartmentId), Times.Once);
             userRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<string>()), Times.Never);
         }
     }

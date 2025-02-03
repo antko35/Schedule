@@ -13,8 +13,8 @@ namespace UserManagementService.Application.UseCases.Validators.Commands.Departm
     {
         public RemoveUserFromDepartmentCommandValidator()
         {
-            RuleFor(x => x.userId).NotEmpty();
-            RuleFor(x => x.departmentId).NotEmpty();
+            RuleFor(x => x.UserId).NotEmpty();
+            RuleFor(x => x.DepartmentId).NotEmpty();
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿namespace UserManagementService.Domain.Models;
-
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
+namespace UserManagementService.Domain.Models;
 public class Department : Entity
 {
     [BsonElement("departmentName")]

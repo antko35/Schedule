@@ -7,6 +7,6 @@ using UserManagementService.Application.DTOs;
 /// <summary>
 /// Get full users info in departmernt
 /// </summary>
-/// <param name="departmentId"></param>
-public record GetUsersByDepartmentQuery(string departmentId)
-    : IRequest<IEnumerable<FullUserInfo>>;
+/// <param name="DepartmentId"></param>
+public record GetUsersByDepartmentQuery(string DepartmentId)
+    : IRequest<IEnumerable<UserInfoInDepartment>>;

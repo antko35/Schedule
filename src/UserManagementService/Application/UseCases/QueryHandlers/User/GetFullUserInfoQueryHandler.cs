@@ -12,7 +12,7 @@
     using UserManagementService.Domain.Abstractions.IRepository;
 
     public class GetFullUserInfoQueryHandler
-        : IRequestHandler<GetFullUserInfoQuery, AllUserInfo>
+        : IRequestHandler<GetFullUserInfoQuery, FullUserInfo>
     {
         private readonly IUserJobsRepository userJobsRepository;
         private readonly IUserRepository userRepository;
@@ -23,16 +23,14 @@
             this.userJobsRepository = userJobsRepository;
         }
 
-        public async Task<AllUserInfo> Handle(GetFullUserInfoQuery request, CancellationToken cancellationToken)
+        public async Task<FullUserInfo> Handle(GetFullUserInfoQuery request, CancellationToken cancellationToken)
         {
-            var user = await userRepository.GetByIdAsync(request.userId)
+            var user = await userRepository.GetByIdAsync(request.UserId)
                 ?? throw new KeyNotFoundException("User not found");
 
-            var userJobs = await userJobsRepository.GetUserJobsByUserIdAsync(request.userId);
+            var userJobs = await userJobsRepository.GetUserJobsByUserIdAsync(request.UserId);
 
-            Console.WriteLine(userJobs);
-            Console.WriteLine(user.ToString());
-            AllUserInfo response = new AllUserInfo()
+            FullUserInfo response = new FullUserInfo()
             {
                 Id = user.Id,
                 FirstName = user.FirstName,

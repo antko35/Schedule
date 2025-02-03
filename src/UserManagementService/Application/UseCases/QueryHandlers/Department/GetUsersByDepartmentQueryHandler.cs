@@ -12,7 +12,7 @@ using UserManagementService.Application.UseCases.Queries.Department;
 using UserManagementService.Domain.Abstractions.IRepository;
 using UserManagementService.Domain.Models;
 
-public class GetUsersByDepartmentQueryHandler : IRequestHandler<GetUsersByDepartmentQuery, IEnumerable<FullUserInfo>>
+public class GetUsersByDepartmentQueryHandler : IRequestHandler<GetUsersByDepartmentQuery, IEnumerable<UserInfoInDepartment>>
 {
     private readonly IDepartmentRepository departmentRepository;
     private readonly IUserRepository userRepository;
@@ -28,19 +28,19 @@ public class GetUsersByDepartmentQueryHandler : IRequestHandler<GetUsersByDepart
         this.userJobsRepository = userJobsRepository;
     }
 
-    public async Task<IEnumerable<FullUserInfo>> Handle(GetUsersByDepartmentQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<UserInfoInDepartment>> Handle(GetUsersByDepartmentQuery request, CancellationToken cancellationToken)
     {
-        var department = await departmentRepository.GetByIdAsync(request.departmentId)
+        var department = await departmentRepository.GetByIdAsync(request.DepartmentId)
             ?? throw new KeyNotFoundException("Department doesnt exist");
 
-        var userJobs = await userJobsRepository.GetUserJobsByDepartmentIdAsync(request.departmentId);
+        var userJobs = await userJobsRepository.GetUserJobsByDepartmentIdAsync(request.DepartmentId);
 
-        List<FullUserInfo> users = new List<FullUserInfo>();
+        List<UserInfoInDepartment> users = new List<UserInfoInDepartment>();
         foreach (var userJob in userJobs)
         {
             var user = await userRepository.GetByIdAsync(userJob.UserId);
 
-            FullUserInfo fullUserInfo = new FullUserInfo(user, userJob);
+            UserInfoInDepartment fullUserInfo = new UserInfoInDepartment(user, userJob);
             users.Add(fullUserInfo);
         }
 

@@ -16,7 +16,7 @@
 
         public async Task<UserJob> Handle(RemoveUserFromDepartmentCommand request, CancellationToken cancellationToken)
         {
-            var userJob = await userJobsRepository.GetUserJobAsync(request.userId, request.departmentId)
+            var userJob = await userJobsRepository.GetUserJobAsync(request.UserId, request.DepartmentId)
                 ?? throw new InvalidOperationException("User doesnt found in this department");
 
             await userJobsRepository.RemoveAsync(userJob.Id);

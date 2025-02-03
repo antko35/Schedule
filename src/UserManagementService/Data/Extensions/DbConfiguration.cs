@@ -11,11 +11,13 @@
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            services.Configure<DbOptions>(configuration.GetSection("DatabaseSettings"));
+            services.Configure<DbOptions>(
+                configuration.GetSection("DatabaseSettings"));
+
             services.AddSingleton<BaseDbOptions>(sp =>
                 sp.GetRequiredService<IOptions<DbOptions>>().Value);
 
-            services.AddSingleton<DbContext>();
+            services.AddScoped<DbContext>();
 
             return services;
         }

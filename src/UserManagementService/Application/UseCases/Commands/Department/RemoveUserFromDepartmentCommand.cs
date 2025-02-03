@@ -3,5 +3,7 @@
 using MediatR;
 using UserManagementService.Domain.Models;
 
-public record RemoveUserFromDepartmentCommand(string userId, string departmentId)
+public record RemoveUserFromDepartmentCommand(
+    string UserId,
+    string DepartmentId)
     : IRequest<UserJob>;

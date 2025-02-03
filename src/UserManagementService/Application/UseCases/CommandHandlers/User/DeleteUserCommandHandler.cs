@@ -25,12 +25,12 @@
 
         public async Task Handle(DeleteUserCommand request, CancellationToken cancellationToken)
         {
-            var user = await userRepository.GetByIdAsync(request.userId)
+            var user = await userRepository.GetByIdAsync(request.UserId)
                 ?? throw new KeyNotFoundException("User not found");
 
-            await userRepository.RemoveAsync(request.userId);
+            await userRepository.RemoveAsync(request.UserId);
 
-            await userJobsRepository.DeleteByUserId(request.userId);
+            await userJobsRepository.DeleteByUserId(request.UserId);
         }
     }
 }

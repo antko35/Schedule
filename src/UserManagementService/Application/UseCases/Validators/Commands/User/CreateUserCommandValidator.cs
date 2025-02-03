@@ -13,6 +13,12 @@ namespace UserManagementService.Application.UseCases.Validators.Commands.User
     {
         public CreateUserCommandValidator()
         {
+            RuleFor(x => x.FirstName)
+                .NotEmpty();
+            RuleFor(x => x.LastName)
+                .NotEmpty();
+            RuleFor(x => x.Gender)
+                .NotEmpty();
             RuleFor(x => x.DateOfBirth)
                 .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today))
                 .WithMessage("Date of birth cannot be in the future.");

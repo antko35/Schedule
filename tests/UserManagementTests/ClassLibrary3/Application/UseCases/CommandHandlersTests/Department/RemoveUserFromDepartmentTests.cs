@@ -34,11 +34,11 @@
             var existingUserJob = new UserJob
             {
                 Id = "job789",
-                UserId = command.userId,
+                UserId = command.UserId,
                 DepartmentId = command.departmentId
             };
 
-            userJobsRepositoryMock.Setup(repo => repo.GetUserJobAsync(command.userId, command.departmentId))
+            userJobsRepositoryMock.Setup(repo => repo.GetUserJobAsync(command.UserId, command.departmentId))
                 .ReturnsAsync(existingUserJob);
             userJobsRepositoryMock.Setup(repo => repo.RemoveAsync(existingUserJob.Id))
                 .Returns(Task.CompletedTask);
@@ -48,10 +48,10 @@
 
             // Assert
             result.Should().NotBeNull();
-            result.UserId.Should().Be(command.userId);
+            result.UserId.Should().Be(command.UserId);
             result.DepartmentId.Should().Be(command.departmentId);
 
-            userJobsRepositoryMock.Verify(repo => repo.GetUserJobAsync(command.userId, command.departmentId), Times.Once);
+            userJobsRepositoryMock.Verify(repo => repo.GetUserJobAsync(command.UserId, command.departmentId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.RemoveAsync(existingUserJob.Id), Times.Once);
         }
 
@@ -59,7 +59,7 @@
         public async Task RemoveUserFromDepartment_UserJobNotFound_ThrowInvalidOperationException()
         {
             // Arrange
-            userJobsRepositoryMock.Setup(repo => repo.GetUserJobAsync(command.userId, command.departmentId))
+            userJobsRepositoryMock.Setup(repo => repo.GetUserJobAsync(command.UserId, command.departmentId))
                 .ReturnsAsync((UserJob)null);
 
             // Act
@@ -69,7 +69,7 @@
             await act.Should().ThrowAsync<InvalidOperationException>()
                 .WithMessage("User doesnt found in this department");
 
-            userJobsRepositoryMock.Verify(repo => repo.GetUserJobAsync(command.userId, command.departmentId), Times.Once);
+            userJobsRepositoryMock.Verify(repo => repo.GetUserJobAsync(command.UserId, command.departmentId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.RemoveAsync(It.IsAny<string>()), Times.Never);
         }
     }

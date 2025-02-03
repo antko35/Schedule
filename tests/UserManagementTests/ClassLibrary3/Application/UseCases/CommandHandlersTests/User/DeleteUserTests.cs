@@ -37,31 +37,31 @@
         public async Task DeleteDepartment_Success()
         {
             // Arrange
-            var user = new User { Id = command.userId, FirstName = "John" };
+            var user = new User { Id = command.UserId, FirstName = "John" };
 
-            userRepositoryMock.Setup(repo => repo.GetByIdAsync(command.userId))
+            userRepositoryMock.Setup(repo => repo.GetByIdAsync(command.UserId))
                 .ReturnsAsync(user);
 
-            userRepositoryMock.Setup(repo => repo.RemoveAsync(command.userId))
+            userRepositoryMock.Setup(repo => repo.RemoveAsync(command.UserId))
                 .Returns(Task.CompletedTask);
 
-            userJobsRepositoryMock.Setup(repo => repo.DeleteByUserId(command.userId))
+            userJobsRepositoryMock.Setup(repo => repo.DeleteByUserId(command.UserId))
                 .Returns(Task.CompletedTask);
 
             // Act
             await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            userRepositoryMock.Verify(repo => repo.GetByIdAsync(command.userId), Times.Once);
-            userRepositoryMock.Verify(repo => repo.RemoveAsync(command.userId), Times.Once);
-            userJobsRepositoryMock.Verify(repo => repo.DeleteByUserId(command.userId), Times.Once);
+            userRepositoryMock.Verify(repo => repo.GetByIdAsync(command.UserId), Times.Once);
+            userRepositoryMock.Verify(repo => repo.RemoveAsync(command.UserId), Times.Once);
+            userJobsRepositoryMock.Verify(repo => repo.DeleteByUserId(command.UserId), Times.Once);
         }
 
         [Fact]
         public async Task Handle_UserDoesNotExist_ThrowsKeyNotFoundException()
         {
             // Arrange
-            userRepositoryMock.Setup(repo => repo.GetByIdAsync(command.userId))
+            userRepositoryMock.Setup(repo => repo.GetByIdAsync(command.UserId))
                 .ReturnsAsync((User)null);
 
             // Act
@@ -71,7 +71,7 @@
             await act.Should().ThrowAsync<KeyNotFoundException>()
                 .WithMessage("User not found");
 
-            userRepositoryMock.Verify(repo => repo.GetByIdAsync(command.userId), Times.Once);
+            userRepositoryMock.Verify(repo => repo.GetByIdAsync(command.UserId), Times.Once);
             userRepositoryMock.Verify(repo => repo.RemoveAsync(It.IsAny<string>()), Times.Never);
             userJobsRepositoryMock.Verify(repo => repo.DeleteByUserId(It.IsAny<string>()), Times.Never);
 

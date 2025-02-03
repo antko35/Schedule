@@ -11,17 +11,15 @@
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly IUserRepository userRepository;
         private readonly IMediator mediator;
 
-        public UserController(IUserRepository repository, IMediator mediator)
+        public UserController(IMediator mediator)
         {
-            userRepository = repository;
             this.mediator = mediator;
         }
 
         /// <summary>
-        /// Get all general users information
+        /// Get general informationfor all users
         /// </summary>
         /// <returns>List of users from collection 'Users'</returns>
         [HttpGet]
@@ -34,7 +32,7 @@
 
         /// <summary>
         /// Get full user info by id.
-        /// Contatins general info and info about working in department
+        /// Contatins general info and info about work in departments
         /// </summary>
         /// <param name="id">User Id</param>
         /// <returns></returns>

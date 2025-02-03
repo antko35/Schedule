@@ -8,14 +8,12 @@
     using MediatR;
     using UserManagementService.Domain.Models;
 
-    public record UpdateUserInfoCommand
-        : IRequest<User>
-    {
-        required public string UserId { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? Patronymic { get; set; }
-        public string? Gender { get; set; }
-        public DateOnly DateOfBirth { get; set; }
-    }
+    public record UpdateUserInfoCommand(
+        string UserId,
+        string FirstName,
+        string LastName,
+        string? Patronymic,
+        string Gender,
+        DateOnly DateOfBirth)
+        : IRequest<User>;
 }

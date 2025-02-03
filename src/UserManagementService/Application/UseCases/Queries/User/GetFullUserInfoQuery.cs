@@ -8,8 +8,8 @@
     using MediatR;
     using UserManagementService.Application.DTOs;
 
-    public record GetFullUserInfoQuery(string userId)
-        : IRequest<AllUserInfo>
+    public record GetFullUserInfoQuery(string UserId)
+        : IRequest<FullUserInfo>
     {
     }
 }

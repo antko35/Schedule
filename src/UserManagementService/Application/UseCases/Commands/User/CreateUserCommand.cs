@@ -8,13 +8,11 @@
     using MediatR;
     using UserManagementService.Domain.Models;
 
-    public record CreateUserCommand
-        : IRequest<User>
-    {
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public string Patronymic { get; set; } = string.Empty;
-        public string Gender { get; set; } = string.Empty;
-        public DateOnly DateOfBirth { get; set; }
-    }
+    public record CreateUserCommand(
+        string FirstName,
+        string LastName,
+        string Patronymic,
+        string Gender,
+        DateOnly DateOfBirth)
+        : IRequest<User>;
 }

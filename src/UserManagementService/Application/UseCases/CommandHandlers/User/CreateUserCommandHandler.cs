@@ -22,7 +22,7 @@
 
         public async Task<User> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            var userToCreate = new User
+            var user = new User
             {
                 FirstName = request.FirstName,
                 LastName = request.LastName,
@@ -30,11 +30,11 @@
                 Gender = request.Gender,
                 DateOfBirth = request.DateOfBirth,
             };
-            userToCreate.CalculateAge();
+            user.CalculateAge();
 
-            await userRepository.AddAsync(userToCreate);
+            await userRepository.AddAsync(user);
 
-            return userToCreate;
+            return user;
         }
     }
 }
