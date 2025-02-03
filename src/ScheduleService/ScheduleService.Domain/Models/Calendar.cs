@@ -9,16 +9,25 @@
 
     public class Calendar : Entity
     {
+        [BsonElement("year")]
+        public int Year { get; set; }
+
+        [BsonElement("holiday")]
+        public DateOnly HolidayDate { get; set; }
+
+        [BsonElement("transferDay")]
+        public DateOnly? TransferDate { get; set; }
+
+        [BsonElement("transferDayMonthNumber")]
+        public int MonthOfTransferDay { get; set; }
+
+        [BsonElement("holidayMonthNumber")]
+        public int MonthOfHoliday { get; set; }
+
         [BsonElement("dayOfMonth")]
-        public int DayOfMonth { get; set; }
+        public int HolidayDayOfMonth { get; set; } = 0;
 
         [BsonElement("dayOfWeek")]
         public DayOfWeek DayOfWeek { get; set; }
-
-        [BsonElement("officialHoliday")]
-        public bool OfficialHoliday { get; set; }
-
-        [BsonElement("transferDay")]
-        public DateOnly? TransferDay { get; set; } // перенос на какую дату
     }
 }

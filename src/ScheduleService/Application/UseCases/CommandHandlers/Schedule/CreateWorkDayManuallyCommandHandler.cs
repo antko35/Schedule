@@ -7,39 +7,51 @@
     using MediatR;
     using ScheduleService.Application.UseCases.Commands.Schedule;
     using ScheduleService.DataAccess.Repository;
+    using ScheduleService.Domain.Abstractions;
     using ScheduleService.Domain.Models;
 
-    public class CreateWorkDayManuallyCommandHandler : IRequestHandler<CreateWorkDayManuallyCommand>
+    public class CreateWorkDayManuallyCommandHandler
+        : IRequestHandler<CreateWorkDayManuallyCommand, WorkDay>
     {
         private readonly IUserRuleRepository userRuleRepository;
+        private readonly IScheduleRepository scheduleRepository;
 
-        public CreateWorkDayManuallyCommandHandler(IUserRuleRepository userRuleRepository)
+        public CreateWorkDayManuallyCommandHandler(
+            IUserRuleRepository userRuleRepository,
+            IScheduleRepository scheduleRepository)
         {
             this.userRuleRepository = userRuleRepository;
+            this.scheduleRepository = scheduleRepository;
         }
 
-        public async Task Handle(CreateWorkDayManuallyCommand request, CancellationToken cancellationToken)
+        public async Task<WorkDay> Handle(CreateWorkDayManuallyCommand request, CancellationToken cancellationToken)
         {
-            string monthName = new DateTime(request.StartTime.Year, request.StartTime.Month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("es"));
+            string monthName = new DateTime(request.StartTime.Year, request.StartTime.Month, 1)
+                .ToString("MMMM")
+                .ToLower();
 
-            var workDaySchedue = await userRuleRepository.GetWorkDaySchedue(request.UserId, request.DepartmentId, monthName);
+            var userSchedueRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.StartTime.Year)
+                ?? throw new InvalidOperationException($"Schedule rules not found, {monthName}");
 
-            var newWorkDay = new WorkDay
+            var dailySchedule = await scheduleRepository.GetWorkDayAsync(userSchedueRules.ScheduleId, request.StartTime.Day);
+
+            WorkDay newWorkDay = new WorkDay
             {
+                Day = request.StartTime.Day,
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
             };
 
-            var workDay = workDaySchedue.Schedule.Where(x => x.StartTime.Day == request.StartTime.Day);
-
-            if (workDay.FirstOrDefault() != null)
+            if (dailySchedule == null)
             {
-                await userRuleRepository.UpdateWorkDayAsync(request.UserId, request.DepartmentId, monthName, newWorkDay);
+                await scheduleRepository.AddWorkDayAsync(userSchedueRules.ScheduleId, newWorkDay);
             }
             else
             {
-                await userRuleRepository.AddWorkDayAsync(request.UserId, request.DepartmentId, monthName, newWorkDay);
+                await scheduleRepository.UpdateWorkDayAsync(userSchedueRules.ScheduleId, newWorkDay);
             }
+
+            return newWorkDay;
         }
     }
 }

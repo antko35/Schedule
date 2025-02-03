@@ -1,9 +1,9 @@
+using ScheduleService.API.Extensions;
 using ScheduleService.Application.Extensions;
 using ScheduleService.DataAccess.Extensions;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 
 builder.Services.AddControllers();
 
@@ -16,7 +16,15 @@ builder.Services
     .ConfigureDb(builder.Configuration)
     .AddDataAccessDependencis();
 
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+});
+
 var app = builder.Build();
+
+//app.UseMiddleware<ExeptionHadlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

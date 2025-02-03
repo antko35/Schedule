@@ -21,9 +21,9 @@
     <ProjectReference Include="..\Application\ScheduleService.Application.csproj" />
     <ProjectReference Include="..\ScheduleService.DataAccess\ScheduleService.DataAccess.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Extensions\" />
-  </ItemGroup>
+	
+    <PropertyGroup>
+	    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
 
 </Project>

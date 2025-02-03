@@ -16,9 +16,11 @@ namespace ScheduleService.API.Controllers
         }
 
         [HttpPost]
-        public async Task CreateUserRules([FromBody] CreateScheduleRulesCommand command)
+        public async Task<IActionResult> CreateUserRules([FromBody] CreateScheduleRulesCommand command)
         {
             await mediator.Send(command);
+
+            return Ok();
         }
     }
 }

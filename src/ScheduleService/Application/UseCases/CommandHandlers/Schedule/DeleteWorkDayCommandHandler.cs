@@ -6,31 +6,40 @@
     using MediatR;
     using ScheduleService.Application.UseCases.Commands.Schedule;
     using ScheduleService.DataAccess.Repository;
+    using ScheduleService.Domain.Abstractions;
+    using ScheduleService.Domain.Models;
 
-    public class DeleteWorkDayCommandHandler : IRequestHandler<DeleteWorkDayCommand>
+    public class DeleteWorkDayCommandHandler
+        : IRequestHandler<DeleteWorkDayCommand, Schedule>
     {
         private readonly IUserRuleRepository userRuleRepository;
+        private readonly IScheduleRepository scheduleRepository;
 
-        public DeleteWorkDayCommandHandler(IUserRuleRepository userRuleRepository)
+        public DeleteWorkDayCommandHandler(
+            IUserRuleRepository userRuleRepository,
+            IScheduleRepository scheduleRepository)
         {
             this.userRuleRepository = userRuleRepository;
+            this.scheduleRepository = scheduleRepository;
         }
 
-        public async Task Handle(DeleteWorkDayCommand request, CancellationToken cancellationToken)
+        public async Task<Schedule> Handle(DeleteWorkDayCommand request, CancellationToken cancellationToken)
         {
-            string monthName = new DateTime(request.WorkDay.Year, request.WorkDay.Month, request.WorkDay.Day).ToString("MMMM", CultureInfo.CreateSpecificCulture("es"));
+            string monthName = new DateTime(request.WorkDay.Year, request.WorkDay.Month, request.WorkDay.Day)
+                .ToString("MMMM")
+                .ToLower();
 
-            var schedule = await userRuleRepository.GetWorkDaySchedue(request.UserId, request.DepartmentId, monthName);
+            var scheduleRules = await userRuleRepository
+                .GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.WorkDay.Year)
+                ?? throw new KeyNotFoundException("Schedule for this user not found");
 
-            var dayToDelete = schedule.Schedule.Find(x => x.StartTime.Day == request.WorkDay.Day);
-            if (dayToDelete != null)
-            {
-                await userRuleRepository.DeleteWorkDayAsync(request.UserId, request.DepartmentId, monthName, request.WorkDay);
-            }
-            else
-            {
-                throw new InvalidOperationException("Work in this day not found");
-            }
+            var scheduleForDay = await scheduleRepository
+                .GetWorkDayAsync(scheduleRules.ScheduleId, request.WorkDay.Day)
+                ?? throw new InvalidOperationException("No work during day");
+
+            await scheduleRepository.DeleteWorkDayAsync(scheduleRules.ScheduleId, request.WorkDay.Day);
+
+            return scheduleForDay;
         }
     }
 }

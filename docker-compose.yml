@@ -1,5 +1,4 @@
-﻿version: "3.9"
-
+﻿#version: "3.9"
 services:
   user-service:
     build:
@@ -40,7 +39,7 @@ services:
     environment:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
       - ME_CONFIG_MONGODB_ADMINPASSWORD=password
-      - ME_CONFIG_MONGODB_SERVER=schedule-service-mongo 
+      - ME_CONFIG_MONGODB_SERVER=schedule-service-mongo   
 
 
   user-management-service:

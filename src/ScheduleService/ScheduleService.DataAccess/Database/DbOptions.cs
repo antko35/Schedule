@@ -17,5 +17,7 @@
         public string UserScheduleRuleCollection { get; set; } = string.Empty;
 
         public string ScheduleInfoCollection { get; set; } = string.Empty;
+
+        public string ScheduleCollection { get; set; } = string.Empty;
     }
 }

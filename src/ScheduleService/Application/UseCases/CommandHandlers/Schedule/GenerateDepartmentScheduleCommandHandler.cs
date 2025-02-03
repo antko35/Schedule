@@ -2,10 +2,13 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
+    using System.Diagnostics.Metrics;
     using System.Linq;
+    using System.Security.Cryptography;
+    using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading.Tasks;
+    using global::Application.Services;
     using MediatR;
     using Microsoft.VisualBasic;
     using ScheduleService.Application.DTOs;
@@ -14,88 +17,70 @@
     using ScheduleService.Domain.Abstractions;
     using ScheduleService.Domain.Models;
 
-    public class GenerateDepartmentScheduleCommandHandler : IRequestHandler<GenerateDepartmentScheduleCommand>
+    public class GenerateDepartmentScheduleCommandHandler
+        : IRequestHandler<GenerateDepartmentScheduleCommand>
     {
         private readonly IUserRuleRepository userRuleRepository;
+        private readonly IScheduleRepository scheduleRepository;
+        private readonly ICalendarRepository calendarRepository;
 
-        public GenerateDepartmentScheduleCommandHandler(IUserRuleRepository userRuleRepository)
+        private IEnumerable<UserScheduleRules>? usersRules;
+        private List<Calendar?> officialHolidays = new List<Calendar?>();
+        private List<Calendar?> transferDays = new List<Calendar?>();
+
+        public GenerateDepartmentScheduleCommandHandler(
+            IUserRuleRepository userRuleRepository,
+            IScheduleRepository scheduleRepository,
+            ICalendarRepository calendarRepository)
         {
             this.userRuleRepository = userRuleRepository;
+            this.scheduleRepository = scheduleRepository;
+            this.calendarRepository = calendarRepository;
         }
 
         public async Task Handle(GenerateDepartmentScheduleCommand request, CancellationToken cancellationToken)
         {
-            string monthName = new DateTime(request.Year, request.Month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("es"));
+            await GetUsersRulesForScheduleGeneration(request.Year, request.Month, request.DepartmentId);
 
-            var usersRules = await userRuleRepository.GetUsersRulesByDepartment(request.DepartmentId, monthName);
-
-            int daysInMonth = DateTime.DaysInMonth(request.Year, request.Month);
-
-            DateTime firstDayOfMonth = new DateTime(request.Year, request.Month, 1);
-            DayOfWeek dayOfWeek = firstDayOfMonth.DayOfWeek;
+            await GetHolidays(request.Year, request.Month);
 
             foreach (var userRules in usersRules)
             {
-                var workDay = new AddWorkDayDto
+                await scheduleRepository.DeleteMonthSchedule(userRules.ScheduleId);
+
+                var generatedDays = ScheduleGenerator.GenerateWorkDaysForUser(
+                   userRules,
+                   request.Year,
+                   request.Month,
+                   officialHolidays,
+                   transferDays);
+
+                foreach (var workDay in generatedDays)
                 {
-                   UserId = userRules.UserId,
-                   DepartmentId = userRules.DepartmentId,
-                   Year = request.Year,
-                   Month = request.Month,
-                   MonthName = monthName,
-                };
-                for (int i = 1; i <= daysInMonth; i++)
-                {
-                    workDay.Day = i;
-
-                    // проверка на гос выходной
-                    if (dayOfWeek == DayOfWeek.Sunday || dayOfWeek == DayOfWeek.Saturday)
-                    {
-                        dayOfWeek++;
-                        continue;
-                    }
-
-                    if (userRules.EvenDOW)
-                    {
-                        if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
-                        {
-                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
-                        }
-
-                        if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
-                        {
-                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
-                        }
-                    }
-
-                    if (userRules.EvenDOM)
-                    {
-                        if (i % 2 == 0)
-                        {
-                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
-                        }
-                        else
-                        {
-                            await this.CreateAndAddWorkDay(workDay, userRules.FirstShift);
-                        }
-                    }
+                    await scheduleRepository.AddWorkDayAsync(userRules.ScheduleId, workDay);
                 }
             }
         }
 
-        private async Task CreateAndAddWorkDay(AddWorkDayDto addWorkDay, bool firstShift)
+        private async Task GetUsersRulesForScheduleGeneration(int year, int month, string departmentId)
         {
-            var workDay = new WorkDay
-            {
-                StartTime = firstShift
-                                ? new DateTime(addWorkDay.Year, addWorkDay.Month, addWorkDay.Day, 8, 0, 0)
-                                : new DateTime(addWorkDay.Year, addWorkDay.Month, addWorkDay.Day, 14, 30, 0),
-                EndTime = firstShift
-                                ? new DateTime(addWorkDay.Year, addWorkDay.Month, addWorkDay.Day, 14, 30, 0)
-                                : new DateTime(addWorkDay.Year, addWorkDay.Month, addWorkDay.Day, 21, 0, 0),
-            };
+            string monthName = new DateTime(year, month, 1)
+                .ToString("MMMM")
+                .ToLower();
 
-            await userRuleRepository.AddWorkDayAsync(addWorkDay.UserId, addWorkDay.DepartmentId, addWorkDay.MonthName, workDay);
+            this.usersRules = await userRuleRepository.GetUsersRulesByDepartment(departmentId, monthName);
+
+            if (!usersRules.Any())
+            {
+                throw new InvalidOperationException("Schedule rules for this department not found");
+            }
+        }
+
+        private async Task GetHolidays(int year, int month)
+        {
+            this.officialHolidays = await calendarRepository.GetMonthHolidays(year, month);
+
+            this.transferDays = await calendarRepository.GetMonthTransferDays(year, month);
         }
     }
 }
