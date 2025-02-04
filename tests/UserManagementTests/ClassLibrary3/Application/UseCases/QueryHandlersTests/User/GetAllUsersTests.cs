@@ -39,7 +39,6 @@
                     Patronymic = "MiddleName",
                     Gender = "Male",
                     DateOfBirth = new DateOnly(1990, 1, 1),
-                    Age = 32
                 },
                 new User
                 {
@@ -49,7 +48,6 @@
                     Patronymic = "MiddleName",
                     Gender = "Female",
                     DateOfBirth = new DateOnly(1995, 5, 15),
-                    Age = 27
                 }
             };
 

@@ -36,7 +36,7 @@
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Patronymic = user.Patronymic,
-                Age = user.Age,
+                DateOfBirth = user.DateOfBirth,
                 Gender = user.Gender,
                 Jobs = userJobs,
             };

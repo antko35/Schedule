@@ -6,6 +6,7 @@
     using System.Text;
     using System.Threading.Tasks;
     using FluentValidation;
+    using UserManagementService.Application.Extensions;
     using UserManagementService.Application.UseCases.Commands.Department;
 
     public sealed class AddUserToDepartmentCommandValidator
@@ -13,12 +14,14 @@
     {
         public AddUserToDepartmentCommandValidator()
         {
-            RuleFor(x => x.DepartmentId).NotEmpty();
-            RuleFor(x => x.UserId).NotEmpty();
-            RuleFor(x => x.Role).NotEmpty();
-            RuleFor(x => x.Status).NotEmpty();
-            RuleFor(x => x.Email).EmailAddress();
-            RuleFor(x => x.PhoneNumber).NotEmpty();
+            RuleFor(x => x.UserId)
+                .MustBeValidObjectId();
+
+            RuleFor(x => x.DepartmentId)
+                .MustBeValidObjectId();
+
+            RuleFor(x => x.Email)
+                .EmailAddress();
         }
     }
 }

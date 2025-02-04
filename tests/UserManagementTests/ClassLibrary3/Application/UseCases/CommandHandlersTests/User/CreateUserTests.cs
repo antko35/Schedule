@@ -26,14 +26,7 @@
         public async Task Handle_ShouldCreateUserAndReturnCreatedUser()
         {
             // Arrange
-            var command = new CreateUserCommand
-            {
-                FirstName = "John",
-                LastName = "Doe",
-                Patronymic = "Middle",
-                Gender = "Male",
-                DateOfBirth = new DateOnly(1990, 1, 1)
-            };
+            var command = new CreateUserCommand("John", "Doe", "Middle", "Male", new DateOnly(1990, 1, 1));
 
             User createdUser = null;
 

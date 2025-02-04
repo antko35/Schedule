@@ -31,18 +31,10 @@
             handler = new AddUserToDepartmentCommandHandler(
                 userRepositoryMock.Object,
                 departmentRepositoryMock.Object,
-                userJobsRepositoryMock.Object,
-                clinicRepositoryMock.Object);
+                userJobsRepositoryMock.Object);
 
             command = new AddUserToDepartmentCommand
-            {
-                UserId = "user",
-                DepartmentId = "dept123",
-                Role = "Doctor",
-                Status = "Active",
-                Email = "doctor@example.com",
-                PhoneNumber = "123-456-7890"
-            };
+                ("user", "dept123", "Doctor", "Active", "doctor@example.com", "123-456-7890");
         }
 
         [Fact]

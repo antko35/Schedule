@@ -31,15 +31,13 @@
             var userId = ObjectId.GenerateNewId().ToString();
             var existingUser = CreateTestUser(userId, "John", "Doe", "OldMiddle", "Male", new DateOnly(1990, 1, 1));
 
-            var command = new UpdateUserInfoCommand
-            {
-                UserId = userId,
-                FirstName = "UpdatedFirstName",
-                LastName = "UpdatedLastName",
-                Patronymic = "UpdatedMiddle",
-                Gender = "Female",
-                DateOfBirth = new DateOnly(1995, 5, 15)
-            };
+            var firstName = "UpdatedFirstName";
+            var lastName = "UpdatedLastName";
+            var patronymic = "UpdatedMiddle";
+            var gender = "Female";
+            var dateOfBirth = new DateOnly(1995, 5, 15);
+
+            var command = new UpdateUserInfoCommand(userId, firstName, lastName, patronymic, gender, dateOfBirth);
 
             userRepositoryMock
                 .Setup(repo => repo.GetByIdAsync(userId))
@@ -72,14 +70,7 @@
             // Arrange
             var userId = ObjectId.GenerateNewId().ToString();
             var command = new UpdateUserInfoCommand
-            {
-                UserId = userId,
-                FirstName = "NewFirstName",
-                LastName = "NewLastName",
-                Patronymic = "NewMiddle",
-                Gender = "Non-Binary",
-                DateOfBirth = new DateOnly(2000, 6, 30)
-            };
+                (userId, "NewFirstName", "NewLastName", "NewMiddle", "Male", new DateOnly(2000, 6, 30));
 
             userRepositoryMock
                 .Setup(repo => repo.GetByIdAsync(userId))
@@ -105,7 +96,6 @@
                 Patronymic = patronymic,
                 Gender = gender,
                 DateOfBirth = dateOfBirth,
-                Age = CalculateAge(dateOfBirth)
             };
         }
 

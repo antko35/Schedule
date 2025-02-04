@@ -23,11 +23,7 @@
             departmentRepositoryMock = new Mock<IDepartmentRepository>();
             handler = new CreateDepartmentCommandHandler(departmentRepositoryMock.Object);
 
-            command = new CreateDepartmentCommand
-            {
-                ClinicId = "123",
-                DeartmentName = "newDep"
-            };
+            command = new CreateDepartmentCommand("newDep", "123");
         }
 
         [Fact]
@@ -55,11 +51,7 @@
         public async Task CreateDepartment_Success_ClinicIdIsNullOrEmpty_ReturnNewDepartment()
         {
             // Arrange
-            var customCommand = new CreateDepartmentCommand
-            {
-                ClinicId = null,
-                DeartmentName = "Neurology"
-            };
+            var customCommand = new CreateDepartmentCommand("Neurology", null);
 
             departmentRepositoryMock.Setup(repo => repo.GetByClinicId(It.IsAny<string>()))
                 .ReturnsAsync(new List<Department>());

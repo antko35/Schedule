@@ -32,6 +32,7 @@
 
             HttpStatusCode status;
             string message;
+            string stackTrace = null;
             Dictionary<string, string[]>? errors = null;
 
             switch (exception)
@@ -60,6 +61,7 @@
                 default:
                     status = HttpStatusCode.InternalServerError;
                     message = exception.Message;
+                    stackTrace = exception.StackTrace;
                     break;
             }
 
@@ -67,6 +69,7 @@
             {
                 error = message,
                 errors,
+                stackTrace,
             });
             context.Response.StatusCode = (int)status;
 
