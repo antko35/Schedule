@@ -5,5 +5,5 @@ using UserManagementService.Domain.Models;
 
 public record CreateDepartmentCommand(
     string DeartmentName,
-    string ClinicId)
+    string? ClinicId)
     : IRequest<Department>;

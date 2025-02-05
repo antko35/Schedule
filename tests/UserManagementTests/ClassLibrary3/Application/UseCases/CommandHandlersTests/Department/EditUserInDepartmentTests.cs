@@ -29,14 +29,7 @@
             handler = new EditUserInDepartmentCommandHandler(userRepositoryMock.Object, departmentRepositoryMock.Object, userJobsRepositoryMock.Object);
 
             command = new EditUserInDepartmentCommand
-            {
-                DepartmentId = "DepId",
-                UserId = "userId",
-                Role = "newRole",
-                Status = "newStatus",
-                Email = "new@gmail.com",
-                PhoneNumber = "1234567890",
-            };
+                ("DepId", "userId", "newRole", "newStatus", "new@gmail.com", "1234567890");
         }
 
         [Fact]
@@ -123,7 +116,7 @@
             Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            await act.Should().ThrowAsync<InvalidOperationException>()
+            await act.Should().ThrowAsync<KeyNotFoundException>()
                 .WithMessage("User not found in this department");
         }
     }

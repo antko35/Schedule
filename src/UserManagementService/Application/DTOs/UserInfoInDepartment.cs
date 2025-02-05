@@ -26,7 +26,7 @@ public class UserInfoInDepartment : User
         Patronymic = user.Patronymic;
         Role = userJob.Role;
         Gender = user.Gender;
-        Age = user.Age;
+        DateOfBirth = user.DateOfBirth;
         PhoneNumber = userJob.PhoneNumber;
         Email = userJob.Email;
         Status = userJob.Status;

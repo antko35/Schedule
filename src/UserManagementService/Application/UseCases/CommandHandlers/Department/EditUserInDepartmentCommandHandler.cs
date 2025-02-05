@@ -3,6 +3,7 @@
     using System.Reflection.Metadata;
     using MediatR;
     using UserManagementService.Application.DTOs;
+    using UserManagementService.Application.Extensions;
     using UserManagementService.Application.UseCases.Commands.Department;
     using UserManagementService.Domain.Abstractions.IRepository;
     using UserManagementService.Domain.Models;
@@ -26,14 +27,17 @@
 
         public async Task<UserJob> Handle(EditUserInDepartmentCommand request, CancellationToken cancellationToken)
         {
-            var user = await userRepository.GetByIdAsync(request.UserId)
-                ?? throw new KeyNotFoundException("User not found");
+            var user = await userRepository.GetByIdAsync(request.UserId);
 
-            var department = await departmentRepository.GetByIdAsync(request.DepartmentId)
-                ?? throw new KeyNotFoundException("Department not found");;
+            user.EnsureExists("User not found");
 
-            var userJob = await userJobsRepository.GetUserJobAsync(request.UserId, request.DepartmentId)
-                ?? throw new InvalidOperationException("User not found in this department");
+            var department = await departmentRepository.GetByIdAsync(request.DepartmentId);
+
+            department.EnsureExists("Department not found");
+
+            var userJob = await userJobsRepository.GetUserJobAsync(request.UserId, request.DepartmentId);
+
+            userJob.EnsureExists("User not found in this department");
 
             var newUserJob = new UserJob()
             {

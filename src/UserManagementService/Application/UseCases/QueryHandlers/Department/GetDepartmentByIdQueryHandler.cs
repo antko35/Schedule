@@ -1,6 +1,7 @@
 ﻿namespace UserManagementService.Application.UseCases.QueryHandlers.Department;
 
 using MediatR;
+using UserManagementService.Application.Extensions;
 using UserManagementService.Application.UseCases.Queries.Department;
 using UserManagementService.Domain.Abstractions.IRepository;
 using UserManagementService.Domain.Models;
@@ -15,8 +16,10 @@ public class GetDepartmentByIdQueryHandler : IRequestHandler<GetDepartmentByIdQu
 
     public async Task<Department> Handle(GetDepartmentByIdQuery request, CancellationToken cancellationToken)
     {
-        var department = await departmentRepository.GetByIdAsync(request.Id)
-            ?? throw new KeyNotFoundException("Department not found");
+        var department = await departmentRepository.GetByIdAsync(request.Id);
+
+        department.EnsureExists("Department not found");
+
         return department;
     }
 }

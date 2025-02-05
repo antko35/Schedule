@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Application.Extensions
+﻿namespace UserManagementService.Application.Extensions.Validation
 {
     using System;
     using System.Collections.Generic;

@@ -37,7 +37,6 @@
                     FirstName = "John",
                     LastName = "Doe",
                     DateOfBirth = new DateOnly(1990, 1, 1),
-                    Age = 0
                 },
                 new User
                 {
@@ -45,7 +44,6 @@
                     FirstName = "Jane",
                     LastName = "Smith",
                     DateOfBirth = new DateOnly(1985, 5, 15),
-                    Age = 0
                 }
             };
 

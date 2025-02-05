@@ -18,10 +18,20 @@ public class User : Entity
     public string? Gender { get; set; }
 
     [BsonElement("age")]
-    public int Age { get; set; }
+    public int Age { get; private set; }
+
+    private DateOnly dateOfBirth;
 
     [BsonElement("dateOfBirth")]
-    public DateOnly DateOfBirth { get; set; }
+    public DateOnly DateOfBirth
+    {
+        get => dateOfBirth;
+        set
+        {
+            dateOfBirth = value;
+            CalculateAge();
+        }
+    }
 
     /// <summary>
     /// Set updated age

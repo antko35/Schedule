@@ -30,7 +30,6 @@
                 Gender = request.Gender,
                 DateOfBirth = request.DateOfBirth,
             };
-            user.CalculateAge();
 
             await userRepository.AddAsync(user);
 

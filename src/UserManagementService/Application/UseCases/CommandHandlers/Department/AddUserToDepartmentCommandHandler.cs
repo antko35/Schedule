@@ -2,6 +2,7 @@
 using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
+using UserManagementService.Application.Extensions;
 using UserManagementService.Application.UseCases.Commands.Department;
 using UserManagementService.Domain.Abstractions.IRepository;
 using UserManagementService.Domain.Models;
@@ -23,15 +24,17 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
 
     public async Task<UserJob> Handle(AddUserToDepartmentCommand request, CancellationToken cancellationToken)
     {
-        var user = await userRepository.GetByIdAsync(request.UserId)
-            ?? throw new KeyNotFoundException("User doesnt exist");
+        var user = await userRepository.GetByIdAsync(request.UserId);
 
-        var department = await departmentRepository.GetByIdAsync(request.DepartmentId)
-            ?? throw new KeyNotFoundException("Department doesnt exist");
+        user.EnsureExists("User not found");
 
-        var userJob = await userJobsRepository.GetUserJobAsync(request.UserId, request.DepartmentId);
+        var department = await departmentRepository.GetByIdAsync(request.DepartmentId);
 
-        if (userJob != null)
+        department.EnsureExists("Department not found");
+
+        var userInDepartment = await userJobsRepository.GetUserJobAsync(request.UserId, request.DepartmentId);
+
+        if (userInDepartment != null)
         {
             throw new InvalidOperationException($"User {user.Id} already in department {department.Id}");
         }

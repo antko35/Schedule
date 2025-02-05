@@ -40,24 +40,23 @@
             // Arrange
             var user = new User
             {
-                Id = query.userId,
+                Id = "userId",
                 FirstName = "Alice",
                 LastName = "Smith",
                 Patronymic = "Johnson",
-                Age = 30,
                 Gender = "Female"
             };
 
             var userJobs = new List<UserJob>
             {
-                new UserJob { UserId = query.userId, DepartmentId = "1", Role = "Doctor" },
-                new UserJob { UserId = query.userId, DepartmentId = "2", Role = "Head" }
+                new UserJob { UserId = query.UserId, DepartmentId = "1", Role = "Doctor" },
+                new UserJob { UserId = query.UserId, DepartmentId = "2", Role = "Head" }
             };
 
-            userRepositoryMock.Setup(repo => repo.GetByIdAsync(query.userId))
+            userRepositoryMock.Setup(repo => repo.GetByIdAsync(query.UserId))
                 .ReturnsAsync(user);
 
-            userJobsRepositoryMock.Setup(repo => repo.GetUserJobsByUserIdAsync(query.userId))
+            userJobsRepositoryMock.Setup(repo => repo.GetUserJobsByUserIdAsync(query.UserId))
                 .ReturnsAsync(userJobs);
 
             // Act
@@ -69,19 +68,18 @@
             result.FirstName.Should().Be(user.FirstName);
             result.LastName.Should().Be(user.LastName);
             result.Patronymic.Should().Be(user.Patronymic);
-            result.Age.Should().Be(user.Age);
             result.Gender.Should().Be(user.Gender);
             result.Jobs.Should().Equal(userJobs);
 
-            userRepositoryMock.Verify(repo => repo.GetByIdAsync(query.userId), Times.Once);
-            userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByUserIdAsync(query.userId), Times.Once);
+            userRepositoryMock.Verify(repo => repo.GetByIdAsync(query.UserId), Times.Once);
+            userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByUserIdAsync(query.UserId), Times.Once);
         }
 
         [Fact]
         public async Task Handle_UserNotFound_ThrowsKeyNotFoundException()
         {
             // Arrange
-            userRepositoryMock.Setup(repo => repo.GetByIdAsync(query.userId))
+            userRepositoryMock.Setup(repo => repo.GetByIdAsync(query.UserId))
                 .ReturnsAsync((User)null);
 
             // Act
@@ -91,7 +89,7 @@
             await act.Should().ThrowAsync<KeyNotFoundException>()
                 .WithMessage("User not found");
 
-            userRepositoryMock.Verify(repo => repo.GetByIdAsync(query.userId), Times.Once);
+            userRepositoryMock.Verify(repo => repo.GetByIdAsync(query.UserId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByUserIdAsync(It.IsAny<string>()), Times.Never);
         }
 
@@ -101,18 +99,17 @@
             // Arrange
             var user = new User
             {
-                Id = query.userId,
+                Id = query.UserId,
                 FirstName = "Alice",
                 LastName = "Smith",
                 Patronymic = "Johnson",
-                Age = 30,
                 Gender = "Female"
             };
 
-            userRepositoryMock.Setup(repo => repo.GetByIdAsync(query.userId))
+            userRepositoryMock.Setup(repo => repo.GetByIdAsync(query.UserId))
                 .ReturnsAsync(user);
 
-            userJobsRepositoryMock.Setup(repo => repo.GetUserJobsByUserIdAsync(query.userId))
+            userJobsRepositoryMock.Setup(repo => repo.GetUserJobsByUserIdAsync(query.UserId))
                 .ReturnsAsync(new List<UserJob>());
 
             // Act
@@ -124,12 +121,11 @@
             result.FirstName.Should().Be(user.FirstName);
             result.LastName.Should().Be(user.LastName);
             result.Patronymic.Should().Be(user.Patronymic);
-            result.Age.Should().Be(user.Age);
             result.Gender.Should().Be(user.Gender);
             result.Jobs.Should().BeEmpty();
 
-            userRepositoryMock.Verify(repo => repo.GetByIdAsync(query.userId), Times.Once);
-            userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByUserIdAsync(query.userId), Times.Once);
+            userRepositoryMock.Verify(repo => repo.GetByIdAsync(query.UserId), Times.Once);
+            userJobsRepositoryMock.Verify(repo => repo.GetUserJobsByUserIdAsync(query.UserId), Times.Once);
         }
     }
 }

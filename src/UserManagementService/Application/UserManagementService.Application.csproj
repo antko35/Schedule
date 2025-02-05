@@ -28,8 +28,4 @@
     <ProjectReference Include="..\Domain\UserManagementService.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="UseCases\Validators\Queries\" />
-  </ItemGroup>
-
 </Project>

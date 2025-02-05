@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UserManagementService.Application.DTOs;
+using UserManagementService.Application.Extensions;
 using UserManagementService.Application.UseCases.Queries.Department;
 using UserManagementService.Domain.Abstractions.IRepository;
 using UserManagementService.Domain.Models;
@@ -30,8 +31,9 @@ public class GetUsersByDepartmentQueryHandler : IRequestHandler<GetUsersByDepart
 
     public async Task<IEnumerable<UserInfoInDepartment>> Handle(GetUsersByDepartmentQuery request, CancellationToken cancellationToken)
     {
-        var department = await departmentRepository.GetByIdAsync(request.DepartmentId)
-            ?? throw new KeyNotFoundException("Department doesnt exist");
+        var department = await departmentRepository.GetByIdAsync(request.DepartmentId);
+
+        department.EnsureExists("Department doesnt exist");
 
         var userJobs = await userJobsRepository.GetUserJobsByDepartmentIdAsync(request.DepartmentId);
 
