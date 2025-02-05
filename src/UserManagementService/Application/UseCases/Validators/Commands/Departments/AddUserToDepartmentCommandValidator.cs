@@ -6,7 +6,7 @@
     using System.Text;
     using System.Threading.Tasks;
     using FluentValidation;
-    using UserManagementService.Application.Extensions;
+    using UserManagementService.Application.Extensions.Validation;
     using UserManagementService.Application.UseCases.Commands.Department;
 
     public sealed class AddUserToDepartmentCommandValidator

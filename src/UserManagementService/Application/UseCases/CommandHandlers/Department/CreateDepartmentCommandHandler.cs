@@ -17,16 +17,15 @@ public class CreateDepartmentCommandHandler
         this.departmentRepository = departmentRepository;
     }
 
-    // TODO пересмотреть метод
     public async Task<Department> Handle(CreateDepartmentCommand request, CancellationToken cancellationToken)
     {
         var clinicId = request.ClinicId;
-        if (String.IsNullOrEmpty(request.ClinicId))
+        if (String.IsNullOrEmpty(clinicId))
         {
             clinicId = ObjectId.GenerateNewId().ToString();
         }
 
-        var departmentsInClinic = await departmentRepository.GetByClinicId(request.ClinicId);
+        var departmentsInClinic = await departmentRepository.GetByClinicId(clinicId);
 
         var departmentToCreate = new Department()
         {

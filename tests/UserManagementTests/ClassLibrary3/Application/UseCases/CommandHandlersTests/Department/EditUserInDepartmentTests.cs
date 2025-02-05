@@ -116,7 +116,7 @@
             Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            await act.Should().ThrowAsync<InvalidOperationException>()
+            await act.Should().ThrowAsync<KeyNotFoundException>()
                 .WithMessage("User not found in this department");
         }
     }

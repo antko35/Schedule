@@ -1,6 +1,6 @@
 ﻿namespace UserManagementService.Domain.Abstractions.IRepository;
 using UserManagementService.Domain.Models;
-public interface IGenericRepository<TEntity> : IDisposable where TEntity : Entity
+public interface IGenericRepository<TEntity> where TEntity : Entity
 {
     Task AddAsync(TEntity obj);
 

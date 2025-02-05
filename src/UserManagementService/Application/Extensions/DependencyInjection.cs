@@ -2,6 +2,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using UserManagementService.Application.Extensions.Validation;
 
 namespace UserManagementService.Application.Extensions;
 public static class DependencyInjection

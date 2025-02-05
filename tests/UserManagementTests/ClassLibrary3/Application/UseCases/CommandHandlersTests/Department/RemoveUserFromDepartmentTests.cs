@@ -66,8 +66,8 @@
             Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            await act.Should().ThrowAsync<InvalidOperationException>()
-                .WithMessage("User doesnt found in this department");
+            await act.Should().ThrowAsync<KeyNotFoundException>()
+                .WithMessage("User not found in this department");
 
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobAsync(command.UserId, command.DepartmentId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.RemoveAsync(It.IsAny<string>()), Times.Never);

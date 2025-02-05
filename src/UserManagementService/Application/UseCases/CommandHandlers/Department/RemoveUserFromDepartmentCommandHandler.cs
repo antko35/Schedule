@@ -1,6 +1,7 @@
 ﻿namespace UserManagementService.Application.UseCases.CommandHandlers.Department
 {
     using MediatR;
+    using UserManagementService.Application.Extensions;
     using UserManagementService.Application.UseCases.Commands.Department;
     using UserManagementService.Domain.Abstractions.IRepository;
     using UserManagementService.Domain.Models;
@@ -16,10 +17,12 @@
 
         public async Task<UserJob> Handle(RemoveUserFromDepartmentCommand request, CancellationToken cancellationToken)
         {
-            var userJob = await userJobsRepository.GetUserJobAsync(request.UserId, request.DepartmentId)
-                ?? throw new InvalidOperationException("User doesnt found in this department");
+            var userJob = await userJobsRepository.GetUserJobAsync(request.UserId, request.DepartmentId);
+
+            userJob.EnsureExists("User not found in this department");
 
             await userJobsRepository.RemoveAsync(userJob.Id);
+
             return userJob;
         }
     }

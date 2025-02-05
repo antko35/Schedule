@@ -8,6 +8,7 @@
     using System.Threading;
     using System.Threading.Tasks;
     using UserManagementService.Application.DTOs;
+    using UserManagementService.Application.Extensions;
     using UserManagementService.Application.UseCases.Queries.User;
     using UserManagementService.Domain.Abstractions.IRepository;
 
@@ -25,8 +26,9 @@
 
         public async Task<FullUserInfo> Handle(GetFullUserInfoQuery request, CancellationToken cancellationToken)
         {
-            var user = await userRepository.GetByIdAsync(request.UserId)
-                ?? throw new KeyNotFoundException("User not found");
+            var user = await userRepository.GetByIdAsync(request.UserId);
+
+            user.EnsureExists("User not found");
 
             var userJobs = await userJobsRepository.GetUserJobsByUserIdAsync(request.UserId);
 

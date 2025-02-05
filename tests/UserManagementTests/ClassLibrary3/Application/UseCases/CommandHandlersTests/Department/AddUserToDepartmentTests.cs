@@ -78,7 +78,7 @@
 
             // Assert
             await act.Should().ThrowAsync<KeyNotFoundException>()
-                .WithMessage("User doesnt exist");
+                .WithMessage("User not found");
         }
 
         [Fact]
@@ -98,7 +98,7 @@
 
             // Assert
             await act.Should().ThrowAsync<KeyNotFoundException>()
-                .WithMessage("Department doesnt exist");
+                .WithMessage("Department not found");
         }
 
         [Fact]

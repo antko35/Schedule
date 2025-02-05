@@ -3,7 +3,7 @@
     using System.ComponentModel;
     using System.Net;
     using System.Text.Json;
-    using UserManagementService.Application.Extensions;
+    using UserManagementService.Application.Extensions.Validation;
 
     public class ExeptionHadlingMiddleware
     {
