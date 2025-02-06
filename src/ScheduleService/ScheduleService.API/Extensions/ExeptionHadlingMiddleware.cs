@@ -1,6 +1,7 @@
 ﻿namespace ScheduleService.API.Extensions
 {
     using Microsoft.AspNetCore.Http;
+    using ScheduleService.Application.Extensions;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
@@ -61,11 +62,12 @@
                     source = keyNotFound.Source;
                     break;
 
-                //case ValidationException validationException:
-                //    status = HttpStatusCode.BadRequest;
-                //    message = validationException.Message;
-                //    errors = (Dictionary<string, string[]>)validationException.Errors;
-                //    break;
+                case Application.Extensions.ValidationException validationException:
+                    status = HttpStatusCode.BadRequest;
+                    message = validationException.Message;
+                    errors = (Dictionary<string, string[]>)validationException.Errors;
+                    source = validationException.Source;
+                    break;
 
                 default:
                     status = HttpStatusCode.InternalServerError;

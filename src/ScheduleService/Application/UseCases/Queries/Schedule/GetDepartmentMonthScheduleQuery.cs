@@ -1,4 +1,4 @@
-﻿namespace ScheduleService.Application.UseCases.Commands.Schedule
+﻿namespace ScheduleService.Application.UseCases.Queries.Schedule
 {
     using System;
     using System.Collections.Generic;
@@ -8,11 +8,9 @@
     using MediatR;
     using ScheduleService.Domain.Models;
 
-    public record GetUserMonthScheduleCommand(
-        string UserId,
+    public record GetDepartmentMonthScheduleQuery(
         string DepartmentId,
         int Year,
         int Month)
-        : IRequest<Schedule>
-    { }
+        : IRequest<List<Schedule>>;
 }

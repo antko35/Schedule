@@ -24,7 +24,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-//app.UseMiddleware<ExeptionHadlingMiddleware>();
+app.UseMiddleware<ExeptionHadlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

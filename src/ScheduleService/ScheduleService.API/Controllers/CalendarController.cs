@@ -1,9 +1,10 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using ScheduleService.Application.UseCases.Commands.Calendar;
-
-namespace ScheduleService.API.Controllers
+﻿namespace ScheduleService.API.Controllers
 {
+    using MediatR;
+    using Microsoft.AspNetCore.Mvc;
+    using ScheduleService.Application.UseCases.Commands.Calendar;
+    using ScheduleService.Application.UseCases.Queries.Calendar;
+
     [ApiController]
     [Route("[controller]")]
     public class CalendarController : ControllerBase
@@ -16,6 +17,20 @@ namespace ScheduleService.API.Controllers
         }
 
         /// <summary>
+        /// Get holidays by year.
+        /// </summary>
+        /// <param name="year"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("holidays/{year:int}")]
+        public async Task<IActionResult> GetYearHolidays(int year)
+        {
+            var responce = await mediator.Send(new GetYearHolidaysQuery(year));
+
+            return Ok(responce);
+        }
+
+        /// <summary>
         /// Get holidays with transfer days for month.
         /// </summary>
         /// <param name="year"></param>
@@ -25,7 +40,7 @@ namespace ScheduleService.API.Controllers
         [Route("holidays/{year:int}/{month:int}")]
         public async Task<IActionResult> GetMonthHolidays(int year, int month)
         {
-            var responce = await mediator.Send(new GetMonthHolidaysCommand(year, month));
+            var responce = await mediator.Send(new GetMonthHolidaysQuery(year, month));
 
             return Ok(responce);
         }
@@ -40,7 +55,7 @@ namespace ScheduleService.API.Controllers
         [Route("transferDays/{year:int}/{month:int}")]
         public async Task<IActionResult> GetYearHolidays(int year, int month)
         {
-            var responce = await mediator.Send(new GetMonthTransferDaysCommand(year, month));
+            var responce = await mediator.Send(new GetMonthTransferDaysQuery(year, month));
 
             return Ok(responce);
         }
@@ -73,6 +88,19 @@ namespace ScheduleService.API.Controllers
             var result = await mediator.Send(command);
 
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Delete holiday.
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        public async Task<IActionResult> DeleteHoliday([FromBody] DeleteHolidayCommand command)
+        {
+            await mediator.Send(command);
+
+            return Ok();
         }
     }
 }

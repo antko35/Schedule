@@ -24,12 +24,17 @@
         // auto generation after adding to user management service
         public async Task Handle(CreateScheduleRulesCommand request, CancellationToken cancellationToken)
         {
+            var monthName = new DateOnly(request.Year, request.Month, 1)
+                .ToString("MMMM")
+                .ToLower();
+
             var scheduleId = ObjectId.GenerateNewId().ToString();
             var scheduleRules = new UserScheduleRules
             {
                 UserId = request.UserId,
                 DepartmentId = request.DepartmentId,
-                Month = request.Month,
+                Year = request.Year,
+                Month = monthName,
                 ScheduleId = scheduleId,
             };
 

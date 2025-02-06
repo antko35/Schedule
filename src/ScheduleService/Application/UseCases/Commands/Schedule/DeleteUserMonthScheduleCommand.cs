@@ -7,14 +7,6 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    public class DeleteUserMonthScheduleCommand : IRequest<string>
-    {
-        public string UserId { get; set; }
-
-        public string DepartmentId { get; set; }
-
-        public int Month { get; set; }
-
-        public int Year { get; set; }
-    }
+    public record DeleteUserMonthScheduleCommand(string UserId, string DepartmentId, int Month, int Year)
+        : IRequest<string>;
 }

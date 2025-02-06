@@ -1,4 +1,3 @@
-using Application.DTOs;
 using ScheduleService.Domain.Models;
 using System;
 using System.Collections.Generic;

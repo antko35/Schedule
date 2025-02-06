@@ -8,12 +8,10 @@
     using MediatR;
     using ScheduleService.Domain.Models;
 
-    public record CreateWorkDayManuallyCommand
-        : IRequest<WorkDay>
-    {
-        public string UserId { get; set; }
-        public string DepartmentId { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
-    }
+    public record CreateWorkDayManuallyCommand(
+        string UserId,
+        string DepartmentId,
+        DateTime StartTime,
+        DateTime EndTime)
+        : IRequest<WorkDay>;
 }

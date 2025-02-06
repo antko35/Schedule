@@ -22,10 +22,31 @@
 
         public async Task<Calendar> Handle(AddOfficialHolidayCommand request, CancellationToken cancellationToken)
         {
-            DayOfWeek dayOfWeek = request.Holiday.DayOfWeek;
+            await IsHolidayAlreadyExist(request.Holiday);
 
+            var holidayDay = await CreateDay(request);
+
+            await calendarRepository.AddAsync(holidayDay);
+
+            return holidayDay;
+        }
+
+        private async Task IsHolidayAlreadyExist(DateOnly holiday)
+        {
+            var holidays = await calendarRepository.GetMonthHolidays(holiday.Year, holiday.Month);
+
+            if (holidays.Any(x => x.HolidayDate.Day == holiday.Day))
+            {
+                throw new InvalidOperationException($"Holiday {holiday} already exist");
+            }
+        }
+
+        private async Task<Calendar> CreateDay(AddOfficialHolidayCommand request)
+        {
+            DayOfWeek dayOfWeek = request.Holiday.DayOfWeek;
             var holidayDay = new Calendar()
             {
+                Year = request.Holiday.Year,
                 HolidayDayOfMonth = request.Holiday.Day,
                 DayOfWeek = dayOfWeek,
                 HolidayDate = request.Holiday,
@@ -35,13 +56,12 @@
 
             if (request.TransferDay.Year == 0001)
             {
-                holidayDay.TransferDate = null;            }
+                holidayDay.TransferDate = null;
+            }
             else
             {
                 holidayDay.TransferDate = request.TransferDay;
             }
-
-            await calendarRepository.AddAsync(holidayDay);
 
             return holidayDay;
         }

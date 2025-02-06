@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 
 namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
 {
-    public record CreateScheduleRulesCommand : IRequest
-    {
-        public string UserId { get; set; }
-        public string DepartmentId { get; set; }
-        public string Month { get; set; }
-    }
+    public record CreateScheduleRulesCommand(
+        string UserId,
+        string DepartmentId,
+        int Month,
+        int Year) : IRequest;
 }

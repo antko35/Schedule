@@ -7,13 +7,9 @@ using System.Threading.Tasks;
 
 namespace ScheduleService.Application.UseCases.Commands.Schedule
 {
-    public class GenerateDepartmentScheduleCommand
-        : IRequest
-    {
-        required public string DepartmentId { get; set; }
-
-        required public int Year { get; set; }
-
-        required public int Month { get; set; }
-    }
+    public record GenerateDepartmentScheduleCommand(
+        string DepartmentId,
+        int Year,
+        int Month)
+        : IRequest;
 }

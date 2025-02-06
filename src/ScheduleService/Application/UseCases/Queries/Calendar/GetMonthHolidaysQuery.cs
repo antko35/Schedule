@@ -1,4 +1,4 @@
-﻿namespace ScheduleService.Application.UseCases.Commands.Calendar
+﻿namespace ScheduleService.Application.UseCases.Queries.Calendar
 {
     using System;
     using System.Collections.Generic;
@@ -8,6 +8,8 @@
     using MediatR;
     using ScheduleService.Domain.Models;
 
-    public record AddOfficialHolidayCommand(DateOnly Holiday, DateOnly TransferDay)
-        : IRequest<Calendar>;
+    public record GetMonthHolidaysQuery(int Year, int Month)
+        : IRequest<List<Calendar>>
+    {
+    }
 }

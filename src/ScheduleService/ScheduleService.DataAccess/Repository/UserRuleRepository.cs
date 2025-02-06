@@ -18,11 +18,12 @@ namespace ScheduleService.DataAccess.Repository
         {
         }
 
-        public async Task<IEnumerable<UserScheduleRules>?> GetUsersRulesByDepartment(string departmentId, string month)
+        public async Task<IEnumerable<UserScheduleRules>?> GetUsersRulesByDepartment(string departmentId, string month, int year)
         {
             var filter = Builders<UserScheduleRules>.Filter.And(
                 Builders<UserScheduleRules>.Filter.Eq(x => x.DepartmentId, departmentId),
-                Builders<UserScheduleRules>.Filter.Eq(x => x.Month, month));
+                Builders<UserScheduleRules>.Filter.Eq(x => x.Month, month),
+                Builders<UserScheduleRules>.Filter.Eq(x => x.Year, year));
 
             var rules = await dbSet.Find(filter).ToListAsync();
 

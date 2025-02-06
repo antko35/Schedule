@@ -11,7 +11,6 @@
     using global::Application.Services;
     using MediatR;
     using Microsoft.VisualBasic;
-    using ScheduleService.Application.DTOs;
     using ScheduleService.Application.UseCases.Commands.Schedule;
     using ScheduleService.DataAccess.Repository;
     using ScheduleService.Domain.Abstractions;
@@ -24,7 +23,7 @@
         private readonly IScheduleRepository scheduleRepository;
         private readonly ICalendarRepository calendarRepository;
 
-        private IEnumerable<UserScheduleRules>? usersRules;
+        private IEnumerable<UserScheduleRules> usersRules = new List<UserScheduleRules>();
         private List<Calendar?> officialHolidays = new List<Calendar?>();
         private List<Calendar?> transferDays = new List<Calendar?>();
 
@@ -68,7 +67,7 @@
                 .ToString("MMMM")
                 .ToLower();
 
-            this.usersRules = await userRuleRepository.GetUsersRulesByDepartment(departmentId, monthName);
+            this.usersRules = await userRuleRepository.GetUsersRulesByDepartment(departmentId, monthName, year);
 
             if (!usersRules.Any())
             {

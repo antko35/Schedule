@@ -3,6 +3,7 @@
     using MediatR;
     using Microsoft.AspNetCore.Mvc;
     using ScheduleService.Application.UseCases.Commands.Schedule;
+    using ScheduleService.Application.UseCases.Queries.Schedule;
 
     [ApiController]
     [Route("[controller]")]
@@ -23,7 +24,7 @@
         [Route("schedule/{userId}/{departmentId}/{year:int}/{month:int}")]
         public async Task<IActionResult> GetMonthSchedule(string userId, string departmentId, int year, int month)
         {
-            var command = new GetUserMonthScheduleCommand(userId, departmentId, year, month);
+            var command = new GetUserMonthScheduleQuery(userId, departmentId, year, month);
 
             var result = await mediator.Send(command);
 
@@ -32,11 +33,13 @@
 
         [HttpGet]
         [Route("schedule/{departmentId}/{year:int}/{month:int}")]
-        public async Task GetDepartmentSchedule(string departmentId, int year, int month)
+        public async Task<IActionResult> GetDepartmentSchedule(string departmentId, int year, int month)
         {
-            var command = new GetMonthScheduleCommand(departmentId, year, month);
+            var command = new GetDepartmentMonthScheduleQuery(departmentId, year, month);
 
-            //var result = await mediator.Send(command);
+            var result = await mediator.Send(command);
+
+            return Ok(result);
         }
 
         /// <summary>

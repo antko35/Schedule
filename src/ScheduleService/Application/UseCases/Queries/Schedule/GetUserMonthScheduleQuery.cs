@@ -1,4 +1,4 @@
-﻿namespace ScheduleService.Application.UseCases.Commands.Schedule
+﻿namespace ScheduleService.Application.UseCases.Queries.Schedule
 {
     using System;
     using System.Collections.Generic;
@@ -8,9 +8,10 @@
     using MediatR;
     using ScheduleService.Domain.Models;
 
-    public record DeleteWorkDayCommand(
+    public record GetUserMonthScheduleQuery(
         string UserId,
         string DepartmentId,
-        DateTime WorkDay)
+        int Year,
+        int Month)
         : IRequest<Schedule>;
 }

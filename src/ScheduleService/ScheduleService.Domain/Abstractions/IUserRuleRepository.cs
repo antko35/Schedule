@@ -7,6 +7,6 @@ namespace ScheduleService.DataAccess.Repository
     {
         Task<UserScheduleRules> GetMonthScheduleRules(string userId, string departmentId, string monthName, int year);
 
-        Task<IEnumerable<UserScheduleRules>> GetUsersRulesByDepartment( string departmentId, string month);
+        Task<IEnumerable<UserScheduleRules>> GetUsersRulesByDepartment( string departmentId, string month, int year);
     }
 }

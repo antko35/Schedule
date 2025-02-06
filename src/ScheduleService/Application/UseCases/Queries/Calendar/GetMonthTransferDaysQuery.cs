@@ -1,4 +1,4 @@
-﻿namespace ScheduleService.Application.UseCases.Commands.Calendar
+﻿namespace ScheduleService.Application.UseCases.Queries.Calendar
 {
     using System;
     using System.Collections.Generic;
@@ -8,7 +8,7 @@
     using MediatR;
     using ScheduleService.Domain.Models;
 
-    public record GetMonthTransferDaysCommand(int Year, int Month)
+    public record GetMonthTransferDaysQuery(int Year, int Month)
         : IRequest<List<Calendar>>
     {
     }

@@ -42,5 +42,14 @@
 
             return result;
         }
+
+        public async Task<List<Calendar>> GetYearHolidays(int year)
+        {
+            var filter = Builders<Calendar>.Filter.Eq(x => x.Year, year);
+
+            var result = await dbSet.Find(filter).ToListAsync();
+
+            return result;
+        }
     }
 }
