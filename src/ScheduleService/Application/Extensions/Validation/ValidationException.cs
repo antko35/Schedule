@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScheduleService.Application.Extensions
+namespace ScheduleService.Application.Extensions.Validation
 {
     public class ValidationException : Exception
     {

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using ScheduleService.Application.Extensions;
 using ScheduleService.Application.UseCases.Commands.Schedule;
 using ScheduleService.DataAccess.Repository;
 using ScheduleService.Domain.Abstractions;
@@ -26,25 +27,36 @@ namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
 
         public async Task<string> Handle(DeleteUserMonthScheduleCommand request, CancellationToken cancellationToken)
         {
+            string response;
+
+            var scheduleId = await GetUsersScheduleId(request);
+
+            var result = await scheduleRepository.DeleteMonthSchedule(scheduleId);
+
+            if (result.ModifiedCount > 0)
+            {
+                response = $" Schedule {scheduleId} was cleaned.";
+                return response;
+            }
+            else
+            {
+                response = "Nothing to delete";
+                return response;
+            }
+        }
+
+        private async Task<string> GetUsersScheduleId(DeleteUserMonthScheduleCommand request)
+        {
             string monthName = new DateTime(request.Year, request.Month, 1)
                 .ToString("MMMM")
                 .ToLower();
 
-            var userRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.Year)
-                ?? throw new InvalidOperationException("Invalid input");
+            var userRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.Year);
 
+            userRules.EnsureExists("Invalid input");
             var scheduleId = userRules.ScheduleId;
 
-            var result = await scheduleRepository.DeleteMonthSchedule(scheduleId);
-            string res;
-            if (result.ModifiedCount > 0)
-            {
-                res = $" Schedule {scheduleId} was cleaned.";
-                return res;
-            }
-
-            res = "Nothing to delete";
-            return res;
+            return scheduleId;
         }
     }
 }

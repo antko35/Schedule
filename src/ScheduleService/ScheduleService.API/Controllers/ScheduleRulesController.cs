@@ -15,6 +15,11 @@ namespace ScheduleService.API.Controllers
             this.mediator = mediator;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> CreateUserRules([FromBody] CreateScheduleRulesCommand command)
         {

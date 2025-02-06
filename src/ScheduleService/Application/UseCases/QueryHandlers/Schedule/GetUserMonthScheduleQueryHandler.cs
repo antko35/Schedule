@@ -30,20 +30,27 @@
 
         public async Task<Schedule> Handle(GetUserMonthScheduleQuery request, CancellationToken cancellationToken)
         {
-            var monthName = new DateOnly(request.Year, request.Month, 1)
-                .ToString("MMMM")
-                .ToLower();
-
-            var userRules = await userRuleRepository
-                .GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.Year);
-
-            userRules.EnsureExists("Invalid input");
+            var userRules = await GetUsersRules(request);
 
             var schedule = await scheduleRepository.GetByIdAsync(userRules.ScheduleId);
 
             schedule.EnsureExists("Error while getting schedule");
 
             return schedule;
+        }
+
+        private async Task<UserScheduleRules> GetUsersRules(GetUserMonthScheduleQuery request)
+        {
+            var monthName = new DateOnly(request.Year, request.Month, 1)
+                 .ToString("MMMM")
+                 .ToLower();
+
+            var userRules = await userRuleRepository
+                .GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.Year);
+
+            userRules.EnsureExists("Invalid input");
+
+            return userRules;
         }
     }
 }

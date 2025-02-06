@@ -4,6 +4,7 @@
     using FluentValidation;
     using MediatR;
     using Microsoft.Extensions.DependencyInjection;
+    using ScheduleService.Application.Extensions.Validation;
 
     public static class DependencyInjection
     {

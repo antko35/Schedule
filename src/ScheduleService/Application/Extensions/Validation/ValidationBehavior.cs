@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScheduleService.Application.Extensions
+namespace ScheduleService.Application.Extensions.Validation
 {
     public sealed class ValidationBehavior<TRequest, TResponse>
         : IPipelineBehavior<TRequest, TResponse>
