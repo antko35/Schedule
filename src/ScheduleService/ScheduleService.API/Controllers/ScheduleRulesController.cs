@@ -17,7 +17,7 @@ namespace ScheduleService.API.Controllers
         }
 
         /// <summary>
-        /// Get ruler for schedule generation.
+        /// Get rules for schedule generation.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="departmentId"></param>
@@ -34,13 +34,32 @@ namespace ScheduleService.API.Controllers
         }
 
         /// <summary>
-        /// Auto creating userScheduleRules for schedule generation.
+        /// Auto creating userScheduleRules for schedule generation and schedule.
         /// Creating after adding user to department(in user management service).
         /// </summary>
         /// <param name="command"></param>
         /// <returns></returns>
         [HttpPost]
+        [Route("generateRules")]
         public async Task<IActionResult> CreateUserRules([FromBody] CreateScheduleRulesCommand command)
+        {
+            await mediator.Send(command);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Set hours per day and max working hours per day.
+        /// Set when user work`s first shift.
+        /// Ex: If user works first shift on even days of week set: EvenDOW: true.
+        /// If user works first shift on even days of month set: EvenDOM: true.
+        /// If user work`s only first shift set " EvenDOW: true, unEvenDOW: true ".
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("setRules")]
+        public async Task<IActionResult> SetGenerationRules(SetGenerationRulesCommand command)
         {
             await mediator.Send(command);
 
@@ -52,6 +71,7 @@ namespace ScheduleService.API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
+        [Route("clearRules")]
         public async Task<IActionResult> ClearRules()
         {
             return Ok();
