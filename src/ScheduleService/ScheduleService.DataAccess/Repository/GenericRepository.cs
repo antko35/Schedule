@@ -27,12 +27,6 @@
             await dbSet.InsertOneAsync(obj);
         }
 
-        // TODO почитать чзх
-        public void Dispose()
-        {
-            //throw new NotImplementedException();
-        }
-
         public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
             return await dbSet.Find(_ => true).ToListAsync();

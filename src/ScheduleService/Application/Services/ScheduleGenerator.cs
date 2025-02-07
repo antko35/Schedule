@@ -29,7 +29,7 @@ namespace Application.Services
                     continue;
                 }
 
-                // chek transfer date
+                // check transfer date
                 bool isTransferDay = transferDays.Any(x => x?.TransferDate?.Day == day);
                 if ((dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday) && !isTransferDay)
                 {

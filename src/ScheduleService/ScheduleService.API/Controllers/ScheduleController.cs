@@ -31,6 +31,13 @@
             return Ok(result);
         }
 
+        /// <summary>
+        /// Get department schedule.
+        /// </summary>
+        /// <param name="departmentId"></param>
+        /// <param name="year"></param>
+        /// <param name="month"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("schedule/{departmentId}/{year:int}/{month:int}")]
         public async Task<IActionResult> GetDepartmentSchedule(string departmentId, int year, int month)
