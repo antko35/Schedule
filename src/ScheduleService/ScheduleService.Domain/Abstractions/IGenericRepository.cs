@@ -6,8 +6,6 @@
     {
         Task AddAsync(TEntity obj);
 
-        void Dispose();
-
         Task<IEnumerable<TEntity>> GetAllAsync();
 
         Task<TEntity> GetByIdAsync(string id);

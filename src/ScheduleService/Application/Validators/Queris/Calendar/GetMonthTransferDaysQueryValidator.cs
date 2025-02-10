@@ -14,7 +14,7 @@ namespace ScheduleService.Application.Validators.Queris.Calendar
         public GetMonthTransferDaysQueryValidator()
         {
             RuleFor(x => x.Year)
-                           .InclusiveBetween(2000, 2100);
+                 .InclusiveBetween(2000, 2100);
 
             RuleFor(x => x.Month)
                 .InclusiveBetween(1, 12);
