@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
 {
-    public sealed record SetGenerationRulesCommand(
-        string Id,
+    public record SetGenerationRulesCommand(
+        string ScheduleRulesId,
         float HoursPerMonth,
         float MaxHoursPerDay,
         bool EvenDOW,

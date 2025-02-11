@@ -14,16 +14,22 @@
     /// </summary>
     public class UserScheduleRules : Entity
     {
+        [BsonElement("userId")]
         public string UserId { get; set; }
 
+        [BsonElement("departmentId")]
         public string DepartmentId { get; set; }
 
-        public string Month { get; set; } = string.Empty;
+        [BsonElement("monthName")]
+        public string MonthName { get; set; } = string.Empty;
 
+        [BsonElement("year")]
         public int Year { get; set; }
 
+        [BsonElement("hoursPerMonth")]
         public float HoursPerMonth { get; set; }
 
+        [BsonElement("hoursPerDay")]
         public float MaxHoursPerDay { get; set; }
 
         /// <summary>

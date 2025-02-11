@@ -22,7 +22,7 @@ namespace ScheduleService.DataAccess.Repository
         {
             var filter = Builders<UserScheduleRules>.Filter.And(
                 Builders<UserScheduleRules>.Filter.Eq(x => x.DepartmentId, departmentId),
-                Builders<UserScheduleRules>.Filter.Eq(x => x.Month, month),
+                Builders<UserScheduleRules>.Filter.Eq(x => x.MonthName, month),
                 Builders<UserScheduleRules>.Filter.Eq(x => x.Year, year));
 
             var rules = await dbSet.Find(filter).ToListAsync();
@@ -35,7 +35,7 @@ namespace ScheduleService.DataAccess.Repository
             var filter = Builders<UserScheduleRules>.Filter.And(
                Builders<UserScheduleRules>.Filter.Eq(x => x.UserId, userId),
                Builders<UserScheduleRules>.Filter.Eq(x => x.DepartmentId, departmentId),
-               Builders<UserScheduleRules>.Filter.Eq(x => x.Month, monthName),
+               Builders<UserScheduleRules>.Filter.Eq(x => x.MonthName, monthName),
                Builders<UserScheduleRules>.Filter.Eq(x => x.Year, year));
 
             var result = await dbSet.Find(filter).FirstOrDefaultAsync();

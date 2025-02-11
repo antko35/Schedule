@@ -34,17 +34,20 @@
                 UserId = request.UserId,
                 DepartmentId = request.DepartmentId,
                 Year = request.Year,
-                Month = monthName,
+                MonthName = monthName,
                 ScheduleId = scheduleId,
             };
 
             var schedule = new Schedule
             {
                 Id = scheduleId,
+                MonthName = monthName,
             };
 
-            await scheduleRepository.AddAsync(schedule);
-            await userRuleRepository.AddAsync(scheduleRules);
+            var task1 = scheduleRepository.AddAsync(schedule);
+            var task2 = userRuleRepository.AddAsync(scheduleRules);
+
+            await Task.WhenAll(task1, task2);
         }
     }
 }

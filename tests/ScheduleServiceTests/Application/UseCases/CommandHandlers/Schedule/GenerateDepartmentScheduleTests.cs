@@ -34,12 +34,7 @@ namespace Application.UseCases.CommandHandlers.Schedule
                 scheduleRepositoryMock.Object,
                 calendarRepositoryMock.Object);
 
-            command = new GenerateDepartmentScheduleCommand 
-            {
-                DepartmentId = "id",
-                Year = 2025,
-                Month = 1,
-            };
+            command = new GenerateDepartmentScheduleCommand("id", 2025, 1);
         }
 
         [Fact]
@@ -94,13 +89,13 @@ namespace Application.UseCases.CommandHandlers.Schedule
             // };
 
             userRuleRepositoryMock
-                .Setup(x => x.GetUsersRulesByDepartment(It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.GetUsersRulesByDepartment(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
                 .ReturnsAsync(usersRules);
 
-            calendarRepositoryMock.Setup(x => x.GetMonthHolidays(It.IsAny<int>()))
+            calendarRepositoryMock.Setup(x => x.GetMonthHolidays(It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync(holidays);
 
-            calendarRepositoryMock.Setup(x => x.GetMonthTransferDays(It.IsAny<int>()))
+            calendarRepositoryMock.Setup(x => x.GetMonthTransferDays(It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync(transferDays);
 
             // Act
