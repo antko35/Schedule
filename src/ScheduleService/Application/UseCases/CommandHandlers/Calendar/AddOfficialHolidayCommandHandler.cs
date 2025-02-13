@@ -1,4 +1,6 @@
-﻿namespace ScheduleService.Application.UseCases.CommandHandlers.Calendar
+﻿using AutoMapper;
+
+namespace ScheduleService.Application.UseCases.CommandHandlers.Calendar
 {
     using System;
     using System.Collections.Generic;
@@ -14,17 +16,19 @@
         : IRequestHandler<AddOfficialHolidayCommand, Calendar>
     {
         private readonly ICalendarRepository calendarRepository;
+        private readonly IMapper mapper;
 
-        public AddOfficialHolidayCommandHandler(ICalendarRepository calendarRepository)
+        public AddOfficialHolidayCommandHandler(ICalendarRepository calendarRepository, IMapper mapper)
         {
             this.calendarRepository = calendarRepository;
+            this.mapper = mapper;
         }
 
         public async Task<Calendar> Handle(AddOfficialHolidayCommand request, CancellationToken cancellationToken)
         {
             await IsHolidayAlreadyExist(request.Holiday);
 
-            var holidayDay = await CreateDay(request);
+            var holidayDay = mapper.Map<Calendar>(request);
 
             await calendarRepository.AddAsync(holidayDay);
 
@@ -39,31 +43,6 @@
             {
                 throw new InvalidOperationException($"Holiday {holiday} already exist");
             }
-        }
-
-        private async Task<Calendar> CreateDay(AddOfficialHolidayCommand request)
-        {
-            DayOfWeek dayOfWeek = request.Holiday.DayOfWeek;
-            var holidayDay = new Calendar()
-            {
-                Year = request.Holiday.Year,
-                HolidayDayOfMonth = request.Holiday.Day,
-                DayOfWeek = dayOfWeek,
-                HolidayDate = request.Holiday,
-                MonthOfHoliday = request.Holiday.Month,
-                MonthOfTransferDay = request.TransferDay.Month,
-            };
-
-            if (request.TransferDay.Year == 0001)
-            {
-                holidayDay.TransferDate = null;
-            }
-            else
-            {
-                holidayDay.TransferDate = request.TransferDay;
-            }
-
-            return holidayDay;
         }
     }
 }

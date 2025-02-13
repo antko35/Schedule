@@ -39,20 +39,26 @@
 
         public async Task Handle(GenerateDepartmentScheduleCommand request, CancellationToken cancellationToken)
         {
-            await GetUsersRulesForScheduleGeneration(request.Year, request.Month, request.DepartmentId);
+            var task1 = GetUsersRulesForScheduleGeneration(request.Year, request.Month, request.DepartmentId);
+            var task2 = GetHolidays(request.Year, request.Month);
 
-            await GetHolidays(request.Year, request.Month);
+            await Task.WhenAll(task1, task2);
 
+            await GenerateAndAdd(request.Year, request.Month);
+        }
+
+        private async Task GenerateAndAdd(int year, int month)
+        {
             foreach (var userRules in usersRules)
             {
                 await scheduleRepository.DeleteMonthSchedule(userRules.ScheduleId);
 
                 var generatedDays = ScheduleGenerator.GenerateWorkDaysForUser(
-                   userRules,
-                   request.Year,
-                   request.Month,
-                   officialHolidays,
-                   transferDays);
+                    userRules,
+                    year,
+                    month,
+                    officialHolidays,
+                    transferDays);
 
                 foreach (var workDay in generatedDays)
                 {
@@ -77,9 +83,13 @@
 
         private async Task GetHolidays(int year, int month)
         {
-            this.officialHolidays = await calendarRepository.GetMonthHolidays(year, month);
+            var task1 = calendarRepository.GetMonthHolidays(year, month);
+            var task2 = calendarRepository.GetMonthTransferDays(year, month);
 
-            this.transferDays = await calendarRepository.GetMonthTransferDays(year, month);
+            await Task.WhenAll(task1, task2);
+
+            this.officialHolidays = task1.Result;
+            this.transferDays = task2.Result;
         }
     }
 }

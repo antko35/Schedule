@@ -2,7 +2,9 @@ using ScheduleService.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using MongoDB.Driver.Linq;
 
 namespace Application.Services
 {
@@ -15,8 +17,35 @@ namespace Application.Services
             IEnumerable<Calendar> officialHolidays,
             IEnumerable<Calendar> transferDays)
         {
-            var generatedDays = new List<WorkDay>();
             int daysInMonth = DateTime.DaysInMonth(year, month);
+
+            var generatedDays = Generate(officialHolidays, transferDays, userRules, daysInMonth, year, month);
+
+            generatedDays = CorrectGeneralTime(generatedDays, userRules);
+
+            return generatedDays;
+        }
+
+        private static List<WorkDay> CorrectGeneralTime(List<WorkDay> workDays, UserScheduleRules userRules)
+        {
+            var workdaysCount = workDays.Count;
+            var totalTime = workdaysCount * 6.6;
+
+            if (totalTime != userRules.HoursPerMonth)
+            {
+                var timeDifference = userRules.HoursPerMonth - totalTime;
+                var dayToCorrect = workDays[workdaysCount - 1];
+                var newEndTime = dayToCorrect.EndTime.AddHours(timeDifference);
+
+                dayToCorrect.EndTime = newEndTime;
+            }
+
+            return workDays;
+        }
+
+        private static List<WorkDay> Generate(IEnumerable<Calendar> officialHolidays, IEnumerable<Calendar> transferDays, UserScheduleRules userRules, int daysInMonth, int year, int month)
+        {
+            var generatedDays = new List<WorkDay>();
 
             for (int day = 1; day <= daysInMonth; day++)
             {
@@ -105,11 +134,14 @@ namespace Application.Services
 
         private static WorkDay CreateWorkDayDto(UserScheduleRules userRules, int year, int month, int day, bool firstShift)
         {
+            TimeOnly startWork = userRules.StartWorkDayTime;
+            TimeOnly endWork = startWork.AddHours(6).AddMinutes(30);
+
             DateTime startTime, endTime;
             if (firstShift)
             {
-                startTime = new DateTime(year, month, day, 8, 0, 0);
-                endTime = new DateTime(year, month, day, 14, 30, 0);
+                startTime = new DateTime(year, month, day, startWork.Hour, startWork.Minute, 0);
+                endTime = new DateTime(year, month, day, endWork.Hour, endWork.Minute, 0);
             }
             else
             {

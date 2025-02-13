@@ -16,7 +16,7 @@
         public DateOnly HolidayDate { get; set; }
 
         [BsonElement("transferDay")]
-        public DateOnly? TransferDate { get; set; }
+        public DateOnly? TransferDate { get; set; } = new DateOnly();
 
         [BsonElement("transferDayMonthNumber")]
         public int MonthOfTransferDay { get; set; }

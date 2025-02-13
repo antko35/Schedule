@@ -32,6 +32,10 @@
         [BsonElement("hoursPerDay")]
         public float MaxHoursPerDay { get; set; }
 
+        [BsonElement("StartWorkDayTime")]
+
+        public TimeOnly StartWorkDayTime { get; set; }
+
         /// <summary>
         /// Work first shift on even Day of week and second shift on uneven days.
         /// Tuesday, Thursday.

@@ -7,13 +7,23 @@ using System.Threading.Tasks;
 
 namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
 {
-    public record SetGenerationRulesCommand(
-        string ScheduleRulesId,
-        float HoursPerMonth,
-        float MaxHoursPerDay,
-        bool EvenDOW,
-        bool UnEvenDOW,
-        bool EvenDOM,
-        bool UnEvenDOM)
-        : IRequest;
+    public class SetGenerationRulesCommand
+        : IRequest
+    {
+        public string ScheduleRulesId { get; set; }
+
+        public float? HoursPerMonth { get; set; }
+
+        public float? MaxHoursPerDay { get; set; }
+
+        public TimeOnly StartWorkDayTime { get; set; } = new TimeOnly(8, 0, 0);
+
+        public bool? EvenDOW { get; set; }
+
+        public bool? UnEvenDOW { get; set; }
+
+        public bool? EvenDOM { get; set; }
+
+        public bool? UnEvenDOM { get; set; }
+    }
 }

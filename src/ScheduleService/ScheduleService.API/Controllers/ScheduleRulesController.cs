@@ -16,6 +16,15 @@ namespace ScheduleService.API.Controllers
             this.mediator = mediator;
         }
 
+        [HttpGet]
+        [Route("getAll")]
+        public async Task<IActionResult> GetScheduleRules()
+        {
+            var result = await mediator.Send(new GetAllRulesQuery());
+
+            return Ok(result);
+        }
+
         /// <summary>
         /// Get rules for schedule generation.
         /// </summary>
@@ -54,10 +63,21 @@ namespace ScheduleService.API.Controllers
         /// Ex: If user works first shift on even days of week set: EvenDOW: true.
         /// If user works first shift on even days of month set: EvenDOM: true.
         /// If user work`s only first shift set " EvenDOW: true, unEvenDOW: true ".
+        ///
+        /// PATCH {
+        ///   "scheduleRulesId": "string",
+        ///   "hoursPerMonth": 0,
+        ///   "maxHoursPerDay": 0,
+        ///   "evenDOW": true,
+        ///   "startWorkDayTime": "string",
+        ///   "unEvenDOW": true,
+        ///   "evenDOM": true,
+        ///   "unEvenDOM": true
+        /// }.
         /// </summary>
         /// <param name="command"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPatch]
         [Route("setRules")]
         public async Task<IActionResult> SetGenerationRules(SetGenerationRulesCommand command)
         {

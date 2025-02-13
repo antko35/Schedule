@@ -1,8 +1,10 @@
-﻿using AutoMapper;
+﻿using System.Globalization;
+using AutoMapper;
 using MediatR;
 using ScheduleService.Application.Extensions;
 using ScheduleService.Application.UseCases.Commands.ScheduleRules;
 using ScheduleService.DataAccess.Repository;
+using ScheduleService.Domain.Models;
 
 namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules
 {
