@@ -27,6 +27,7 @@ namespace Application.Services
         }
 
         private static List<WorkDay> CorrectGeneralTime(List<WorkDay> workDays, UserScheduleRules userRules)
+
         {
             var workdaysCount = workDays.Count;
             var totalTime = workdaysCount * 6.6;
