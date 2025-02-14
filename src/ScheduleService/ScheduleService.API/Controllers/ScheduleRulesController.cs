@@ -63,19 +63,21 @@ namespace ScheduleService.API.Controllers
         /// Ex: If user works first shift on even days of week set: EvenDOW: true.
         /// If user works first shift on even days of month set: EvenDOM: true.
         /// If user work`s only first shift set " EvenDOW: true, unEvenDOW: true ".
-        ///
-        /// PATCH {
-        ///   "scheduleRulesId": "string",
-        ///   "hoursPerMonth": 0,
-        ///   "maxHoursPerDay": 0,
-        ///   "evenDOW": true,
-        ///   "startWorkDayTime": "string",
-        ///   "unEvenDOW": true,
-        ///   "evenDOM": true,
-        ///   "unEvenDOM": true
-        /// }.
         /// </summary>
         /// <param name="command"></param>
+        /// <remarks>
+        /// ```
+        ///    PATCH {
+        ///     "scheduleRulesId": "string",
+        ///      "hoursPerMonth": 0,
+        ///     "maxHoursPerDay": 0,
+        ///     "evenDOW": true,
+        ///     "startWorkDayTime": "string",
+        ///     "unEvenDOW": true,
+        ///     "evenDOM": true,
+        ///     "unEvenDOM": true
+        ///     }.
+        /// </remarks>
         /// <returns></returns>
         [HttpPatch]
         [Route("setRules")]
