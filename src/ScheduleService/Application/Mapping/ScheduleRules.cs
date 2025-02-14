@@ -9,6 +9,22 @@ public class ScheduleRules : Profile
     public ScheduleRules()
     {
         CreateMap<SetGenerationRulesCommand, UserScheduleRules>()
+            .AfterMap((src, dest) =>
+            {
+                // Если в запросе передан DOM, сбрасываем DOW
+                if (src.EvenDOM.HasValue || src.UnEvenDOM.HasValue)
+                {
+                    dest.EvenDOW = false;
+                    dest.UnEvenDOW = false;
+                }
+
+                // Если в запросе передан DOW, сбрасываем DOM
+                if (src.EvenDOW.HasValue || src.UnEvenDOW.HasValue)
+                {
+                    dest.EvenDOM = false;
+                    dest.UnEvenDOM = false;
+                }
+            })
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) =>
             {
                 if (srcMember == null)
