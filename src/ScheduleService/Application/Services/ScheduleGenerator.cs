@@ -45,93 +45,97 @@ namespace Application.Services
         }
 
         private static List<WorkDay> Generate(IEnumerable<Calendar> officialHolidays, IEnumerable<Calendar> transferDays, UserScheduleRules userRules, int daysInMonth, int year, int month)
+{
+    var generatedDays = new List<WorkDay>();
+
+    for (int day = 1; day <= daysInMonth; day++)
+    {
+        var currentDay = new DateTime(year, month, day);
+        DayOfWeek dayOfWeek = currentDay.DayOfWeek;
+
+        // Пропуск праздничных дней
+        if (officialHolidays.Any(x => x.HolidayDayOfMonth == day))
         {
-            var generatedDays = new List<WorkDay>();
+            continue;
+        }
 
-            for (int day = 1; day <= daysInMonth; day++)
+        // Проверка на перенесенные дни
+        bool isTransferDay = transferDays.Any(x => x?.TransferDate?.Day == day);
+        if ((dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday) && !isTransferDay)
+        {
+            continue;
+        }
+
+        if (isTransferDay)
+        {
+            var replacedDay = transferDays.FirstOrDefault(x => x?.TransferDate?.Day == day);
+            if (replacedDay == null || replacedDay.HolidayDate.Month != month)
             {
-                var currentDay = new DateTime(year, month, day);
-                DayOfWeek dayOfWeek = currentDay.DayOfWeek;
+                continue;
+            }
+            else
+            {
+                dayOfWeek = replacedDay.HolidayDate.DayOfWeek;
+            }
+        }
 
-                // skip holidays
-                if (officialHolidays.Any(x => x.HolidayDayOfMonth == day))
+        bool isFirstShift = false;
+
+        if (userRules.OnlyFirstShift)
+        {
+            isFirstShift = true;
+        }
+        else if (userRules.OnlySecondShift)
+        {
+            isFirstShift = false;
+        }
+        else
+        {
+            if (userRules.EvenDOW)
+            {
+                if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
                 {
-                    continue;
-                }
-
-                // check transfer date
-                bool isTransferDay = transferDays.Any(x => x?.TransferDate?.Day == day);
-                if ((dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday) && !isTransferDay)
-                {
-                    continue;
-                }
-
-                if (isTransferDay)
-                {
-                    var replacedDay = transferDays.FirstOrDefault(x => x?.TransferDate?.Day == day);
-                    if (replacedDay == null || replacedDay.HolidayDate.Month != month)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        dayOfWeek = replacedDay.HolidayDate.DayOfWeek;
-                    }
-                }
-
-                if (userRules.EvenDOW)
-                {
-                    if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
-                    {
-                        generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: true));
-                    }
-
-                    if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
-                    {
-                        generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: false));
-                    }
-                }
-
-                if (userRules.UnEvenDOW)
-                {
-                    if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
-                    {
-                        generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: true));
-                    }
-
-                    if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
-                    {
-                        generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: false));
-                    }
-                }
-
-                if (userRules.EvenDOM)
-                {
-                    if (day % 2 == 0)
-                    {
-                        generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: true));
-                    }
-                    else
-                    {
-                        generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: false));
-                    }
-                }
-
-                if (userRules.UnEvenDOM)
-                {
-                    if (day % 2 != 0)
-                    {
-                        generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: true));
-                    }
-                    else
-                    {
-                        generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: false));
-                    }
+                    isFirstShift = true;
                 }
             }
 
-            return generatedDays;
+            if (userRules.UnEvenDOW)
+            {
+                if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
+                {
+                    isFirstShift = true;
+                }
+            }
+
+            if (userRules.EvenDOM)
+            {
+                if (day % 2 == 0)
+                {
+                    isFirstShift = true;
+                }
+            }
+
+            if (userRules.UnEvenDOM)
+            {
+                if (day % 2 != 0)
+                {
+                    isFirstShift = true;
+                }
+            }
         }
+
+        if (isFirstShift)
+        {
+            generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: true));
+        }
+        else
+        {
+            generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: false));
+        }
+    }
+
+    return generatedDays;
+}
 
         private static WorkDay CreateWorkDayDto(UserScheduleRules userRules, int year, int month, int day, bool firstShift)
         {

@@ -36,6 +36,12 @@
 
         public TimeOnly StartWorkDayTime { get; set; }
 
+        [BsonElement("onlyFirstShift")]
+        public bool OnlyFirstShift { get; set; }
+
+        [BsonElement("onlySecondShift")]
+        public bool OnlySecondShift { get; set; }
+
         /// <summary>
         /// Work first shift on even Day of week and second shift on uneven days.
         /// Tuesday, Thursday.

@@ -87,16 +87,5 @@ namespace ScheduleService.API.Controllers
 
             return Ok();
         }
-
-        /// <summary>
-        /// Set default rules for schedule rules.
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("clearRules")]
-        public async Task<IActionResult> ClearRules()
-        {
-            return Ok();
-        }
     }
 }

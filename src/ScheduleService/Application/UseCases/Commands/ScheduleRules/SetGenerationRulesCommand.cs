@@ -18,6 +18,10 @@ namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
 
         public TimeOnly StartWorkDayTime { get; set; } = new TimeOnly(0, 0, 0);
 
+        public bool? OnlyFirstShift { get; set; }
+
+        public bool? OnlySecondShift { get; set; }
+
         public bool? EvenDOW { get; set; }
 
         public bool? UnEvenDOW { get; set; }

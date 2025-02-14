@@ -11,14 +11,56 @@ public class ScheduleRules : Profile
         CreateMap<SetGenerationRulesCommand, UserScheduleRules>()
             .AfterMap((src, dest) =>
             {
-                if (src.EvenDOM.HasValue || src.UnEvenDOM.HasValue)
+                if (src.EvenDOM.HasValue)
                 {
+                    dest.OnlyFirstShift = false;
+                    dest.OnlySecondShift = false;
+                    dest.UnEvenDOM = false;
                     dest.EvenDOW = false;
                     dest.UnEvenDOW = false;
                 }
 
-                if (src.EvenDOW.HasValue || src.UnEvenDOW.HasValue)
+                if (src.UnEvenDOM.HasValue)
                 {
+                    dest.OnlyFirstShift = false;
+                    dest.OnlySecondShift = false;
+                    dest.EvenDOM = false;
+                    dest.EvenDOW = false;
+                    dest.UnEvenDOW = false;
+                }
+
+                if (src.UnEvenDOW.HasValue)
+                {
+                    dest.OnlyFirstShift = false;
+                    dest.OnlySecondShift = false;
+                    dest.EvenDOW = false;
+                    dest.EvenDOM = false;
+                    dest.UnEvenDOM = false;
+                }
+
+                if (src.EvenDOW.HasValue)
+                {
+                    dest.OnlyFirstShift = false;
+                    dest.OnlySecondShift = false;
+                    dest.UnEvenDOW = false;
+                    dest.EvenDOM = false;
+                    dest.UnEvenDOM = false;
+                }
+
+                if (src.OnlyFirstShift.HasValue)
+                {
+                    dest.OnlySecondShift = false;
+                    dest.EvenDOW = false;
+                    dest.UnEvenDOW = false;
+                    dest.EvenDOM = false;
+                    dest.UnEvenDOM = false;
+                }
+
+                if (src.OnlySecondShift.HasValue)
+                {
+                    dest.OnlyFirstShift = false;
+                    dest.EvenDOW = false;
+                    dest.UnEvenDOW = false;
                     dest.EvenDOM = false;
                     dest.UnEvenDOM = false;
                 }
