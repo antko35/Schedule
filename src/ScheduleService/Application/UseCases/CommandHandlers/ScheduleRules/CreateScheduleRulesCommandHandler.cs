@@ -11,7 +11,7 @@
     using ScheduleService.Domain.Abstractions;
     using ScheduleService.Domain.Models;
 
-    public record CreateScheduleRulesCommandHandler : IRequestHandler<CreateScheduleRulesCommand>
+    public record CreateScheduleRulesCommandHandler : IRequestHandler<CreateScheduleRulesCommand, (Schedule Schedule, UserScheduleRules ScheduleRules)>
     {
         private readonly IUserRuleRepository userRuleRepository;
         private readonly IScheduleRepository scheduleRepository;
@@ -22,7 +22,7 @@
         }
 
         // auto generation after adding to user management service
-        public async Task Handle(CreateScheduleRulesCommand request, CancellationToken cancellationToken)
+        public async Task<(Schedule Schedule, UserScheduleRules ScheduleRules)> Handle(CreateScheduleRulesCommand request, CancellationToken cancellationToken)
         {
             var monthName = new DateOnly(request.Year, request.Month, 1)
                 .ToString("MMMM")
@@ -48,6 +48,8 @@
             var task2 = userRuleRepository.AddAsync(scheduleRules);
 
             await Task.WhenAll(task1, task2);
+
+            return (schedule, scheduleRules);
         }
     }
 }

@@ -22,17 +22,19 @@ namespace ScheduleService.Application.Validators.Commands.ScheduleRules
             RuleFor(x => x)
                 .Must(x =>
                 {
-                    bool isDOWSet = x.EvenDOW.HasValue || x.UnEvenDOW.HasValue;
-                    bool isDOMSet = x.EvenDOM.HasValue || x.UnEvenDOM.HasValue;
-
-                    if (isDOWSet && isDOMSet)
+                    var flags = new bool?[]
                     {
-                        return false;
-                    }
+                        x.EvenDOW,
+                        x.UnEvenDOW,
+                        x.EvenDOM,
+                        x.UnEvenDOM,
+                        x.OnlyFirstShift,
+                        x.OnlySecondShift,
+                    };
 
-                    return true;
+                    return flags.Count(f => f.HasValue && f.Value) <= 1;
                 })
-                .WithMessage("You must specify either evenDOW and unEvenDOW, or evenDOM and unEvenDOM, but not both.");
+                .WithMessage("Only one of EvenDOW, UnEvenDOW, EvenDOM, UnEvenDOM, OnlyFirstShift, OnlySecondShift can be true.");
 
             RuleFor(x => x)
                 .Must(x =>

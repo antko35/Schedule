@@ -49,8 +49,7 @@ namespace Application.UseCases.CommandHandlers.Schedule
                     DepartmentId = ObjectId.GenerateNewId().ToString(),
                     ScheduleId = ObjectId.GenerateNewId().ToString(),
                     EvenDOW = true,
-                    FirstShift = true,
-                    SecondShift = false,
+                   
                 },
             };
 
@@ -75,19 +74,7 @@ namespace Application.UseCases.CommandHandlers.Schedule
             // };
             var holidays = new List<Calendar>();
             var transferDays = new List<Calendar>();
-
-            // var transferDays = new List<Calendar>
-            // {
-            //     new Calendar
-            //     {
-            //          HolidayDate = new DateOnly(2025, 7, 1),
-            //          TransferDate = new DateOnly(2025, 11, 1),
-            //          MonthOfTransferDay = 1,
-            //          MonthOfHoliday = 1,
-            //          HolidayDayOfMonth = 1,
-            //     },
-            // };
-
+            
             userRuleRepositoryMock
                 .Setup(x => x.GetUsersRulesByDepartment(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
                 .ReturnsAsync(usersRules);

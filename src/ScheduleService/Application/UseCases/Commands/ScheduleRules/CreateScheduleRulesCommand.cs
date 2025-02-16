@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ScheduleService.Domain.Models;
 
 namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
 {
@@ -11,5 +12,5 @@ namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
         string UserId,
         string DepartmentId,
         int Month,
-        int Year) : IRequest;
+        int Year) : IRequest<(Domain.Models.Schedule Schedule, UserScheduleRules ScheduleRules)>;
 }

@@ -32,9 +32,8 @@
         [BsonElement("hoursPerDay")]
         public float MaxHoursPerDay { get; set; }
 
-        [BsonElement("StartWorkDayTime")]
-
-        public TimeOnly StartWorkDayTime { get; set; }
+        [BsonElement("startWorkDayTime")]
+        public TimeOnly StartWorkDayTime { get; set; } = new TimeOnly(8, 0, 0);
 
         [BsonElement("onlyFirstShift")]
         public bool OnlyFirstShift { get; set; }
@@ -65,10 +64,7 @@
         /// </summary>
         public bool UnEvenDOM { get; set; }
 
-        public bool FirstShift { get; set; }
-
-        public bool SecondShift { get; set; }
-
+        [BsonElement("scheduleId")]
         [BsonRepresentation(BsonType.ObjectId)]
         public string ScheduleId { get; set; }
     }

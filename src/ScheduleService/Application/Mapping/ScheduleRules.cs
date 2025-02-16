@@ -9,77 +9,43 @@ public class ScheduleRules : Profile
     public ScheduleRules()
     {
         CreateMap<SetGenerationRulesCommand, UserScheduleRules>()
-            .AfterMap((src, dest) =>
-            {
-                if (src.EvenDOM.HasValue)
-                {
-                    dest.OnlyFirstShift = false;
-                    dest.OnlySecondShift = false;
-                    dest.UnEvenDOM = false;
-                    dest.EvenDOW = false;
-                    dest.UnEvenDOW = false;
-                }
-
-                if (src.UnEvenDOM.HasValue)
-                {
-                    dest.OnlyFirstShift = false;
-                    dest.OnlySecondShift = false;
-                    dest.EvenDOM = false;
-                    dest.EvenDOW = false;
-                    dest.UnEvenDOW = false;
-                }
-
-                if (src.UnEvenDOW.HasValue)
-                {
-                    dest.OnlyFirstShift = false;
-                    dest.OnlySecondShift = false;
-                    dest.EvenDOW = false;
-                    dest.EvenDOM = false;
-                    dest.UnEvenDOM = false;
-                }
-
-                if (src.EvenDOW.HasValue)
-                {
-                    dest.OnlyFirstShift = false;
-                    dest.OnlySecondShift = false;
-                    dest.UnEvenDOW = false;
-                    dest.EvenDOM = false;
-                    dest.UnEvenDOM = false;
-                }
-
-                if (src.OnlyFirstShift.HasValue)
-                {
-                    dest.OnlySecondShift = false;
-                    dest.EvenDOW = false;
-                    dest.UnEvenDOW = false;
-                    dest.EvenDOM = false;
-                    dest.UnEvenDOM = false;
-                }
-
-                if (src.OnlySecondShift.HasValue)
-                {
-                    dest.OnlyFirstShift = false;
-                    dest.EvenDOW = false;
-                    dest.UnEvenDOW = false;
-                    dest.EvenDOM = false;
-                    dest.UnEvenDOM = false;
-                }
-            })
-            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) =>
-            {
-                if (srcMember == null)
-                    return false;
-
-                if (srcMember is TimeOnly time && time == default(TimeOnly))
-                    return false;
-
-                if (srcMember is float floatValue && floatValue == default(float))
-                    return false;
-
-                if (srcMember is bool boolValue && boolValue == default(bool))
-                    return false;
-
-                return true;
-            }));
+            .AfterMap((src, dest) => ApplyRules(src, dest))
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => IsValidMember(srcMember)));
     }
+
+    private static void ApplyRules(SetGenerationRulesCommand src, UserScheduleRules dest)
+    {
+        if (src.EvenDOM == true || src.UnEvenDOM == true || src.UnEvenDOW == true || 
+            src.EvenDOW == true || src.OnlyFirstShift == true || src.OnlySecondShift == true)
+        {
+            ResetFlags(dest);
+        }
+
+        if (src.EvenDOM == true) dest.EvenDOM = true;
+        if (src.UnEvenDOM == true) dest.UnEvenDOM = true;
+        if (src.UnEvenDOW == true) dest.UnEvenDOW = true;
+        if (src.EvenDOW == true) dest.EvenDOW = true;
+        if (src.OnlyFirstShift == true) dest.OnlyFirstShift = true;
+        if (src.OnlySecondShift == true) dest.OnlySecondShift = true;
+    }
+
+    private static void ResetFlags(UserScheduleRules rules)
+    {
+        rules.OnlyFirstShift = false;
+        rules.OnlySecondShift = false;
+        rules.EvenDOM = false;
+        rules.UnEvenDOM = false;
+        rules.EvenDOW = false;
+        rules.UnEvenDOW = false;
+    }
+
+    private static bool IsValidMember(object? srcMember) =>
+        srcMember switch
+        {
+            null => false,
+            TimeOnly time when time == default => false,
+            float floatValue when floatValue == default => false,
+            bool boolValue when boolValue == default => false,
+            _ => true
+        };
 }

@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="8.0.1" />
+    <PackageReference Include="JetBrains.Annotations" Version="2025.1.0-eap1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
@@ -21,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\ScheduleService\Application\ScheduleService.Application.csproj" />
     <ProjectReference Include="..\..\..\src\ScheduleService\ScheduleService.API\ScheduleService.API.csproj" />
   </ItemGroup>
 
