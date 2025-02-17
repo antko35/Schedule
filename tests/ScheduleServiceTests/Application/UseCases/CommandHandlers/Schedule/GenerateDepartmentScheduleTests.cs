@@ -7,8 +7,7 @@ using ScheduleService.Domain.Abstractions;
 using ScheduleService.Domain.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -34,7 +33,7 @@ namespace Application.UseCases.CommandHandlers.Schedule
                 scheduleRepositoryMock.Object,
                 calendarRepositoryMock.Object);
 
-            command = new GenerateDepartmentScheduleCommand("id", 2025, 1);
+            command = new GenerateDepartmentScheduleCommand("id", 2025, 2);
         }
 
         [Fact]
@@ -46,75 +45,58 @@ namespace Application.UseCases.CommandHandlers.Schedule
                 new UserScheduleRules
                 {
                     UserId = ObjectId.GenerateNewId().ToString(),
-                    DepartmentId = ObjectId.GenerateNewId().ToString(),
+                    DepartmentId = "department1",
                     ScheduleId = ObjectId.GenerateNewId().ToString(),
                     EvenDOW = true,
-                   
                 },
             };
 
-            // var holidays = new List<Calendar>
-            // {
-            //     new Calendar
-            //     {
-            //         HolidayDate = new DateOnly(2025, 1, 1),
-            //         TransferDate = null,
-            //         MonthOfTransferDay = 1,
-            //         MonthOfHoliday = 1,
-            //         HolidayDayOfMonth = 1,
-            //     },
-            //     new Calendar
-            //     {
-            //         HolidayDate = new DateOnly(2025, 1, 6),
-            //         TransferDate = new DateOnly(2025, 11, 1),
-            //         MonthOfTransferDay = 1,
-            //         MonthOfHoliday = 1,
-            //         HolidayDayOfMonth = 1,
-            //     },
-            // };
             var holidays = new List<Calendar>();
             var transferDays = new List<Calendar>();
-            
+
             userRuleRepositoryMock
                 .Setup(x => x.GetUsersRulesByDepartment(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
                 .ReturnsAsync(usersRules);
 
-            calendarRepositoryMock.Setup(x => x.GetMonthHolidays(It.IsAny<int>(), It.IsAny<int>()))
+            calendarRepositoryMock
+                .Setup(x => x.GetMonthHolidays(It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync(holidays);
 
-            calendarRepositoryMock.Setup(x => x.GetMonthTransferDays(It.IsAny<int>(), It.IsAny<int>()))
+            calendarRepositoryMock
+                .Setup(x => x.GetMonthTransferDays(It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync(transferDays);
 
             // Act
             await handler.Handle(command, CancellationToken.None);
 
-            var a = 0;
             // Assert
+            userRuleRepositoryMock.Verify(x =>
+                x.GetUsersRulesByDepartment(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<int>()), Times.Once);
+
+            scheduleRepositoryMock.Verify(
+                x => x.DeleteMonthSchedule(It.IsAny<string>()), Times.Once);
+
+            scheduleRepositoryMock.Verify(
+                x => x.AddWorkDayAsync(usersRules[0].ScheduleId, It.IsAny<WorkDay>()), Times.Exactly(20));
         }
 
         [Fact]
-        public async Task GenerateSchedule_UnevenDOW_FirstShift_WithoutHoliday()
+        public async Task GenerateSchedule_ShouldThrowException_WhenNoRulesFound()
         {
-        }
+            // Arrange
+            userRuleRepositoryMock
+                .Setup(x => x.GetUsersRulesByDepartment(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync((new List<UserScheduleRules>()));
 
-        [Fact]
-        public async Task GenerateSchedule_EvenDOM_FirstShift_WithoutHoliday()
-        {
-        }
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                handler.Handle(command, CancellationToken.None));
 
-        [Fact]
-        public async Task GenerateSchedule_UnevenDOM_FirstShift_WithoutHoliday()
-        {
-        }
-
-        [Fact]
-        public async Task GenerateSchedule_EvenDOW_SecondShift_WithHoliday()
-        {
-        }
-
-        [Fact]
-        public async Task GenerateSchedule_EvenDOM_SecondShift_WithHoliday()
-        {
+            // Assert
+            Assert.Equal("Schedule rules for this department not found", exception.Message);
         }
     }
 }
