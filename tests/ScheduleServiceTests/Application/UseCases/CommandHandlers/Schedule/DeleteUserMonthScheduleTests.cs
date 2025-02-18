@@ -51,7 +51,7 @@ public class DeleteUserMonthScheduleTests
         }
 
         [Fact]
-        public async Task Handle_ShouldReturnNothingToDelete_WhenScheduleDoesNotExist()
+        public async Task Handle_ShouldReturnNothingToDelete_WhenScheduleIsEmpty()
         {
             // Arrange
             var request = new DeleteUserMonthScheduleCommand("user1", "dept1", 2, 2025);

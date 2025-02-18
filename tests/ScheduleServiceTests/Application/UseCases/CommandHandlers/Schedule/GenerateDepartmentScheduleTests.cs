@@ -51,8 +51,8 @@ namespace Application.UseCases.CommandHandlers.Schedule
                 },
             };
 
-            var holidays = new List<Calendar>();
-            var transferDays = new List<Calendar>();
+            var holidays = new List<ScheduleService.Domain.Models.Calendar>();
+            var transferDays = new List<ScheduleService.Domain.Models.Calendar>();
 
             userRuleRepositoryMock
                 .Setup(x => x.GetUsersRulesByDepartment(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
