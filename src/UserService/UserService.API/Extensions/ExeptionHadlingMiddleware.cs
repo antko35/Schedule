@@ -1,8 +1,8 @@
-﻿using System.Net;
-using System.Text.Json;
-
-namespace UserService.API.Extensions
+﻿namespace UserService.API.Extensions
 {
+    using System.Net;
+    using System.Text.Json;
+
     public class ExeptionHadlingMiddleware
     {
         private readonly RequestDelegate next;

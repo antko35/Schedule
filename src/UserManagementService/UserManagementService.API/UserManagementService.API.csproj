@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿    <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -24,11 +24,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application\UserManagementService.Application.csproj" />
-    <ProjectReference Include="..\Data\UserManagementService.Data.csproj" />
+    <ProjectReference Include="..\Data\UserManagementService.DataAccess.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Protobuf Include="GrpcClient\Protos\userService.proto" GrpcServices="Client" />
   </ItemGroup>
+
+		<PropertyGroup>
+			<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		</PropertyGroup>
 
 </Project>

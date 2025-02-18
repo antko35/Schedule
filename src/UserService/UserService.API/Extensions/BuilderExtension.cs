@@ -19,6 +19,11 @@ public static class BuilderExtension
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<UserDbContext>();
 
+        builder.Services.Configure<IdentityOptions>(options =>
+        {
+            options.User.RequireUniqueEmail = true; // Включение проверки уникальности Email
+        });
+
         builder.Services.AddSwaggerGen(c =>
         {
             c.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
