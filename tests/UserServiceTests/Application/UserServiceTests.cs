@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Identity;
 using Moq;
 using UserService.Application.DTOs;
 using UserService.Domain.Models;
@@ -8,18 +9,17 @@ namespace UserServiceTests.Application
 {
     public class UserServiceTests
     {
-        private readonly Mock<UserManager<User>> _userManagerMock;
-        private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
-        private readonly UserService.Application.Services.UserService _userService;
+        private readonly Mock<UserManager<User>> userManagerMock;
+        private readonly Mock<RoleManager<IdentityRole>> roleManagerMock;
+        private readonly UserService.Application.Services.UserService userService;
 
         public UserServiceTests()
         {
-            _userManagerMock = MockUserManager();
-            _roleManagerMock = MockRoleManager();
-            _userService = new UserService.Application.Services.UserService(
-                _userManagerMock.Object,
-                _roleManagerMock.Object
-            );
+            this.userManagerMock = MockUserManager();
+            this.roleManagerMock = MockRoleManager();
+            this.userService = new UserService.Application.Services.UserService(
+                this.userManagerMock.Object,
+                this.roleManagerMock.Object);
         }
 
         [Fact]
@@ -27,14 +27,16 @@ namespace UserServiceTests.Application
         {
             // Arrange
             var request = new ChangeUserRole { Email = "nonexistent@example.com", Role = "Admin" };
-            _userManagerMock
+            userManagerMock
                 .Setup(um => um.FindByEmailAsync(request.Email))
                 .ReturnsAsync((User)null);
 
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => _userService.ChangeRole(request));
-            Assert.Equal($"email doesnt exist {request.Email}", exception.Message);
+            // Act
+            var act = () => userService.ChangeRole(request);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage($"email doesnt exist {request.Email}");
         }
 
         [Fact]
@@ -44,17 +46,19 @@ namespace UserServiceTests.Application
             var user = new User { Email = "test@example.com" };
             var request = new ChangeUserRole { Email = user.Email, Role = "NonexistentRole" };
 
-            _userManagerMock
+            userManagerMock
                 .Setup(um => um.FindByEmailAsync(user.Email))
                 .ReturnsAsync(user);
-            _roleManagerMock
+            roleManagerMock
                 .Setup(rm => rm.FindByNameAsync(request.Role))
                 .ReturnsAsync((IdentityRole)null);
 
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => _userService.ChangeRole(request));
-            Assert.Equal("Role " + request.Role + " doest exixt", exception.Message);
+            // Act
+            var act = () => userService.ChangeRole(request);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Role " + request.Role + " doest exixt");
         }
 
         [Fact]
@@ -65,21 +69,21 @@ namespace UserServiceTests.Application
             var role = new IdentityRole { Name = "Admin" };
             var request = new ChangeUserRole { Email = user.Email, Role = role.Name };
 
-            _userManagerMock
+            userManagerMock
                 .Setup(um => um.FindByEmailAsync(user.Email))
                 .ReturnsAsync(user);
-            _roleManagerMock
+            roleManagerMock
                 .Setup(rm => rm.FindByNameAsync(role.Name))
                 .ReturnsAsync(role);
-            _userManagerMock
+            userManagerMock
                 .Setup(um => um.AddToRoleAsync(user, role.Name))
                 .ReturnsAsync(IdentityResult.Success);
 
             // Act
-            await _userService.ChangeRole(request);
+            await userService.ChangeRole(request);
 
             // Assert
-            _userManagerMock.Verify(um => um.AddToRoleAsync(user, role.Name), Times.Once);
+            userManagerMock.Verify(um => um.AddToRoleAsync(user, role.Name), Times.Once);
         }
 
         private Mock<UserManager<User>> MockUserManager()

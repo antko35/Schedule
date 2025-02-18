@@ -1,5 +1,6 @@
 ﻿namespace UserServiceTests.Application.GrpcTests
 {
+    using FluentAssertions;
     using Grpc.Core;
     using Microsoft.AspNetCore.Identity;
     using Moq;
@@ -9,20 +10,20 @@
 
     public class GetPersonClaimsTests
     {
-        private readonly Mock<UserManager<User>> _userManagerMock;
-        private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
-        private readonly GrpcService _grpcService;
-        public ServerCallContext context;
+        private readonly Mock<UserManager<User>> userManagerMock;
+        private readonly Mock<RoleManager<IdentityRole>> roleManagerMock;
+        private readonly GrpcService grpcService;
+        private ServerCallContext context;
 
         public GetPersonClaimsTests()
         {
             var userStoreMock = new Mock<IUserStore<User>>();
-            _userManagerMock = new Mock<UserManager<User>>(userStoreMock.Object, null, null, null, null, null, null, null, null);
+            userManagerMock = new Mock<UserManager<User>>(userStoreMock.Object, null, null, null, null, null, null, null, null);
 
             var roleStoreMock = new Mock<IRoleStore<IdentityRole>>();
-            _roleManagerMock = new Mock<RoleManager<IdentityRole>>(roleStoreMock.Object, null, null, null, null);
+            roleManagerMock = new Mock<RoleManager<IdentityRole>>(roleStoreMock.Object, null, null, null, null);
 
-            _grpcService = new GrpcService(_userManagerMock.Object, _roleManagerMock.Object);
+            grpcService = new GrpcService(userManagerMock.Object, roleManagerMock.Object);
 
             context = TestServerCallContext.Create(
                 method: "GetPersonClaims");
@@ -31,21 +32,23 @@
         [Fact]
         public async Task GetClaims_UserNotFound_ErrorResponse()
         {
+            // Arrange
             var email = "user@gmail.com";
             var reqest = new GetClaimsRequest { Email = email};
-            _userManagerMock.Setup(um => um.FindByEmailAsync(reqest.Email)).ReturnsAsync((User)null);
+            userManagerMock.Setup(um => um.FindByEmailAsync(reqest.Email)).ReturnsAsync((User)null);
 
-            //act
-            var result = await _grpcService.GetPersonClaims(reqest, context);
+            // Act
+            var result = await grpcService.GetPersonClaims(reqest, context);
 
-            //assert
-            Assert.False(result.Success);
-            Assert.Equal("No person with this email", result.Message);
+            // Assert
+            result.Success.Should().BeFalse();
+            result.Message.Should().Be("No person with this email");
         }
 
         [Fact]
         public async Task GetClaims_SuccessResponse()
         {
+            // Arrange
             var email = "user@gmail.com";
             var reqest = new GetClaimsRequest { Email = email };
             User user = new User { Email = email };
@@ -54,19 +57,19 @@
                 new System.Security.Claims.Claim("Type1", "Value1"),
                 new System.Security.Claims.Claim("Type2", "Value2"),
             };
-            _userManagerMock.Setup(um => um.FindByEmailAsync(reqest.Email)).ReturnsAsync(user);
-            _userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync(claims);
+            userManagerMock.Setup(um => um.FindByEmailAsync(reqest.Email)).ReturnsAsync(user);
+            userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync(claims);
 
-            // act
-            var result = await _grpcService.GetPersonClaims(reqest, context);
+            // Act
+            var result = await grpcService.GetPersonClaims(reqest, context);
 
-            // assert
-            Assert.True(result.Success);
-            Assert.Equal("Claims retrieved successfully", result.Message);
-            Assert.Equal(2, result.Claims.Count);
+            // Assert
+            result.Success.Should().BeTrue();
+            result.Message.Should().Be("Claims retrieved successfully");
+            result.Claims.Count.Should().Be(2);
 
-            Assert.Contains(result.Claims, c => c.Type == "Type1" && c.Value == "Value1");
-            Assert.Contains(result.Claims, c => c.Type == "Type2" && c.Value == "Value2");
+            result.Claims.Should().Contain(c => c.Type == "Type1" && c.Value == "Value1");
+            result.Claims.Should().Contain(c => c.Type == "Type2" && c.Value == "Value2");
         }
     }
 }
