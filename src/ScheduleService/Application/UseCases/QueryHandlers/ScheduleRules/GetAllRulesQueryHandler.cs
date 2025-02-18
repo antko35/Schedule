@@ -5,7 +5,7 @@ using ScheduleService.Domain.Models;
 
 namespace ScheduleService.Application.UseCases.QueryHandlers.ScheduleRules;
 
-public class GetAllRulesQueryHandler : IRequestHandler<GetAllRulesQuery,IEnumerable<UserScheduleRules>>
+public class GetAllRulesQueryHandler : IRequestHandler<GetAllRulesQuery, IEnumerable<UserScheduleRules>>
 {
     private readonly IUserRuleRepository userRuleRepository;
 
