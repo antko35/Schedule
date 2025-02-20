@@ -22,11 +22,8 @@ builder.Services
 builder.Services
     .AddInfrastructureDependencis(builder.Configuration);
 
-builder.Services.AddSwaggerGen(options =>
-{
-    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-});
+builder.Services
+    .AddSwaggerExtension();
 
 var app = builder.Build();
 
@@ -34,11 +31,10 @@ app.UseMiddleware<ExeptionHadlingMiddleware>();
 
 app.ConfigureHangfire();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(options => // UseSwaggerUI is called only in Development.
+    app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
         options.RoutePrefix = string.Empty;

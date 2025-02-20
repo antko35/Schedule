@@ -15,7 +15,7 @@ public class ScheduleRules : Profile
 
     private static void ApplyRules(SetGenerationRulesCommand src, UserScheduleRules dest)
     {
-        if (src.EvenDOM == true || src.UnEvenDOM == true || src.UnEvenDOW == true || 
+        if (src.EvenDOM == true || src.UnEvenDOM == true || src.UnEvenDOW == true ||
             src.EvenDOW == true || src.OnlyFirstShift == true || src.OnlySecondShift == true)
         {
             ResetFlags(dest);

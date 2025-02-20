@@ -15,12 +15,10 @@ public static class Hangfire
             Authorization = new[] { new AllowAllAuthorizationFilter() }
         });
 
-        // Создаем задачу в области видимости
         using var scope = app.Services.CreateScope();
         var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-        // Создаем повторяющуюся задачу
         recurringJobManager.AddOrUpdate(
             "send-notification-about-schedule-generation",
             () => mediator.Send(new SendPromptMonthlyCommand(), CancellationToken.None),

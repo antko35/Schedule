@@ -17,7 +17,6 @@ namespace ScheduleService.Application.Mapping
                 .ForMember(dest => dest.MonthOfTransferDay, opt => opt.MapFrom(src => src.TransferDay.Month))
                 .AfterMap((src, dest) =>
                 {
-                    // Проверка и установка TransferDate
                     if (src.TransferDay.Year == 0001)
                     {
                         dest.TransferDate = null;

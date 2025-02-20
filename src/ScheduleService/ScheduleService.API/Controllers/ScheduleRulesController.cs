@@ -65,7 +65,6 @@ namespace ScheduleService.API.Controllers
         /// If user work`s only first shift set "onlyFirstShift : true".
         /// If user work`s only second shift set "onlySecondShift : true".
         /// </summary>
-        /// <param name="command"></param>
         /// <remarks>
         /// ```
         ///    PATCH {

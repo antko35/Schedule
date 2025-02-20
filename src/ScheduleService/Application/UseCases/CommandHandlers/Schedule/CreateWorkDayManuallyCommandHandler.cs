@@ -30,9 +30,7 @@
         public async Task<WorkDay> Handle(CreateWorkDayManuallyCommand request, CancellationToken cancellationToken)
         {
             await GetUserScheduleRules(request);
-
-            var isSaturday = IsSaturday(request.StartTime);
-
+            
             WorkDay newWorkDay = new WorkDay
             {
                 Day = request.StartTime.Day,
@@ -51,29 +49,12 @@
                 await scheduleRepository.AddWorkDayAsync(userSchedueRules.ScheduleId, newWorkDay);
             }
 
-            if (isSaturday)
-            {
-                await CorrectWeekSchedule(request.StartTime);
-            }
-
             return newWorkDay;
         }
 
         private async Task CorrectWeekSchedule(DateTime requestStartTime)
         {
             throw new NotImplementedException();
-        }
-
-        private bool IsSaturday(DateTime startTime)
-        {
-            int dayOfWeek = (int)startTime.DayOfWeek;
-
-            if (dayOfWeek == 6)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private async Task GetUserScheduleRules(CreateWorkDayManuallyCommand request)
