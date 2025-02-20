@@ -1,7 +1,9 @@
+using System.Reflection;
 using ScheduleService.API.Extensions;
+using ScheduleService.API.Extensions.AppExtensions.Hangfire;
 using ScheduleService.Application.Extensions;
 using ScheduleService.DataAccess.Extensions;
-using System.Reflection;
+using ScheduleService.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +16,11 @@ builder.Services.AddApplicatiobLayerDependencis();
 
 builder.Services
     .ConfigureDb(builder.Configuration)
+    .HangfireConfigure()
     .AddDataAccessDependencis();
+
+builder.Services
+    .AddInfrastructureDependencis(builder.Configuration);
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -25,6 +31,8 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 app.UseMiddleware<ExeptionHadlingMiddleware>();
+
+app.ConfigureHangfire();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
