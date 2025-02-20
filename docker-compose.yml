@@ -1,11 +1,11 @@
-﻿#version: "3.9"
+﻿version: "3.9"
 services:
   user-service:
     build:
       context: ./src/UserService
       dockerfile: UserService.API/Dockerfile
     ports:
-      - "5001:8080" # Локальный порт → Порт внутри контейнера
+      - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 
@@ -31,6 +31,11 @@ services:
       - MONGO_INITDB_DATABASE=schedule_db
     volumes:
       - schedule-mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   schedule-service-mongo-express:
     image: mongo-express:latest
@@ -39,8 +44,10 @@ services:
     environment:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
       - ME_CONFIG_MONGODB_ADMINPASSWORD=password
-      - ME_CONFIG_MONGODB_SERVER=schedule-service-mongo   
-
+      - ME_CONFIG_MONGODB_SERVER=schedule-service-mongo
+    depends_on:
+      schedule-service-mongo:
+        condition: service_healthy
 
   user-management-service:
     build:
@@ -53,5 +60,3 @@ services:
 
 volumes:
   schedule-mongo-data:
-
-
