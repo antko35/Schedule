@@ -1,4 +1,5 @@
 using FluentAssertions;
+using ScheduleService.Application.Services;
 using ScheduleService.Domain.Models;
 using Xunit;
 

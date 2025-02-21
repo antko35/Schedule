@@ -9,10 +9,9 @@ public static class Hangfire
 {
     public static void ConfigureHangfire(this WebApplication app)
     {
-        // Настраиваем Dashboard
         app.UseHangfireDashboard("/hangfire", new DashboardOptions
         {
-            Authorization = new[] { new AllowAllAuthorizationFilter() }
+            Authorization = new[] { new AllowAllAuthorizationFilter() },
         });
 
         using var scope = app.Services.CreateScope();

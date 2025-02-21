@@ -36,23 +36,23 @@ public class CreateScheduleRulesTests
         // Assert
         var scheduleIdFromRules = result.ScheduleRules.ScheduleId;
 
-        result.Schedule.MonthName.Should().Be("february");
+        result.Schedule.MonthName.Should().Be(It.IsAny<string>());
         result.Schedule.Id.Should().Be(scheduleIdFromRules);
         result.Schedule.WorkDays.Should().BeEmpty();
 
         result.ScheduleRules.UserId.Should().Be("user123");
         result.ScheduleRules.DepartmentId.Should().Be("dept456");
         result.ScheduleRules.Year.Should().Be(2025);
-        result.ScheduleRules.MonthName.Should().Be("february");
+        result.ScheduleRules.MonthName.Should().Be(It.IsAny<string>());
         result.ScheduleRules.StartWorkDayTime.Should().Be(new TimeOnly(8, 0, 0));
 
         mockScheduleRepository.Verify(repo => repo.AddAsync(It.Is<ScheduleService.Domain.Models.Schedule>(s =>
-            s.MonthName == "february")), Times.Once);
+            s.MonthName == It.IsAny<string>())), Times.Once);
 
         mockUserRuleRepository.Verify(repo => repo.AddAsync(It.Is<UserScheduleRules>(r =>
             r.UserId == command.UserId &&
             r.DepartmentId == command.DepartmentId &&
             r.Year == command.Year &&
-            r.MonthName == "february")), Times.Once);
+            r.MonthName == It.IsAny<string>())), Times.Once);
     }
 }

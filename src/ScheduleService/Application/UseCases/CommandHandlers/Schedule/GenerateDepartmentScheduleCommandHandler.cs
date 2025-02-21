@@ -8,9 +8,9 @@
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading.Tasks;
-    using global::Application.Services;
     using MediatR;
     using Microsoft.VisualBasic;
+    using ScheduleService.Application.Services;
     using ScheduleService.Application.UseCases.Commands.Schedule;
     using ScheduleService.DataAccess.Repository;
     using ScheduleService.Domain.Abstractions;

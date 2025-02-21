@@ -16,6 +16,10 @@ namespace ScheduleService.API.Controllers
             this.mediator = mediator;
         }
 
+        /// <summary>
+        /// Get all rules for schedule generation.
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Route("getAll")]
         public async Task<IActionResult> GetScheduleRules()

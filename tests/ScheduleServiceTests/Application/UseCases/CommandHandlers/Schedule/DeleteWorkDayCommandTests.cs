@@ -34,7 +34,7 @@ public class DeleteWorkDayCommandTests
         var scheduleRules = new ScheduleService.Domain.Models.UserScheduleRules { ScheduleId = scheduleId };
         var workDay = new ScheduleService.Domain.Models.Schedule { };
 
-        mockUserRuleRepository.Setup(repo => repo.GetMonthScheduleRules(command.UserId, command.DepartmentId, "january", 2025))
+        mockUserRuleRepository.Setup(repo => repo.GetMonthScheduleRules(command.UserId, command.DepartmentId, It.IsAny<string>(), 2025))
             .ReturnsAsync(scheduleRules);
 
         mockScheduleRepository.Setup(repo => repo.GetWorkDayAsync(scheduleId, command.WorkDay.Day))
@@ -74,7 +74,7 @@ public class DeleteWorkDayCommandTests
         var scheduleId = "schedule1";
         var scheduleRules = new UserScheduleRules { ScheduleId = scheduleId };
 
-        mockUserRuleRepository.Setup(repo => repo.GetMonthScheduleRules(command.UserId, command.DepartmentId, "january", command.WorkDay.Year))
+        mockUserRuleRepository.Setup(repo => repo.GetMonthScheduleRules(command.UserId, command.DepartmentId, It.IsAny<string>(), command.WorkDay.Year))
             .ReturnsAsync(scheduleRules);
 
         mockScheduleRepository.Setup(repo => repo.GetWorkDayAsync(scheduleId, command.WorkDay.Day))

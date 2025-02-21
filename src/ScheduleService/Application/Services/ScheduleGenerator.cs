@@ -6,7 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using MongoDB.Driver.Linq;
 
-namespace Application.Services
+namespace ScheduleService.Application.Services
 {
     public static class ScheduleGenerator
     {
@@ -45,96 +45,96 @@ namespace Application.Services
 
         private static List<WorkDay> Generate(IEnumerable<Calendar> officialHolidays, IEnumerable<Calendar> transferDays, UserScheduleRules userRules, int daysInMonth, int year, int month)
         {
-        var generatedDays = new List<WorkDay>();
+            var generatedDays = new List<WorkDay>();
 
-        for (int day = 1; day <= daysInMonth; day++)
-        {
-            var currentDay = new DateTime(year, month, day);
-            DayOfWeek dayOfWeek = currentDay.DayOfWeek;
-
-            // Пропуск праздничных дней
-            if (officialHolidays.Any(x => x.HolidayDayOfMonth == day))
+            for (int day = 1; day <= daysInMonth; day++)
             {
-                continue;
-            }
+                var currentDay = new DateTime(year, month, day);
+                DayOfWeek dayOfWeek = currentDay.DayOfWeek;
 
-            // Проверка на перенесенные дни
-            bool isTransferDay = transferDays.Any(x => x?.TransferDate?.Day == day);
-            if ((dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday) && !isTransferDay)
-            {
-                continue;
-            }
-
-            if (isTransferDay)
-            {
-                var replacedDay = transferDays.FirstOrDefault(x => x?.TransferDate?.Day == day);
-                if (replacedDay == null || replacedDay.HolidayDate.Month != month)
+                // Пропуск праздничных дней
+                if (officialHolidays.Any(x => x.HolidayDayOfMonth == day))
                 {
                     continue;
                 }
+
+                // Проверка на перенесенные дни
+                bool isTransferDay = transferDays.Any(x => x?.TransferDate?.Day == day);
+                if ((dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday) && !isTransferDay)
+                {
+                    continue;
+                }
+
+                if (isTransferDay)
+                {
+                    var replacedDay = transferDays.FirstOrDefault(x => x?.TransferDate?.Day == day);
+                    if (replacedDay == null || replacedDay.HolidayDate.Month != month)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        dayOfWeek = replacedDay.HolidayDate.DayOfWeek;
+                    }
+                }
+
+                bool isFirstShift = false;
+
+                if (userRules.OnlyFirstShift)
+                {
+                    isFirstShift = true;
+                }
+                else if (userRules.OnlySecondShift)
+                {
+                    isFirstShift = false;
+                }
                 else
                 {
-                    dayOfWeek = replacedDay.HolidayDate.DayOfWeek;
-                }
-            }
-
-            bool isFirstShift = false;
-
-            if (userRules.OnlyFirstShift)
-            {
-                isFirstShift = true;
-            }
-            else if (userRules.OnlySecondShift)
-            {
-                isFirstShift = false;
-            }
-            else
-            {
-                if (userRules.EvenDOW)
-                {
-                    if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
+                    if (userRules.EvenDOW)
                     {
-                        isFirstShift = true;
+                        if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
+                        {
+                            isFirstShift = true;
+                        }
+                    }
+
+                    if (userRules.UnEvenDOW)
+                    {
+                        if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
+                        {
+                            isFirstShift = true;
+                        }
+                    }
+
+                    if (userRules.EvenDOM)
+                    {
+                        if (day % 2 == 0)
+                        {
+                            isFirstShift = true;
+                        }
+                    }
+
+                    if (userRules.UnEvenDOM)
+                    {
+                        if (day % 2 != 0)
+                        {
+                            isFirstShift = true;
+                        }
                     }
                 }
 
-                if (userRules.UnEvenDOW)
+                if (isFirstShift)
                 {
-                    if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
-                    {
-                        isFirstShift = true;
-                    }
+                    generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: true));
                 }
-
-                if (userRules.EvenDOM)
+                else
                 {
-                    if (day % 2 == 0)
-                    {
-                        isFirstShift = true;
-                    }
-                }
-
-                if (userRules.UnEvenDOM)
-                {
-                    if (day % 2 != 0)
-                    {
-                        isFirstShift = true;
-                    }
+                    generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: false));
                 }
             }
 
-            if (isFirstShift)
-            {
-                generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: true));
-            }
-            else
-            {
-                generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: false));
-            }
+            return generatedDays;
         }
-
-        return generatedDays;
-    }
 
         private static WorkDay CreateWorkDayDto(UserScheduleRules userRules, int year, int month, int day, bool firstShift)
         {

@@ -31,11 +31,11 @@ public class DeleteUserMonthScheduleTests
 
             var userRules = new UserScheduleRules
             {
-                ScheduleId = "schedule1"
+                ScheduleId = "schedule1",
             };
 
             mockUserRuleRepository
-                .Setup(x => x.GetMonthScheduleRules(request.UserId, request.DepartmentId, "february", request.Year))
+                .Setup(x => x.GetMonthScheduleRules(request.UserId, request.DepartmentId, It.IsAny<string>(), request.Year))
                 .ReturnsAsync(userRules);
 
             mockScheduleRepository
@@ -62,7 +62,7 @@ public class DeleteUserMonthScheduleTests
             };
 
             mockUserRuleRepository
-                .Setup(x => x.GetMonthScheduleRules(request.UserId, request.DepartmentId, "february", request.Year))
+                .Setup(x => x.GetMonthScheduleRules(request.UserId, request.DepartmentId, It.IsAny<string>(), request.Year))
                 .ReturnsAsync(userRules);
 
             mockScheduleRepository

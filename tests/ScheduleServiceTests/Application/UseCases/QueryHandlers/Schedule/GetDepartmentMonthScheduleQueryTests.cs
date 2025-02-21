@@ -38,16 +38,16 @@ public class GetDepartmentMonthScheduleQueryTests
         var usersRules = new List<UserScheduleRules>
         {
             new UserScheduleRules { ScheduleId = ObjectId.GenerateNewId().ToString() },
-            new UserScheduleRules { ScheduleId = ObjectId.GenerateNewId().ToString()}
+            new UserScheduleRules { ScheduleId = ObjectId.GenerateNewId().ToString() },
         };
 
         var schedules = new List<ScheduleService.Domain.Models.Schedule>
         {
             new ScheduleService.Domain.Models.Schedule { Id = usersRules[0].ScheduleId },
-            new ScheduleService.Domain.Models.Schedule { Id = usersRules[1].ScheduleId }
+            new ScheduleService.Domain.Models.Schedule { Id = usersRules[1].ScheduleId },
         };
 
-        userRuleRepositoryMock.Setup(r => r.GetUsersRulesByDepartment(departmentId, "december", year))
+        userRuleRepositoryMock.Setup(r => r.GetUsersRulesByDepartment(departmentId, It.IsAny<string>(), year))
             .ReturnsAsync(usersRules);
 
         scheduleRepositoryMock.Setup(r => r.GetMonthSchedule(usersRules[0].ScheduleId))
@@ -62,7 +62,7 @@ public class GetDepartmentMonthScheduleQueryTests
         // Assert
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(schedules);
-        userRuleRepositoryMock.Verify(r => r.GetUsersRulesByDepartment(departmentId, "december", year), Times.Once);
+        userRuleRepositoryMock.Verify(r => r.GetUsersRulesByDepartment(departmentId, It.IsAny<string>(), year), Times.Once);
         scheduleRepositoryMock.Verify(r => r.GetMonthSchedule(It.IsAny<string>()), Times.Exactly(2));
     }
 

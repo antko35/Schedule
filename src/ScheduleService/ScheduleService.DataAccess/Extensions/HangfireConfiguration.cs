@@ -22,7 +22,7 @@ public static class HangfireConfiguration
                     MigrationStrategy = new DropMongoMigrationStrategy(),
                     BackupStrategy = new CollectionMongoBackupStrategy()
                 },
-                Prefix = "hangfire", // Префикс для коллекций
+                Prefix = "hangfire",
             });
         });
 
