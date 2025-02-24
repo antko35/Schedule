@@ -19,9 +19,6 @@ public class SetGenerationRulesTests
     {
         this.mockUserRuleRepository = new Mock<IUserRuleRepository>();
 
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<ScheduleService.Application.Mapping.ScheduleRules>());
-        this.mapper = config.CreateMapper();
-
         this.handler = new SetGenerationRulesCommandHandler(mockUserRuleRepository.Object, mapper);
     }
 
