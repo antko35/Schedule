@@ -7,7 +7,7 @@
     {
         Task AddWorkDayAsync(string scheduleId, WorkDay newWorkDay);
 
-        Task<UpdateResult?> DeleteMonthSchedule(string scheduleId);
+        Task<UpdateResult?> ClearMonthSchedule(string scheduleId);
 
         Task DeleteWorkDayAsync(string scheduleId, int day);
 
@@ -16,5 +16,9 @@
         Task<Schedule?> GetWorkDayAsync(string scheduleId, int day);
 
         Task UpdateWorkDayAsync(string scheduleId, WorkDay newWorkDay);
+
+        Task<List<Schedule>?> GetEmptySchedules(int year, string month);
+
+        Task DeleteScheduleAsync(string scheduleId);
     }
 }

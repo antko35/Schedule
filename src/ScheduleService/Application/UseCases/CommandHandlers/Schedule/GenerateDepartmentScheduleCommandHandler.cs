@@ -51,7 +51,7 @@
         {
             foreach (var userRules in usersRules)
             {
-                await scheduleRepository.DeleteMonthSchedule(userRules.ScheduleId);
+                await scheduleRepository.ClearMonthSchedule(userRules.ScheduleId);
 
                 var generatedDays = ScheduleGenerator.GenerateWorkDaysForUser(
                     userRules,

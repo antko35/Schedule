@@ -39,7 +39,7 @@ public class DeleteUserMonthScheduleTests
                 .ReturnsAsync(userRules);
 
             mockScheduleRepository
-                .Setup(x => x.DeleteMonthSchedule(userRules.ScheduleId))
+                .Setup(x => x.ClearMonthSchedule(userRules.ScheduleId))
                 .ReturnsAsync(new MongoDB.Driver.UpdateResult.Acknowledged(1, 1, null));
 
             // Act
@@ -47,7 +47,7 @@ public class DeleteUserMonthScheduleTests
 
             // Assert
             Assert.Equal($" Schedule {userRules.ScheduleId} was cleaned.", result);
-            mockScheduleRepository.Verify(x => x.DeleteMonthSchedule(userRules.ScheduleId), Times.Once);
+            mockScheduleRepository.Verify(x => x.ClearMonthSchedule(userRules.ScheduleId), Times.Once);
         }
 
         [Fact]
@@ -66,7 +66,7 @@ public class DeleteUserMonthScheduleTests
                 .ReturnsAsync(userRules);
 
             mockScheduleRepository
-                .Setup(x => x.DeleteMonthSchedule(userRules.ScheduleId))
+                .Setup(x => x.ClearMonthSchedule(userRules.ScheduleId))
                 .ReturnsAsync(new MongoDB.Driver.UpdateResult.Acknowledged(0, 0, null));
 
             // Act
@@ -74,7 +74,7 @@ public class DeleteUserMonthScheduleTests
 
             // Assert
             Assert.Equal("Nothing to delete", result);
-            mockScheduleRepository.Verify(x => x.DeleteMonthSchedule(userRules.ScheduleId), Times.Once);
+            mockScheduleRepository.Verify(x => x.ClearMonthSchedule(userRules.ScheduleId), Times.Once);
         }
 
         [Fact]

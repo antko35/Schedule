@@ -77,7 +77,7 @@ namespace Application.UseCases.CommandHandlers.Schedule
                     It.IsAny<int>()), Times.Once);
 
             scheduleRepositoryMock.Verify(
-                x => x.DeleteMonthSchedule(It.IsAny<string>()), Times.Once);
+                x => x.ClearMonthSchedule(It.IsAny<string>()), Times.Once);
 
             scheduleRepositoryMock.Verify(
                 x => x.AddWorkDayAsync(usersRules[0].ScheduleId, It.IsAny<WorkDay>()), Times.Exactly(20));

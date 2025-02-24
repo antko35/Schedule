@@ -6,6 +6,8 @@
     {
         Task AddAsync(TEntity obj);
 
+        Task AddRangeAsync(IEnumerable<TEntity> objs);
+
         Task<IEnumerable<TEntity>> GetAllAsync();
 
         Task<TEntity> GetByIdAsync(string id);

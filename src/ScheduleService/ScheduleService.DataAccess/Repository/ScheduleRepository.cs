@@ -59,6 +59,18 @@
             return await result.FirstOrDefaultAsync();
         }
 
+        public async Task<List<Schedule>?> GetEmptySchedules(int year, string month)
+        {
+            var filter = Builders<Schedule>.Filter.And(
+                Builders<Schedule>.Filter
+                    .Where(s => s.WorkDays.Count == 0),
+                Builders<Schedule>.Filter.Eq(s => s.MonthName, month));
+
+            var result = await dbSet.Find(filter).ToListAsync();
+
+            return result;
+        }
+
         public async Task UpdateWorkDayAsync(string scheduleId, WorkDay newWorkDay)
         {
             var filter = Builders<Schedule>.Filter.And(
@@ -72,7 +84,7 @@
             await dbSet.UpdateOneAsync(filter, update);
         }
 
-        public async Task<UpdateResult?> DeleteMonthSchedule(string scheduleId)
+        public async Task<UpdateResult?> ClearMonthSchedule(string scheduleId)
         {
             var filter = Builders<Schedule>.Filter.Eq(x => x.Id, scheduleId);
             var update = Builders<Schedule>.Update.Set(x => x.WorkDays, new List<WorkDay>());
@@ -80,6 +92,12 @@
             var result = await dbSet.UpdateOneAsync(filter, update);
 
             return result;
+        }
+
+        public async Task DeleteScheduleAsync(string scheduleId)
+        {
+            var filter = Builders<Schedule>.Filter.Eq(x => x.Id, scheduleId);
+            var result = await dbSet.DeleteOneAsync(filter);
         }
     }
 }

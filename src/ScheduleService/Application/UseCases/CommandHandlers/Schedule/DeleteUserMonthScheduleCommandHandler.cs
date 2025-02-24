@@ -31,7 +31,7 @@ namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
 
             var scheduleId = await GetUsersScheduleId(request);
 
-            var result = await scheduleRepository.DeleteMonthSchedule(scheduleId);
+            var result = await scheduleRepository.ClearMonthSchedule(scheduleId);
 
             if (result.ModifiedCount > 0)
             {

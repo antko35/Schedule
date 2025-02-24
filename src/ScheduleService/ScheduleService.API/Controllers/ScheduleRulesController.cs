@@ -93,5 +93,20 @@ namespace ScheduleService.API.Controllers
 
             return Ok();
         }
+
+        /// <summary>
+        /// Delete all schedules and rules for user.
+        /// Calling after deleting user in usen manangement service.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="departmentId"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        public async Task<IActionResult> DeleteUserRules(string userId, string departmentId)
+        {
+            await mediator.Send(new DeleteRulesAndScheduleCommand(userId, departmentId));
+
+            return Ok();
+        }
     }
 }

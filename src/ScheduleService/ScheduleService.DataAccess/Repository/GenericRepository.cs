@@ -27,6 +27,11 @@
             await dbSet.InsertOneAsync(obj);
         }
 
+        public async Task AddRangeAsync(IEnumerable<TEntity> objs)
+        {
+            await dbSet.InsertManyAsync(objs);
+        }
+
         public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
             return await dbSet.Find(_ => true).ToListAsync();
