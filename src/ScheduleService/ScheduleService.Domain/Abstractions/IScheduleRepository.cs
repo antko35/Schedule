@@ -17,6 +17,8 @@
 
         Task UpdateWorkDayAsync(string scheduleId, WorkDay newWorkDay);
 
+        Task UpdateWorkDaysAsync(string scheduleId, List<WorkDay> workDays);
+
         Task<List<Schedule>?> GetEmptySchedules(int year, string month);
 
         Task DeleteScheduleAsync(string scheduleId);

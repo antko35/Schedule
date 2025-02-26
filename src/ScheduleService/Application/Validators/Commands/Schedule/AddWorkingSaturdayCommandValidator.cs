@@ -6,6 +6,8 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using ScheduleService.Application.Extensions.Validation;
+using ScheduleService.Domain.Models;
 
 namespace ScheduleService.Application.Validators.Commands.Schedule
 {
@@ -17,11 +19,14 @@ namespace ScheduleService.Application.Validators.Commands.Schedule
             RuleFor(x => x.Saturday)
                 .Must(BeSaturday)
                 .WithMessage("Must be saturday");
+
+            RuleForEach(workDay => workDay.WorkingDays)
+                .ValidateWorkDayTimes();
         }
 
-        private bool BeSaturday(DateTime date)
+        private bool BeSaturday(WorkDay date)
         {
-            return date.DayOfWeek == DayOfWeek.Saturday;
+            return date.StartTime.Date.DayOfWeek == DayOfWeek.Saturday;
         }
     }
 }

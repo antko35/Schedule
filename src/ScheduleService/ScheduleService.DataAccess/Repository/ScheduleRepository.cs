@@ -84,6 +84,24 @@
             await dbSet.UpdateOneAsync(filter, update);
         }
 
+        public async Task UpdateWorkDaysAsync(string scheduleId, List<WorkDay> workDays)
+        {
+            var scheduleFilter = Builders<Schedule>.Filter.Eq(x => x.Id, scheduleId);
+
+            foreach (var workDay in workDays)
+            {
+                var workDayFilter = Builders<Schedule>.Filter.And(
+                    scheduleFilter,
+                    Builders<Schedule>.Filter.ElemMatch(x => x.WorkDays, wd => wd.Day == workDay.Day));
+
+                var update = Builders<Schedule>.Update
+                    .Set("WorkDays.$.StartTime", workDay.StartTime)
+                    .Set("WorkDays.$.EndTime", workDay.EndTime);
+
+                await dbSet.UpdateOneAsync(workDayFilter, update);
+            }
+        }
+
         public async Task<UpdateResult?> ClearMonthSchedule(string scheduleId)
         {
             var filter = Builders<Schedule>.Filter.Eq(x => x.Id, scheduleId);

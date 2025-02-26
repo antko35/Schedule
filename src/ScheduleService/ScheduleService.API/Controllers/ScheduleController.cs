@@ -63,6 +63,23 @@
         }
 
         /// <summary>
+        /// Add working saturday.
+        /// </summary>
+        /// <param name="command"></param>
+        /// <remarks>
+        /// In list "workingDays" should be new working days to compensate for saturday hours(compensate general month time).
+        /// </remarks>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("addSaturday")]
+        public async Task<IActionResult> CreateWorkingSaturday([FromBody] AddWorkingSaturdayCommand command)
+        {
+            await mediator.Send(command);
+
+            return Ok();
+        }
+
+        /// <summary>
         /// Generate schedule for department by month.
         /// </summary>
         /// <param name="command"></param>
