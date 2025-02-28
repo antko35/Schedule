@@ -39,10 +39,10 @@
 
         public async Task Handle(GenerateDepartmentScheduleCommand request, CancellationToken cancellationToken)
         {
-            var task1 = GetUsersRulesForScheduleGeneration(request.Year, request.Month, request.DepartmentId);
-            var task2 = GetHolidays(request.Year, request.Month);
+            var getRulesTask = GetUsersRulesForScheduleGeneration(request.Year, request.Month, request.DepartmentId);
+            var getHolidaysTask = GetHolidays(request.Year, request.Month);
 
-            await Task.WhenAll(task1, task2);
+            await Task.WhenAll(getRulesTask, getHolidaysTask);
 
             await GenerateAndAdd(request.Year, request.Month);
         }
