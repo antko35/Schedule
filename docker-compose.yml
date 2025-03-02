@@ -1,13 +1,48 @@
-﻿version: "3.9"
 services:
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    hostname: rabbitmq
+    restart: always
+    volumes:
+      - ./rabbitmq:/var/lib/rabbitmq
+    ports:
+      - 15672:15672
   user-service:
     build:
       context: ./src/UserService
       dockerfile: UserService.API/Dockerfile
     ports:
-      - "5001:8080"
+      - "5001:8080" # Локальный порт → Порт внутри контейнера
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    depends_on:
+      - user-service-pg-db
+    volumes:
+      - ~/.aspnet/https:/https:ro
+    command: >
+      sh -c "dotnet ef database update -s ./src/UserService/UserService.API -p ./src/UserService/Data && 
+             dotnet UserService.API.dll"
+  
+  user-service-pg-db:
+    image: postgres:latest
+    ports:
+      - "5432:5432" # Локальный порт → Порт внутри контейнера
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=users_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  pdAdmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
 
   schedule-service:
     build:
@@ -17,37 +52,6 @@ services:
       - "5002:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-    depends_on:
-      - schedule-service-mongo
-
-  schedule-service-mongo:
-    image: mongo:latest
-    container_name: schedule-service-mongo
-    ports:
-      - "27018:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=schedule_db
-    volumes:
-      - schedule-mongo-data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  schedule-service-mongo-express:
-    image: mongo-express:latest
-    ports:
-      - "8081:8081"
-    environment:
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
-      - ME_CONFIG_MONGODB_SERVER=schedule-service-mongo
-    depends_on:
-      schedule-service-mongo:
-        condition: service_healthy
 
   user-management-service:
     build:
@@ -57,6 +61,32 @@ services:
       - "5003:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - management-mongo
+    volumes:
+      - ./server-cert.crt:/usr/local/share/ca-certificates/server-cert.crt:ro
+
+  management-mongo:
+    image: mongo:latest
+    container_name: management-mongo
+    ports:
+      - "27017:27017" 
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=usermanagement_db
+    volumes:
+      - management-mongo-data:/data/db
+
+  management-mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=management-mongo
 
 volumes:
-  schedule-mongo-data:
+  db-data:
+  management-mongo-data:
