@@ -16,145 +16,34 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2369aca9-6fd5-4233-8932-21541d88a416" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/.idea.Schedule/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/.idea.Schedule/Docker/docker-compose.generated.override.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Extensions/DependencyInjection.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Extensions/EntityExtension.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Extensions/Validation/ValidationBehavior.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Extensions/Validation/ValidationException.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Extensions/Validation/ValidationExtensions.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Extensions/Validation/WorkDayValidationExtensions.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Mapping/CalendarMapping.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Services/ScheduleGenerator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/Calendar/AddOfficialHolidayCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/Calendar/DeleteHolidayCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/Schedule/AddWorkingSaturdayCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/Schedule/CreateWorkDayManuallyCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/Schedule/DeleteUserMonthScheduleCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/Schedule/DeleteWorkDayCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/Schedule/GenerateDepartmentScheduleCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/Schedule/SendPromptMonthlyCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/ScheduleRules/AddingScheduleRulesForNextMonthCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/ScheduleRules/CreateScheduleRulesCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/ScheduleRules/DeleteRulesAndScheduleCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/CommandHandlers/ScheduleRules/SetGenerationRulesCommandHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/Calendar/AddOfficialHolidayCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/Calendar/DeleteHolidayCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/Schedule/AddWorkingSaturdayCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/Schedule/CreateWorkDayManuallyCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/Schedule/DeleteUserMonthScheduleCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/Schedule/DeleteWorkDayCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/Schedule/GenerateDepartmentScheduleCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/Schedule/SendPromptMonthlyCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/ScheduleRules/AddingScheduleRulesForNextMonthCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/ScheduleRules/CreateScheduleRulesCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/ScheduleRules/DeleteRulesAndScheduleCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Commands/ScheduleRules/SetGenerationRulesCommand.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Queries/Calendar/GetMonthHolidaysQuery.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Queries/Calendar/GetMonthTransferDaysQuery.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Queries/Calendar/GetYearHolidaysQuery.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Queries/Schedule/GetDepartmentMonthScheduleQuery.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Queries/Schedule/GetUserMonthScheduleQuery.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Queries/ScheduleRules/GetAllRulesQuery.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/Queries/ScheduleRules/GetUserRulesQuery.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/QueryHandlers/Calendar/GetMonthHolidaysQueryHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/QueryHandlers/Calendar/GetMonthTransferDaysQueryHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/QueryHandlers/Calendar/GetYearHolidaysQueryHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/QueryHandlers/Schedule/GetDepartmentMonthScheduleQueryHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/QueryHandlers/Schedule/GetUserMonthScheduleQueryHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/QueryHandlers/ScheduleRules/GetAllRulesQueryHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/UseCases/QueryHandlers/ScheduleRules/GetUserRulesQueryHandler.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Commands/Calendar/AddOfficialHolidayCommandValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Commands/Schedule/AddWorkingSaturdayCommandValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Commands/Schedule/CreateWorkDayManuallyCommandValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Commands/Schedule/DeleteUserMonthScheduleCommandValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Commands/Schedule/DeleteWorkDayCommandValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Commands/Schedule/GenerateDepartmentScheduleCommandValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Commands/ScheduleRules/SetGenerationRulesCommandValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Queris/Calendar/GetMonthHolidaysQueryValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Queris/Calendar/GetMonthTransferDaysQueryValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Queris/Calendar/GetYearHolidaysQueryValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Queris/Schedule/GetDepartmentMonthScheduleQueryValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Queris/Schedule/GetUserMonthScheduleQueryValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/Application/Validators/Queris/ScheduleRules/GetUserRulesQueryValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Controllers/CalendarController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Controllers/ScheduleController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Controllers/ScheduleRulesController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Extensions/AppExtensions/Hangfire/AllowAllAuthorizationFilter.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Extensions/AppExtensions/Hangfire/Hangfire.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Extensions/BuilderExtensions/ExeptionHadlingMiddleware.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Extensions/BuilderExtensions/SwaggerExtension.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.DataAccess/Database/DbContext.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.DataAccess/Database/DbOptions.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.DataAccess/Extensions/DbConfiguration.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.DataAccess/Extensions/DependencyInjection.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.DataAccess/Extensions/HangfireConfiguration.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.DataAccess/Repository/CalendarRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.DataAccess/Repository/GenericRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.DataAccess/Repository/ScheduleRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.DataAccess/Repository/UserRuleRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.DataAccess/ScheduleService.DataAccess.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/Abstractions/ICalendarRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/Abstractions/IEmailService.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/Abstractions/IGenericRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/Abstractions/IScheduleRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/Abstractions/IUserRuleRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/Models/Calendar.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/Models/Entity.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/Models/Schedule.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/Models/UserScheduleRules.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/Models/WorkDay.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Infrastructure/EmailSender/SmtpEmailService.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Infrastructure/EmailSender/SmtpSettings.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Infrastructure/Extensions/DependencyInjection.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Infrastructure/ScheduleService.Infrastructure.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/Application.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/Services/ScheduleGeneratorTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/CommandHandlers/Calendar/AddOfficialHolidayCommandTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/CommandHandlers/Calendar/DeleteHolidayCommandTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/CommandHandlers/Schedule/AddWorkingSaturdayCommandTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/CommandHandlers/Schedule/CreateWorkDayManuallyCommandTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/CommandHandlers/Schedule/DeleteUserMonthScheduleTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/CommandHandlers/Schedule/DeleteWorkDayCommandTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/CommandHandlers/Schedule/GenerateDepartmentScheduleTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/CommandHandlers/ScheduleRules/AddingScheduleRulesForNextMonthCommandTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/CommandHandlers/ScheduleRules/CreateScheduleRulesTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/CommandHandlers/ScheduleRules/DeleteRulesAndScheduleCommandTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/CommandHandlers/ScheduleRules/SetGenerationRulesTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/QueryHandlers/Calendar/GetMonthHolidaysQueryTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/QueryHandlers/Calendar/GetMonthTransferDaysQueryTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/QueryHandlers/Calendar/GetYearHolidaysQueryTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/QueryHandlers/Schedule/GetDepartmentMonthScheduleQueryTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/QueryHandlers/Schedule/GetUserMonthScheduleQueryTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/QueryHandlers/ScheduleRules/GetAllRulesQueryTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/ScheduleServiceTests/Application/UseCases/QueryHandlers/ScheduleRules/GetUserRulesQueryTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Schedule.sln" beforeDir="false" afterPath="$PROJECT_DIR$/Schedule.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Schedule/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Schedule/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Schedule/Docker/docker-compose.generated.override.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Schedule/Docker/docker-compose.generated.override.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ScheduleService/Application/Class1.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ScheduleService/Application/ScheduleService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/ScheduleService/Application/ScheduleService.Application.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/ScheduleService.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/ScheduleService.API.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Data/Class1.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Data/ScheduleService.Data.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Data/ScheduleService.Data.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/Class1.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/ScheduleService.Domain.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/ScheduleService/ScheduleService.Domain/ScheduleService.Domain.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UserManagementService/Application/UserManagementService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/UserManagementService/Application/UserManagementService.Application.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UserManagementService/Data/UserManagementService.Data.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/UserManagementService/Data/UserManagementService.Data.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UserManagementService/Domain/UserManagementService.Domain.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/UserManagementService/Domain/UserManagementService.Domain.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UserService/Core/UserService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/UserService/Core/UserService.Application.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UserService/Data/UserService.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/UserService/Data/UserService.Infrastructure.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UserService/Domain/UserService.Domain.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/UserService/Domain/UserService.Domain.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UserService/UserService.API/UserService.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/UserService/UserService.API/UserService.API.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/UserManagementTests/ClassLibrary3/Class1.cs" beforeDir="false" afterPath="$PROJECT_DIR$/tests/UserManagementTests/ClassLibrary3/Class1.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/UserManagementTests/ClassLibrary3/ClassLibrary3.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/tests/UserManagementTests/ClassLibrary3/ClassLibrary3.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/UserServiceTests/ClassLibrary1/ClassLibrary1.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/tests/UserServiceTests/ClassLibrary1/ClassLibrary1.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/DECISION_TAB.LOG" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/DECISION_TAB.LOG" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/LATEST.LOG" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/LATEST.LOG" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/coordination/rabbit@rabbitmq/00000003.wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/coordination/rabbit@rabbitmq/RABBITM5S2P4817AO9/00000001.segment" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/coordination/rabbit@rabbitmq/RABBITM5S2P4817AO9/00000001.segment" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/coordination/rabbit@rabbitmq/meta.dets" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/coordination/rabbit@rabbitmq/meta.dets" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/file_summary.ets" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/file_summary.ets" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/msg_store_index.ets" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/msg_store_index.ets" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/file_summary.ets" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/file_summary.ets" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/msg_store_index.ets" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/msg_store_index.ets" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/quorum/rabbit@rabbitmq/00000003.wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_runtime_parameters.DCD" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_runtime_parameters.DCD" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_runtime_parameters.DCL" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_runtime_parameters.DCL" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_serial" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_serial" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server-cert.crt/server-cert.crt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UserService/UserService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/UserService/UserService.API/appsettings.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DockerExecCommands">
+    <ExecCommand>
+      <option name="command" value="dotnet ef database update -s ./src/UserService/UserService.API -p ./src/UserService/Data" />
+    </ExecCommand>
   </component>
   <component name="DpaMonitoringSettings">
     <option name="firstShow" value="false" />
@@ -189,7 +78,8 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/5e732150eb7b559daf4c64d0f96fc5907a647a4a3027c3b6549dd4c951dac2/Cron.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/7415982338a3ccbd2a7a4eb483af627bda727e356b86bb32c5d4f6998f9c/IRequestHandler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Program.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/tests/UserManagementTests/ClassLibrary3/Class1.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///home/antkov/RiderProjects/Schedule/tests/UserManagementTests/ClassLibrary3/Class1.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///home/antkov/RiderProjects/Schedule/tests/UserManagementTests/ClassLibrary3/Class1.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///home/antkov/RiderProjects/Schedule/tests/UserManagementTests/ClassLibrary3/Class1.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///home/antkov/RiderProjects/Schedule/tests/UserManagementTests/ClassLibrary3/Class1.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
@@ -213,19 +103,22 @@
     "Docker.ScheduleService.API/Dockerfile.executor": "Run",
     "Docker.UserManagementService.API/Dockerfile.executor": "Run",
     "Docker.UserService.API/Dockerfile.executor": "Run",
-    "Docker.full-pj.executor": "Debug",
+    "Docker.docker-compose.yml.pdAdmin: Compose Deployment.executor": "Run",
+    "Docker.docker-compose.yml.schedule-service-mongo-express: Compose Deployment.executor": "Run",
+    "Docker.docker-compose.yml.user-service: Compose Deployment.executor": "Run",
+    "Docker.full-pj.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "c1d54050-8752-4126-a002-c34a9b58215c.executor": "Debug",
     "d2e67eeb-819a-46a2-8516-351f78f75d55.executor": "Debug",
-    "git-widget-placeholder": "Merging main",
-    "last_opened_file_path": "/home/antkov/RiderProjects/Schedule/src/ScheduleService/ScheduleService.Infrastructure/ScheduleService.Infrastructure.csproj",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/home/antkov/RiderProjects/Schedule/src/UserService/Data/Migrations",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "Docker",
+    "settings.editor.selected.configurable": "preferences.sourceCode.C#",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -234,7 +127,7 @@
     ]
   }
 }]]></component>
-  <component name="RunManager" selected="Docker.full-pj">
+  <component name="RunManager" selected="Docker.docker-compose.yml.user-service: Compose Deployment">
     <configuration name="ScheduleService.API: http" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/ScheduleService.API.csproj" />
       <option name="LAUNCH_PROFILE_TFM" value="net9.0" />
@@ -361,9 +254,58 @@
       <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="true" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
+      <deployment type="docker-compose.yml">
+        <settings />
+      </deployment>
+      <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="false" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="docker-deploy" factoryName="dockerfile" temporary="true">
       <deployment type="dockerfile">
         <settings />
+      </deployment>
+      <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-compose.yml.pdAdmin: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="services">
+            <list>
+              <option value="pdAdmin" />
+            </list>
+          </option>
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-compose.yml.schedule-service-mongo-express: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="services">
+            <list>
+              <option value="schedule-service-mongo-express" />
+            </list>
+          </option>
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-compose.yml.user-service: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="services">
+            <list>
+              <option value="user-service" />
+            </list>
+          </option>
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
       </deployment>
       <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="false" />
       <method v="2" />
@@ -389,7 +331,17 @@
       <item itemvalue="Docker.ScheduleService.API/Dockerfile" />
       <item itemvalue="Docker.UserManagementService.API/Dockerfile" />
       <item itemvalue="Docker.UserService.API/Dockerfile" />
+      <item itemvalue="Docker.docker-compose.yml.pdAdmin: Compose Deployment" />
+      <item itemvalue="Docker.docker-compose.yml.schedule-service-mongo-express: Compose Deployment" />
+      <item itemvalue="Docker.docker-compose.yml.user-service: Compose Deployment" />
     </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Docker.docker-compose.yml.user-service: Compose Deployment" />
+        <item itemvalue="Docker.docker-compose.yml.pdAdmin: Compose Deployment" />
+        <item itemvalue="Docker.docker-compose.yml.schedule-service-mongo-express: Compose Deployment" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -432,6 +384,7 @@
       <workItem from="1740724234250" duration="4996000" />
       <workItem from="1740912977481" duration="2438000" />
       <workItem from="1740915430701" duration="804000" />
+      <workItem from="1740926566649" duration="3344000" />
     </task>
     <task id="LOCAL-00001" summary="set rules chanhes">
       <option name="closed" value="true" />
@@ -577,7 +530,15 @@
       <option name="project" value="LOCAL" />
       <updated>1740915496950</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="schedule service merge">
+      <option name="closed" value="true" />
+      <created>1740918015353</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1740918015353</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -637,6 +598,7 @@
     <MESSAGE value="fix naming" />
     <MESSAGE value="rabbit" />
     <MESSAGE value="smth" />
-    <option name="LAST_COMMIT_MESSAGE" value="" />
+    <MESSAGE value="schedule service merge" />
+    <option name="LAST_COMMIT_MESSAGE" value="schedule service merge" />
   </component>
 </project>

@@ -1,41 +1,5 @@
 # This is a generated file. Not intended for manual editing.
 services:
-  schedule-service:
-    build:
-      context: "/home/antkov/RiderProjects/Schedule/src/ScheduleService"
-      dockerfile: "ScheduleService.API/Dockerfile"
-      target: "base"
-    command: []
-    entrypoint:
-    - "dotnet"
-    - "/app/bin/Debug/net9.0/ScheduleService.API.dll"
-    environment:
-      DOTNET_USE_POLLING_FILE_WATCHER: "true"
-    image: "scheduleservice.api:dev"
-    ports: []
-    volumes:
-    - "/home/antkov/RiderProjects/Schedule/src/ScheduleService/ScheduleService.API:/app:rw"
-    - "/home/antkov/RiderProjects/Schedule:/src:rw"
-    - "/home/antkov/.nuget/packages:/home/app/.nuget/packages"
-    working_dir: "/app"
-  user-management-service:
-    build:
-      context: "/home/antkov/RiderProjects/Schedule/src/UserManagementService"
-      dockerfile: "UserManagementService.API/Dockerfile"
-      target: "base"
-    command: []
-    entrypoint:
-    - "dotnet"
-    - "/app/bin/Debug/net9.0/UserManagementService.API.dll"
-    environment:
-      DOTNET_USE_POLLING_FILE_WATCHER: "true"
-    image: "usermanagementservice.api:dev"
-    ports: []
-    volumes:
-    - "/home/antkov/RiderProjects/Schedule/src/UserManagementService/UserManagementService.API:/app:rw"
-    - "/home/antkov/RiderProjects/Schedule:/src:rw"
-    - "/home/antkov/.nuget/packages:/home/app/.nuget/packages"
-    working_dir: "/app"
   user-service:
     build:
       context: "/home/antkov/RiderProjects/Schedule/src/UserService"
@@ -45,8 +9,7 @@ services:
     entrypoint:
     - "dotnet"
     - "/app/bin/Debug/net9.0/UserService.API.dll"
-    environment:
-      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    environment: {}
     image: "userservice.api:dev"
     ports: []
     volumes:
