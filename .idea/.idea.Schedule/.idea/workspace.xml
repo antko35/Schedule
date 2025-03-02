@@ -76,32 +76,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Docker.ScheduleService.API/Dockerfile.executor": "Run",
-    "Docker.UserManagementService.API/Dockerfile.executor": "Run",
-    "Docker.UserService.API/Dockerfile.executor": "Run",
-    "Docker.full-pj.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "c1d54050-8752-4126-a002-c34a9b58215c.executor": "Debug",
-    "d2e67eeb-819a-46a2-8516-351f78f75d55.executor": "Debug",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/home/antkov/RiderProjects/Schedule/src/ScheduleService/ScheduleService.Infrastructure/ScheduleService.Infrastructure.csproj",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "Docker",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Docker.ScheduleService.API/Dockerfile.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.UserManagementService.API/Dockerfile.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.UserService.API/Dockerfile.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.full-pj.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;c1d54050-8752-4126-a002-c34a9b58215c.executor&quot;: &quot;Debug&quot;,
+    &quot;d2e67eeb-819a-46a2-8516-351f78f75d55.executor&quot;: &quot;Debug&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/antkov/RiderProjects/Schedule/src/ScheduleService/ScheduleService.Infrastructure/ScheduleService.Infrastructure.csproj&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;Docker&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
-      "C#"
+  &quot;keyToStringList&quot;: {
+    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
+      &quot;C#&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Docker.full-pj">
     <configuration name="ScheduleService.API: http" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/ScheduleService.API.csproj" />
