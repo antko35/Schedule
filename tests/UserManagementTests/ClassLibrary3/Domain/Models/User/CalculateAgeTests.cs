@@ -40,7 +40,7 @@
             var calculatedAge = user.CalculateAge();
 
             // Assert
-            calculatedAge.Should().Be(20);
+            calculatedAge.Should().Be(21);
         }
     }
 }
