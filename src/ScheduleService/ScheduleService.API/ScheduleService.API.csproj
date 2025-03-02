@@ -19,8 +19,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application\ScheduleService.Application.csproj" />
-    <ProjectReference Include="..\ScheduleService.Data\ScheduleService.Data.csproj" />
+    <ProjectReference Include="..\ScheduleService.DataAccess\ScheduleService.DataAccess.csproj" />
+    <ProjectReference Include="..\ScheduleService.Infrastructure\ScheduleService.Infrastructure.csproj" />
   </ItemGroup>
+	
+    <PropertyGroup>
+	    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Controllers\" />

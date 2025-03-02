@@ -15,7 +15,7 @@ WORKDIR /src
 COPY ["ScheduleService.API/ScheduleService.API.csproj", "ScheduleService.API/"]
 COPY ["Application/ScheduleService.Application.csproj", "Application/"]
 COPY ["ScheduleService.Domain/ScheduleService.Domain.csproj", "ScheduleService.Domain/"]
-COPY ["ScheduleService.Data/ScheduleService.Data.csproj", "ScheduleService.Data/"]
+COPY ["ScheduleService.DataAccess/ScheduleService.DataAccess.csproj", "ScheduleService.DataAccess/"]
 RUN dotnet restore "./ScheduleService.API/ScheduleService.API.csproj"
 COPY . .
 WORKDIR "/src/ScheduleService.API"
