@@ -1,4 +1,6 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
+﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+
+namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
 {
     using System;
     using System.Threading;
@@ -14,12 +16,14 @@
     public class CreateUserTests
     {
         private readonly Mock<IUserRepository> userRepositoryMock;
+        private readonly Mock<IRabbitMqService> rabbitMqService;
         private readonly CreateUserCommandHandler handler;
 
         public CreateUserTests()
         {
             userRepositoryMock = new Mock<IUserRepository>();
-            handler = new CreateUserCommandHandler(userRepositoryMock.Object);
+            rabbitMqService = new Mock<IRabbitMqService>();
+            handler = new CreateUserCommandHandler(userRepositoryMock.Object, rabbitMqService.Object);
         }
 
         [Fact]
