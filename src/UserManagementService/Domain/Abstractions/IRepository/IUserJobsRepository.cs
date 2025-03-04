@@ -29,5 +29,7 @@
         /// <param name="userId"></param>
         /// <returns>List of User`s UserJob </returns>
         Task<IEnumerable<UserJob>> GetUserJobsByUserIdAsync(string userId);
+
+        Task<List<string>> GetHeadEmails(IEnumerable<string> requestDepartmentsIds);
     }
 }

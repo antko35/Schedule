@@ -23,6 +23,7 @@ public static class HangfireConfiguration
                     BackupStrategy = new CollectionMongoBackupStrategy()
                 },
                 Prefix = "hangfire",
+                CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
             });
         });
 

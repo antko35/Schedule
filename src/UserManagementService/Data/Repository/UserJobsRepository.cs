@@ -40,6 +40,19 @@ public class UserJobsRepository : GenericRepository<UserJob>, IUserJobsRepositor
         return userJobs;
     }
 
+    public async Task<List<string>> GetHeadEmails(IEnumerable<string> departmentIds)
+    {
+        var filter = Builders<UserJob>.Filter.And(
+            Builders<UserJob>.Filter.In(u => u.DepartmentId, departmentIds),
+            Builders<UserJob>.Filter.Eq(u => u.Role, "departmentHead"));
+
+        var emails = await dbSet
+            .Find(filter)
+            .ToListAsync();
+
+        return emails.Select(u => u.Email).ToList();
+    }
+
     public async Task DeleteByUserId(string userId)
     {
         var filter = Builders<UserJob>.Filter.Eq(x => x.UserId, userId);

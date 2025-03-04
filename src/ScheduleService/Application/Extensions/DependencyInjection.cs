@@ -1,4 +1,6 @@
-﻿namespace ScheduleService.Application.Extensions
+﻿using ScheduleService.Application.Services;
+
+namespace ScheduleService.Application.Extensions
 {
     using System.Reflection;
     using FluentValidation;
@@ -17,6 +19,8 @@
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+            services.AddScoped<RpcService>();
 
             return services;
         }
