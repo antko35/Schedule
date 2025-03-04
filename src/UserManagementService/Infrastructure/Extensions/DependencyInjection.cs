@@ -7,7 +7,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructureDependencies(this IServiceCollection services)
     {
-        services.AddScoped<IUserCreatedPublisher, UserCreatedPublisher>();
+        services.AddScoped<IUserEventPublisher, UserEventPublisher>();
             
         return services;
     }

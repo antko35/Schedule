@@ -13,6 +13,7 @@ public static class DependencyInjection
         services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
         
         services.AddHostedService<UserCreatedConsumer>();
+        services.AddHostedService<UserDeletedConsumer>();
         
         return services;
     }

@@ -14,18 +14,18 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
     private readonly IUserRepository userRepository;
     private readonly IDepartmentRepository departmentRepository;
     private readonly IUserJobsRepository userJobsRepository;
-    private readonly IUserCreatedPublisher userCreatedPublisher;
+    private readonly IUserEventPublisher userEventPublisher;
 
 
     public AddUserToDepartmentCommandHandler(IUserRepository userRepository,
                                              IDepartmentRepository departmentRepository,
                                              IUserJobsRepository userJobsRepository,
-                                             IUserCreatedPublisher userCreatedPublisher)
+                                             IUserEventPublisher userEventPublisher)
     {
         this.userRepository = userRepository;
         this.departmentRepository = departmentRepository;
         this.userJobsRepository = userJobsRepository;
-        this.userCreatedPublisher = userCreatedPublisher;
+        this.userEventPublisher = userEventPublisher;
 
     }
 
@@ -58,7 +58,7 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
 
         await userJobsRepository.AddAsync(newUserJob);
 
-        await userCreatedPublisher.PublishUserCreated(newUserJob.UserId, newUserJob.DepartmentId);
+        await userEventPublisher.PublishUserCreated(newUserJob.UserId, newUserJob.DepartmentId);
 
         return newUserJob;
     }

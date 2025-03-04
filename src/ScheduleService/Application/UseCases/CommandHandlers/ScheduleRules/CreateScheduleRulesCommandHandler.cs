@@ -26,7 +26,6 @@
         {
             var year = DateTime.Now.Year;
             var monthName = DateTime.Now
-                .Month
                 .ToString("MMMM")
                 .ToLower();
 
