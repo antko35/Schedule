@@ -1,4 +1,6 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.Department
+﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+
+namespace UserManagementService.Application.UseCases.CommandHandlersTests.Department
 {
     using System;
     using System.Collections.Generic;
@@ -18,6 +20,7 @@
         private readonly Mock<IDepartmentRepository> departmentRepositoryMock;
         private readonly Mock<IUserJobsRepository> userJobsRepositoryMock;
         private readonly Mock<IClinicRepository> clinicRepositoryMock;
+        private readonly Mock<IUserEventPublisher> userEventPublisher;
         private readonly AddUserToDepartmentCommandHandler handler;
         private readonly AddUserToDepartmentCommand command;
 
@@ -27,11 +30,13 @@
             departmentRepositoryMock = new Mock<IDepartmentRepository>();
             userJobsRepositoryMock = new Mock<IUserJobsRepository>();
             clinicRepositoryMock = new Mock<IClinicRepository>();
+            userEventPublisher = new Mock<IUserEventPublisher>();
 
             handler = new AddUserToDepartmentCommandHandler(
                 userRepositoryMock.Object,
                 departmentRepositoryMock.Object,
-                userJobsRepositoryMock.Object);
+                userJobsRepositoryMock.Object,
+                userEventPublisher.Object);
 
             command = new AddUserToDepartmentCommand
                 ("user", "dept123", "Doctor", "Active", "doctor@example.com", "123-456-7890");
@@ -63,6 +68,7 @@
             result.Role.Should().Be(command.Role);
             result.Status.Should().Be(command.Status);
 
+            userEventPublisher.Verify(pub => pub.PublishUserCreated(command.UserId, command.DepartmentId));
             userJobsRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<UserJob>()), Times.Once);
         }
 

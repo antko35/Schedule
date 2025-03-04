@@ -1,4 +1,6 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.Department
+﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+
+namespace UserManagementService.Application.UseCases.CommandHandlersTests.Department
 {
     using FluentAssertions;
     using Moq;
@@ -16,13 +18,15 @@
     public class RemoveUserFromDepartmentTests
     {
         private readonly Mock<IUserJobsRepository> userJobsRepositoryMock;
+        private readonly Mock<IUserEventPublisher> userEventPublisher;
         private readonly RemoveUserFromDepartmentCommandHandler handler;
         private readonly RemoveUserFromDepartmentCommand command;
 
         public RemoveUserFromDepartmentTests()
         {
             userJobsRepositoryMock = new Mock<IUserJobsRepository>();
-            handler = new RemoveUserFromDepartmentCommandHandler(userJobsRepositoryMock.Object);
+            userEventPublisher = new Mock<IUserEventPublisher>();
+            handler = new RemoveUserFromDepartmentCommandHandler(userJobsRepositoryMock.Object, userEventPublisher.Object);
 
             command = new RemoveUserFromDepartmentCommand("user123", "department456");
         }
@@ -50,6 +54,8 @@
             result.Should().NotBeNull();
             result.UserId.Should().Be(command.UserId);
             result.DepartmentId.Should().Be(command.DepartmentId);
+
+            userEventPublisher.Verify(pub => pub.PublishUserDeleted(command.UserId, command.DepartmentId));
 
             userJobsRepositoryMock.Verify(repo => repo.GetUserJobAsync(command.UserId, command.DepartmentId), Times.Once);
             userJobsRepositoryMock.Verify(repo => repo.RemoveAsync(existingUserJob.Id), Times.Once);

@@ -16,14 +16,12 @@ namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
     public class CreateUserTests
     {
         private readonly Mock<IUserRepository> userRepositoryMock;
-        private readonly Mock<IRabbitMqService> rabbitMqService;
         private readonly CreateUserCommandHandler handler;
 
         public CreateUserTests()
         {
             userRepositoryMock = new Mock<IUserRepository>();
-            rabbitMqService = new Mock<IRabbitMqService>();
-            handler = new CreateUserCommandHandler(userRepositoryMock.Object, rabbitMqService.Object);
+            handler = new CreateUserCommandHandler(userRepositoryMock.Object);
         }
 
         [Fact]
