@@ -12,11 +12,11 @@ namespace Infrastructure.RabbitMq;
 
 public class UserEmailsRpcServer : IHostedService
 {
-    private readonly ILogger<UserEmailsRpcServer> _logger;
-    private IConnection? _connection;
-    private IChannel? _channel;
-    private AsyncEventingBasicConsumer? _consumer;
-    private readonly ConnectionFactory _factory;
+    private readonly ILogger<UserEmailsRpcServer> logger;
+    private IConnection? connection;
+    private IChannel? channel;
+    private AsyncEventingBasicConsumer? consumer;
+    private readonly ConnectionFactory factory;
     
     private readonly IServiceScopeFactory scopeFactory;
     
@@ -24,26 +24,28 @@ public class UserEmailsRpcServer : IHostedService
 
     public UserEmailsRpcServer(ILogger<UserEmailsRpcServer> logger, IServiceScopeFactory scopeFactory)
     {
-        _logger = logger;
-        _factory = new ConnectionFactory { HostName = "rabbitmq" };
+        this.logger = logger;
+        factory = new ConnectionFactory { HostName = "rabbitmq" };
         this.scopeFactory = scopeFactory;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
 
-        _connection = await _factory.CreateConnectionAsync();
-        _channel = await _connection.CreateChannelAsync();
+        connection = await factory.CreateConnectionAsync();
+        channel = await connection.CreateChannelAsync();
         
-        await _channel.QueueDeclareAsync(queue: RequestQueue, durable: false, exclusive: false, autoDelete: false);
+        await channel.QueueDeclareAsync(queue: RequestQueue, durable: false, exclusive: false, autoDelete: false);
 
-        _consumer = new AsyncEventingBasicConsumer(_channel);
-        _consumer.ReceivedAsync += async (model, ea) =>
+        consumer = new AsyncEventingBasicConsumer(channel);
+        consumer.ReceivedAsync += async (model, ea) =>
         {
             var body = ea.Body.ToArray();
            
             var departmentsIds = JsonSerializer.Deserialize<List<string>>(body) ?? new List<string>();
-             _logger.LogInformation($"{departmentsIds}");
+            
+            logger.LogInformation($"{departmentsIds}");
+             
             var emails = await GetDepartmentHeadsEmails(departmentsIds);
             
             var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(emails));
@@ -54,30 +56,30 @@ public class UserEmailsRpcServer : IHostedService
                 CorrelationId = props.CorrelationId
             };
             
-            await _channel.BasicPublishAsync(
+            await channel.BasicPublishAsync(
                 exchange: string.Empty,
                 routingKey: ea.BasicProperties.ReplyTo!,
                 mandatory: true,
                 basicProperties: replyProps,
                 body: responseBytes);
 
-            await _channel.BasicAckAsync(ea.DeliveryTag, false);
+            await channel.BasicAckAsync(ea.DeliveryTag, false);
         };
 
-        await _channel.BasicConsumeAsync(queue: RequestQueue, autoAck: false, consumer: _consumer);
+        await channel.BasicConsumeAsync(queue: RequestQueue, autoAck: false, consumer: consumer);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
 
-        if (_channel is not null)
+        if (channel is not null)
         {
-            await _channel.CloseAsync();
+            await channel.CloseAsync();
         }
 
-        if (_connection is not null)
+        if (connection is not null)
         {
-            await _connection.CloseAsync();
+            await connection.CloseAsync();
         }
     }
 
@@ -90,7 +92,7 @@ public class UserEmailsRpcServer : IHostedService
         
         var responce = await mediator.Send(query, CancellationToken.None);
 
-        _logger.LogInformation($"{responce.ToArray()}");
+        logger.LogInformation($"{responce.ToArray()}");
         
         return responce;
     }

@@ -3,11 +3,11 @@ using ScheduleService.Domain.Abstractions.Rabbit;
 
 namespace ScheduleService.Application.Services;
 
-public class RpcService
+public class UserEmailRpcService
 {
     private readonly IUserEmailsRpcClient userEmailsRpcClient;
 
-    public RpcService(IUserEmailsRpcClient userEmailsRpcClient)
+    public UserEmailRpcService(IUserEmailsRpcClient userEmailsRpcClient)
     {
         this.userEmailsRpcClient = userEmailsRpcClient;
     }
@@ -18,7 +18,6 @@ public class RpcService
 
         var response = await userEmailsRpcClient.GetDepartmentHeadsEmailsAsync(ids);
 
-        Console.Out.WriteLine(response);
         var emails = JsonSerializer.Deserialize<List<string>>(response);
 
         await userEmailsRpcClient.DisposeAsync();

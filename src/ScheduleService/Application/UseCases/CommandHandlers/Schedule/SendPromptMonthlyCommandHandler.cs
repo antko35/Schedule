@@ -13,18 +13,18 @@ public class SendPromptMonthlyCommandHandler
     private readonly IEmailService emailService;
     private readonly IScheduleRepository scheduleRepository;
     private readonly IUserRuleRepository scheduleRuleRepository;
-    private readonly RpcService rpcService;
+    private readonly UserEmailRpcService userEmailRpcService;
 
     public SendPromptMonthlyCommandHandler(
         IEmailService emailService,
         IScheduleRepository scheduleRepository,
         IUserRuleRepository scheduleRuleRepository,
-        RpcService rpcService)
+        UserEmailRpcService userEmailRpcService)
     {
         this.emailService = emailService;
         this.scheduleRepository = scheduleRepository;
         this.scheduleRuleRepository = scheduleRuleRepository;
-        this.rpcService = rpcService;
+        this.userEmailRpcService = userEmailRpcService;
     }
 
     public async Task Handle(SendPromptMonthlyCommand request, CancellationToken cancellationToken)
@@ -59,13 +59,10 @@ public class SendPromptMonthlyCommandHandler
 
     private async Task<List<EmailInfoDto>> GetHeadEmails(List<string> departments)
     {
-        Console.Out.WriteLine(departments.First());
-        
-        var emails = await rpcService.InvokeAsync(departments);
+        var emails = await userEmailRpcService.InvokeAsync(departments);
 
-        Console.Out.WriteLine(emails.First());
-        Console.Out.WriteLine("-----------");
         var responce = new List<EmailInfoDto>();
+
         foreach (var email in emails)
         {
              EmailInfoDto info = new EmailInfoDto()

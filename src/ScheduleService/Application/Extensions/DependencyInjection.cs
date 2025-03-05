@@ -20,7 +20,7 @@ namespace ScheduleService.Application.Extensions
 
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-            services.AddScoped<RpcService>();
+            services.AddScoped<UserEmailRpcService>();
 
             return services;
         }
