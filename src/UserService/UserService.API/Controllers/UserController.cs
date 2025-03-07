@@ -6,7 +6,7 @@
     using UserService.Domain.Constants;
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize]
     public class UserController(Application.Services.UserService userService) : ControllerBase
     {
