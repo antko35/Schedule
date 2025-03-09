@@ -15,25 +15,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2369aca9-6fd5-4233-8932-21541d88a416" name="Changes" comment="">
+    <list default="true" id="2369aca9-6fd5-4233-8932-21541d88a416" name="Changes" comment="nginx in pr + gitignore">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Schedule/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Schedule/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Schedule/Docker/docker-compose.generated.override.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Schedule/Docker/docker-compose.generated.override.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/DECISION_TAB.LOG" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/DECISION_TAB.LOG" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/LATEST.LOG" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/LATEST.LOG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/coordination/rabbit@rabbitmq/00000003.wal" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/coordination/rabbit@rabbitmq/RABBITM5S2P4817AO9/00000001.segment" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/coordination/rabbit@rabbitmq/RABBITM5S2P4817AO9/00000001.segment" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/coordination/rabbit@rabbitmq/meta.dets" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/coordination/rabbit@rabbitmq/meta.dets" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/file_summary.ets" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/file_summary.ets" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/msg_store_index.ets" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/msg_store_index.ets" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/file_summary.ets" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/file_summary.ets" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/msg_store_index.ets" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/msg_store_index.ets" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/quorum/rabbit@rabbitmq/00000003.wal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/clean.dot" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/file_summary.ets" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/msg_store_index.ets" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/clean.dot" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/file_summary.ets" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/msg_store_index.ets" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_durable_exchange.DCD" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_durable_exchange.DCD" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_durable_queue.DCD" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_durable_queue.DCD" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_durable_route.DCD" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_durable_route.DCD" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_runtime_parameters.DCD" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_runtime_parameters.DCD" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_runtime_parameters.DCL" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_runtime_parameters.DCL" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_serial" beforeDir="false" afterPath="$PROJECT_DIR$/rabbitmq/mnesia/rabbit@rabbitmq/rabbit_serial" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server-cert.crt/server-cert.crt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UserService/UserService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/UserService/UserService.API/appsettings.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,15 +43,25 @@
     <ExecCommand>
       <option name="command" value="dotnet ef database update -s ./src/UserService/UserService.API -p ./src/UserService/Data" />
     </ExecCommand>
+    <ExecCommand>
+      <option name="command" value="nginx -t" />
+    </ExecCommand>
   </component>
   <component name="DpaMonitoringSettings">
     <option name="firstShow" value="false" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JSON File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <branch-grouping />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="scheduleService" />
+        <entry key="$PROJECT_DIR$" value="additions" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -74,14 +83,20 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/8e0e5cfdf5354375b88e811a052f3521e26200/1f/44cbcf92/TimeSpan.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/8e0e5cfdf5354375b88e811a052f3521e26200/41/ef48f9b7/DateTime.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/8e0e5cfdf5354375b88e811a052f3521e26200/fb/22cf0394/List`1.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/137e6cca078ed7a8d6c7f926c8bbbb06b863be4cdba0503daf305e606d131c/EndpointRouteBuilderExtensions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1750dff95ce6347f7797ec095c5c17196efe67de17ff2666b9992265f0b6/AuthorizeAttribute.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1fce37416598a5fb677f9b329d52e2e9d64e126621a5229f5a5884d87827b9ad/Mapper.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/493ea29440165dd297937caaecca318704dfe5735267c4f9a160ef3c185855/IdentityApiEndpointRouteBuilderExtensions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/5e732150eb7b559daf4c64d0f96fc5907a647a4a3027c3b6549dd4c951dac2/Cron.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/621526284d3e4868b98948aff942206525763e57e194a27623b66c384466/ServiceProviderServiceExtensions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/6cff58531c0f6ed75abfe1eff81ca50d7f23d56df16e019f0d1f642d67e572d/EndpointMethodInfoApiExplorerServiceCollectionExtensions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/7415982338a3ccbd2a7a4eb483af627bda727e356b86bb32c5d4f6998f9c/IRequestHandler.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/77a288e47fae82d884d4b7131707fda84e882cde146aff472dbc8c9c3e9e46d/IdentityServiceCollectionExtensions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/99e8bc77d296dbfa0f7a2456d5ae46ce4fe6113f975e32755c54f64bd5a39c/BackgroundService.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/a1486c8dbbbc2d8a8acfa6de27abf918d3f654c3e71f3a10c2c369f1c76f6b6/MvcServiceCollectionExtensions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/e26b4ed856796cd7be9896b8849577dd98d763b945230abce735637c5fbcdd/IdentityBuilderExtensions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/Program.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock:///home/antkov/RiderProjects/Schedule/tests/UserManagementTests/ClassLibrary3/Class1.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///home/antkov/RiderProjects/Schedule/tests/UserManagementTests/ClassLibrary3/Class1.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///home/antkov/RiderProjects/Schedule/tests/UserManagementTests/ClassLibrary3/Class1.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///home/antkov/RiderProjects/Schedule/tests/UserManagementTests/ClassLibrary3/Class1.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///home/antkov/RiderProjects/Schedule/src/UserService/UserService.API/Controllers/UserController.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProblemsViewState">
@@ -98,35 +113,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Docker.ScheduleService.API/Dockerfile.executor": "Run",
-    "Docker.UserManagementService.API/Dockerfile.executor": "Run",
-    "Docker.UserService.API/Dockerfile.executor": "Run",
-    "Docker.docker-compose.yml.pdAdmin: Compose Deployment.executor": "Run",
-    "Docker.docker-compose.yml.schedule-service-mongo-express: Compose Deployment.executor": "Run",
-    "Docker.docker-compose.yml.user-service: Compose Deployment.executor": "Run",
-    "Docker.full-pj.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "c1d54050-8752-4126-a002-c34a9b58215c.executor": "Debug",
-    "d2e67eeb-819a-46a2-8516-351f78f75d55.executor": "Debug",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/home/antkov/RiderProjects/Schedule/src/UserService/Data/Migrations",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.sourceCode.C#",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Docker.ScheduleService.API/Dockerfile.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.UserManagementService.API/Dockerfile.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.UserService.API/Dockerfile.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.docker-compose.yml.pdAdmin: Compose Deployment.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.docker-compose.yml.schedule-service-mongo-express: Compose Deployment.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.docker-compose.yml.user-service: Compose Deployment.executor&quot;: &quot;Debug&quot;,
+    &quot;Docker.full-pj.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;c1d54050-8752-4126-a002-c34a9b58215c.executor&quot;: &quot;Debug&quot;,
+    &quot;d2e67eeb-819a-46a2-8516-351f78f75d55.executor&quot;: &quot;Debug&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;nginx&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/antkov/RiderProjects/Schedule/docker-compose.yml&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.C#&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
-      "C#"
+  &quot;keyToStringList&quot;: {
+    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
+      &quot;Config&quot;,
+      &quot;C#&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Docker.docker-compose.yml.user-service: Compose Deployment">
     <configuration name="ScheduleService.API: http" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/src/ScheduleService/ScheduleService.API/ScheduleService.API.csproj" />
@@ -338,7 +354,9 @@
     <recent_temporary>
       <list>
         <item itemvalue="Docker.docker-compose.yml.user-service: Compose Deployment" />
+        <item itemvalue="Docker.docker-compose.yml.schedule-service-mongo-express: Compose Deployment" />
         <item itemvalue="Docker.docker-compose.yml.pdAdmin: Compose Deployment" />
+        <item itemvalue="Docker.docker-compose.yml.user-service: Compose Deployment" />
         <item itemvalue="Docker.docker-compose.yml.schedule-service-mongo-express: Compose Deployment" />
       </list>
     </recent_temporary>
@@ -384,7 +402,15 @@
       <workItem from="1740724234250" duration="4996000" />
       <workItem from="1740912977481" duration="2438000" />
       <workItem from="1740915430701" duration="804000" />
-      <workItem from="1740926566649" duration="3344000" />
+      <workItem from="1740926566649" duration="8341000" />
+      <workItem from="1740981864384" duration="7872000" />
+      <workItem from="1741008393285" duration="2148000" />
+      <workItem from="1741029431398" duration="28549000" />
+      <workItem from="1741116841238" duration="10327000" />
+      <workItem from="1741166910026" duration="25845000" />
+      <workItem from="1741272041330" duration="3217000" />
+      <workItem from="1741331137781" duration="4035000" />
+      <workItem from="1741515400793" duration="18066000" />
     </task>
     <task id="LOCAL-00001" summary="set rules chanhes">
       <option name="closed" value="true" />
@@ -538,7 +564,95 @@
       <option name="project" value="LOCAL" />
       <updated>1740918015353</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="fix user service(db and cert)">
+      <option name="closed" value="true" />
+      <created>1740931147830</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1740931147830</updated>
+    </task>
+    <task id="LOCAL-00021" summary="fixes">
+      <option name="closed" value="true" />
+      <created>1740932485271</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1740932485271</updated>
+    </task>
+    <task id="LOCAL-00022" summary="add user to schedule service after adding to department in user-man-service">
+      <option name="closed" value="true" />
+      <created>1741070903462</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1741070903462</updated>
+    </task>
+    <task id="LOCAL-00023" summary="delete user in scheduleservice after deletting in user-management-service">
+      <option name="closed" value="true" />
+      <created>1741081760028</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1741081760028</updated>
+    </task>
+    <task id="LOCAL-00024" summary="fix tests">
+      <option name="closed" value="true" />
+      <created>1741082330550</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1741082330550</updated>
+    </task>
+    <task id="LOCAL-00025" summary="rabbit rpc, get emails fom user management service">
+      <option name="closed" value="true" />
+      <created>1741123518573</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1741123518573</updated>
+    </task>
+    <task id="LOCAL-00026" summary="fixes">
+      <option name="closed" value="true" />
+      <created>1741159829822</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1741159829822</updated>
+    </task>
+    <task id="LOCAL-00027" summary="nginx default proxy">
+      <option name="closed" value="true" />
+      <created>1741175043153</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1741175043153</updated>
+    </task>
+    <task id="LOCAL-00028" summary="nginx default proxy">
+      <option name="closed" value="true" />
+      <created>1741259699198</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1741259699198</updated>
+    </task>
+    <task id="LOCAL-00029" summary="in pr">
+      <option name="closed" value="true" />
+      <created>1741334360809</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1741334360809</updated>
+    </task>
+    <task id="LOCAL-00030" summary="nginx in pr + gitignore">
+      <option name="closed" value="true" />
+      <created>1741537531398</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1741537531398</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -579,9 +693,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="set rules chanhes" />
-    <MESSAGE value="rules + generaor fixes" />
-    <MESSAGE value="in process" />
     <MESSAGE value="schrduleRules tests" />
     <MESSAGE value="schedule tests" />
     <MESSAGE value="Calendar Query Tests" />
@@ -589,7 +700,6 @@
     <MESSAGE value="healthCheck docker compose" />
     <MESSAGE value="Hangfire" />
     <MESSAGE value="add hangfire files" />
-    <MESSAGE value="fixes" />
     <MESSAGE value="Delete rules and schedules, hangfire, fixes" />
     <MESSAGE value="tests" />
     <MESSAGE value="fix mapper" />
@@ -599,6 +709,15 @@
     <MESSAGE value="rabbit" />
     <MESSAGE value="smth" />
     <MESSAGE value="schedule service merge" />
-    <option name="LAST_COMMIT_MESSAGE" value="schedule service merge" />
+    <MESSAGE value="fix user service(db and cert)" />
+    <MESSAGE value="add user to schedule service after adding to department in user-man-service" />
+    <MESSAGE value="delete user in scheduleservice after deletting in user-management-service" />
+    <MESSAGE value="fix tests" />
+    <MESSAGE value="rabbit rpc, get emails fom user management service" />
+    <MESSAGE value="fixes" />
+    <MESSAGE value="nginx default proxy" />
+    <MESSAGE value="in pr" />
+    <MESSAGE value="nginx in pr + gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="nginx in pr + gitignore" />
   </component>
 </project>
