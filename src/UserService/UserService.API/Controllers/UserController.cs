@@ -22,7 +22,13 @@
                 Value = c.Value
             }).ToList();
 
-            return Ok(claimList);
+            var permissions = claimList.Select(x => x.Value).ToList();
+
+            var resp = string.Join(",", permissions);
+
+            Response.Headers.Append("X-User-Permissions", resp);
+
+            return Ok();
         }
 
         [HttpPost]
