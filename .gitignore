@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider RABBITMQ
 /rabbitmq/
+
+# Rider 
+idea/
