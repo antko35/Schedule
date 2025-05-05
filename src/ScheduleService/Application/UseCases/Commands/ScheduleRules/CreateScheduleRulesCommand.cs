@@ -10,7 +10,5 @@ namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
 {
     public record CreateScheduleRulesCommand(
         string UserId,
-        string DepartmentId,
-        int Month,
-        int Year) : IRequest<(Domain.Models.Schedule Schedule, UserScheduleRules ScheduleRules)>;
+        string DepartmentId) : IRequest<(Domain.Models.Schedule Schedule, UserScheduleRules ScheduleRules)>;
 }

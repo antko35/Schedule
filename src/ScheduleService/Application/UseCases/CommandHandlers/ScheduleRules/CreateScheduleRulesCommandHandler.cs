@@ -24,7 +24,8 @@
         // auto generation after adding to user management service
         public async Task<(Schedule Schedule, UserScheduleRules ScheduleRules)> Handle(CreateScheduleRulesCommand request, CancellationToken cancellationToken)
         {
-            var monthName = new DateOnly(request.Year, request.Month, 1)
+            var year = DateTime.Now.Year;
+            var monthName = DateTime.Now
                 .ToString("MMMM")
                 .ToLower();
 
@@ -33,7 +34,7 @@
             {
                 UserId = request.UserId,
                 DepartmentId = request.DepartmentId,
-                Year = request.Year,
+                Year = year,
                 MonthName = monthName,
                 ScheduleId = scheduleId,
             };
@@ -44,10 +45,10 @@
                 MonthName = monthName,
             };
 
-            var task1 = scheduleRepository.AddAsync(schedule);
-            var task2 = userRuleRepository.AddAsync(scheduleRules);
+            var addScheduleTask = scheduleRepository.AddAsync(schedule);
+            var addScheduleRulesTask = userRuleRepository.AddAsync(scheduleRules);
 
-            await Task.WhenAll(task1, task2);
+            await Task.WhenAll(addScheduleTask, addScheduleRulesTask);
 
             return (schedule, scheduleRules);
         }

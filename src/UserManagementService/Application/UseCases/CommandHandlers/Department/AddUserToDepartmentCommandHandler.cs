@@ -1,4 +1,6 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlers.Department;
+﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+
+namespace UserManagementService.Application.UseCases.CommandHandlers.Department;
 using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,14 +14,19 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
     private readonly IUserRepository userRepository;
     private readonly IDepartmentRepository departmentRepository;
     private readonly IUserJobsRepository userJobsRepository;
+    private readonly IUserEventPublisher userEventPublisher;
+
 
     public AddUserToDepartmentCommandHandler(IUserRepository userRepository,
                                              IDepartmentRepository departmentRepository,
-                                             IUserJobsRepository userJobsRepository)
+                                             IUserJobsRepository userJobsRepository,
+                                             IUserEventPublisher userEventPublisher)
     {
         this.userRepository = userRepository;
         this.departmentRepository = departmentRepository;
         this.userJobsRepository = userJobsRepository;
+        this.userEventPublisher = userEventPublisher;
+
     }
 
     public async Task<UserJob> Handle(AddUserToDepartmentCommand request, CancellationToken cancellationToken)
@@ -50,6 +57,8 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
         };
 
         await userJobsRepository.AddAsync(newUserJob);
+
+        await userEventPublisher.PublishUserCreated(newUserJob.UserId, newUserJob.DepartmentId);
 
         return newUserJob;
     }

@@ -1,4 +1,6 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
+﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+
+namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
 {
     using System;
     using System.Threading;

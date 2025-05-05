@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Application\UserManagementService.Application.csproj" />
     <ProjectReference Include="..\Data\UserManagementService.DataAccess.csproj" />
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

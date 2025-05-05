@@ -1,4 +1,5 @@
 using MediatR;
+using ScheduleService.Application.Services;
 using ScheduleService.Application.UseCases.Commands.Schedule;
 using ScheduleService.DataAccess.EmailSender;
 using ScheduleService.DataAccess.Repository;
@@ -12,15 +13,18 @@ public class SendPromptMonthlyCommandHandler
     private readonly IEmailService emailService;
     private readonly IScheduleRepository scheduleRepository;
     private readonly IUserRuleRepository scheduleRuleRepository;
+    private readonly UserEmailRpcService userEmailRpcService;
 
     public SendPromptMonthlyCommandHandler(
         IEmailService emailService,
         IScheduleRepository scheduleRepository,
-        IUserRuleRepository scheduleRuleRepository)
+        IUserRuleRepository scheduleRuleRepository,
+        UserEmailRpcService userEmailRpcService)
     {
         this.emailService = emailService;
         this.scheduleRepository = scheduleRepository;
         this.scheduleRuleRepository = scheduleRuleRepository;
+        this.userEmailRpcService = userEmailRpcService;
     }
 
     public async Task Handle(SendPromptMonthlyCommand request, CancellationToken cancellationToken)
@@ -29,8 +33,7 @@ public class SendPromptMonthlyCommandHandler
 
         var departments = await GetDepartmentsWithEmptySchedule(date.year, date.month);
 
-        Console.Out.WriteLine($"Sending prompt monthly: {departments.Count}");
-        var emails = GetHeadEmails(departments);
+        var emails = await GetHeadEmails(departments);
 
         await SendEmails(emails, date.month);
     }
@@ -48,31 +51,25 @@ public class SendPromptMonthlyCommandHandler
     {
         foreach (var email in emails)
         {
-            var body = $"{email.Username}, please fill schedule for {email.Clinic} for next month({month})";
+            var body = $"{email.Email}, please fill schedule for next month({month})";
 
             await emailService.SendEmailAsync(email.Email, "Schedule Generation", body);
         }
     }
 
-    private List<EmailInfoDto> GetHeadEmails(List<string> departments)
+    private async Task<List<EmailInfoDto>> GetHeadEmails(List<string> departments)
     {
+        var emails = await userEmailRpcService.InvokeAsync(departments);
+
         var responce = new List<EmailInfoDto>();
 
-        // получение из user management service с попмощью rabbit
-        var email = "antkovking@gmail.com";
-        var userName = "Anton Olegovich";
-        var clinic1 = "Clinic ";
-        var clinic2 = "Clinic 2";
-
-        foreach (var department in departments)
+        foreach (var email in emails)
         {
-             EmailInfoDto info1 = new EmailInfoDto()
+             EmailInfoDto info = new EmailInfoDto()
              {
                  Email = email,
-                 Username = userName + " " + department,
-                 Clinic = clinic1,
              };
-             responce.Add(info1);
+             responce.Add(info);
         }
 
         return responce;
@@ -103,11 +100,5 @@ public class SendPromptMonthlyCommandHandler
     private class EmailInfoDto
     {
         public string Email { get; set; }
-
-        public string Username { get; set; }
-
-        public string Clinic { get; set; }
-
-        public string Month { get; set; }
     }
 }

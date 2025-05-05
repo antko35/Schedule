@@ -51,6 +51,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserManagementService", "te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserServiceTests", "tests\UserServiceTests\UserServiceTests.csproj", "{97584FB3-B2B0-4AC0-BEA8-612665767683}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "src\UserManagementService\Infrastructure\Infrastructure.csproj", "{7C4C459B-5B07-417A-A2B2-95314B85E98A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7BD1E600-9795-4DB6-AF84-CEEF14318AAD} = {7BD1E600-9795-4DB6-AF84-CEEF14318AAD}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,6 +126,10 @@ Global
 		{97584FB3-B2B0-4AC0-BEA8-612665767683}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97584FB3-B2B0-4AC0-BEA8-612665767683}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97584FB3-B2B0-4AC0-BEA8-612665767683}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C4C459B-5B07-417A-A2B2-95314B85E98A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C4C459B-5B07-417A-A2B2-95314B85E98A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C4C459B-5B07-417A-A2B2-95314B85E98A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C4C459B-5B07-417A-A2B2-95314B85E98A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -148,5 +157,6 @@ Global
 		{01D24DA9-A489-43B2-836F-9B25432322CF} = {1DF767BA-EE9D-4B55-95DE-B3437276502A}
 		{2800F64F-0716-4FC2-A651-C601DF3964FA} = {F99FAD73-4400-406D-A6F1-8B2607D22EBB}
 		{97584FB3-B2B0-4AC0-BEA8-612665767683} = {99B2CF26-4FE1-444E-B47F-DCBC4910A78C}
+		{7C4C459B-5B07-417A-A2B2-95314B85E98A} = {1DF767BA-EE9D-4B55-95DE-B3437276502A}
 	EndGlobalSection
 EndGlobal
