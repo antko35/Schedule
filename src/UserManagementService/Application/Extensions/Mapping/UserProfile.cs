@@ -8,6 +8,10 @@ public class UserProfile : Profile
 {
     public UserProfile()
     {
-        CreateMap<ShortUserInfo, ShortUserInfoDto>();
+        CreateMap<User, ShortUserInfoDto>()
+            .ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
+            .ForMember(d => d.FirstName, o => o.MapFrom(s => s.FirstName))
+            .ForMember(d => d.LastName, o => o.MapFrom(s => s.LastName))
+            .ForMember(d => d.Patronymic, o => o.MapFrom(s => s.Patronymic));
     }
 }
