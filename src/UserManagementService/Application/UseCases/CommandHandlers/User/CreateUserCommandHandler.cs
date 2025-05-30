@@ -1,4 +1,6 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlers.User
+﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+
+namespace UserManagementService.Application.UseCases.CommandHandlers.User
 {
     using System;
     using System.Collections.Generic;

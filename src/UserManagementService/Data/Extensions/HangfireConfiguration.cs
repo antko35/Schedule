@@ -29,6 +29,7 @@
                         BackupStrategy = new CollectionMongoBackupStrategy()
                     },
                     Prefix = "hangfire", // Префикс для коллекций
+                    CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
                 });
             });
 

@@ -9,7 +9,7 @@ using ScheduleService.Domain.Models;
 
 namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
 
-public class AddingScheduleRulesForNextMonthCommandHandler 
+public class AddingScheduleRulesForNextMonthCommandHandler
     : IRequestHandler<AddingScheduleRulesForNextMonthCommand>
 {
     private readonly IScheduleRepository scheduleRepository;
@@ -35,8 +35,7 @@ public class AddingScheduleRulesForNextMonthCommandHandler
 
         if (allScheduleRules == null)
         {
-            Console.Out.WriteLine($"allScheduleRules is empty");
-            throw new InvalidOperationException("allScheduleRules is empty");
+            throw new InvalidOperationException("No ScheduleRules");
         }
 
         await CreateAndAddRulesAndSchedules(allScheduleRules, nextMonthDate, nextMonth);

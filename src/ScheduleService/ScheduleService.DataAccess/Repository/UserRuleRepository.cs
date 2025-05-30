@@ -37,7 +37,7 @@ namespace ScheduleService.DataAccess.Repository
 
             var result = await dbSet.Find(filter).FirstOrDefaultAsync();
 
-            return result.Id;
+            return result.DepartmentId;
         }
 
         public async Task<List<UserScheduleRules>?> GetAllRulesByMonth(string month)

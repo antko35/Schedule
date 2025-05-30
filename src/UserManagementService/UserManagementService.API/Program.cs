@@ -1,6 +1,7 @@
 using Hangfire;
 using MediatR;
 using System.Reflection;
+using Infrastructure.Extensions;
 using UserManagementService.API.Extensions;
 using UserManagementService.API.Extensions.AppExtensions;
 using UserManagementService.API.Extensions.AppExtensions.Hangfire;
@@ -27,6 +28,9 @@ builder.Services
     .ConfigureDb(builder.Configuration)
     .ConfigureHangfire()
     .AddDataLayerDependencis();
+
+builder.Services
+    .AddInfrastructureDependencies();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
