@@ -31,6 +31,19 @@
         }
 
         /// <summary>
+        /// Get list of users(id, name, surname)
+        /// </summary>
+        /// <returns>List of users from collection 'Users'</returns>
+        [HttpGet]
+        [Route("ShortUserInfo")]
+        public async Task<IActionResult> GetUsersList()
+        {
+            var users = await mediator.Send(new GetUsersListQuery());
+
+            return Ok(users);
+        }
+
+        /// <summary>
         /// Get full user info by id.
         /// Contatins general info and info about work in departments
         /// </summary>

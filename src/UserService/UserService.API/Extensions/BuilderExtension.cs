@@ -15,9 +15,9 @@ public static class BuilderExtension
 
         builder.Services.AddGrpc();
 
-        builder.Services.AddIdentityApiEndpoints<User>()
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<UserDbContext>();
+            builder.Services.AddIdentityApiEndpoints<User>()
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<UserDbContext>();
 
         builder.Services.Configure<IdentityOptions>(options =>
         {
