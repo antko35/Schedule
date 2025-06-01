@@ -27,4 +27,6 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             })
             .ToListAsync();
     }
+    
+    
 }

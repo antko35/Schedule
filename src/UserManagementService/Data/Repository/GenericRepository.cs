@@ -36,6 +36,12 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
         return await dbSet.Find(obj => obj.Id == id).FirstOrDefaultAsync();
     }
 
+    public async Task<List<TEntity>> GetByIdsAsync(IEnumerable<string> ids)
+    {
+        var filter = Builders<TEntity>.Filter.In(x => x.Id, ids);
+        return await dbSet.Find(filter).ToListAsync();
+    }
+
     public async Task RemoveAsync(string id)
     {
         await dbSet.DeleteOneAsync(obj => obj.Id == id);

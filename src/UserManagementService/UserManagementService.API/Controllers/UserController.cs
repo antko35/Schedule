@@ -31,14 +31,14 @@
         }
 
         /// <summary>
-        /// Get list of users(id, name, surname)
+        /// Get list of users(id, name, surname) by department.
         /// </summary>
         /// <returns>List of users from collection 'Users'</returns>
         [HttpGet]
-        [Route("ShortUserInfo")]
-        public async Task<IActionResult> GetUsersList()
+        [Route("{departmentId}/ShortUserInfo")]
+        public async Task<IActionResult> GetUsersList([FromBody] string departmentId)
         {
-            var users = await mediator.Send(new GetUsersListQuery());
+            var users = await mediator.Send(new GetUsersListQuery(departmentId));
 
             return Ok(users);
         }
