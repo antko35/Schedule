@@ -36,7 +36,7 @@
         /// <returns>List of users from collection 'Users'</returns>
         [HttpGet]
         [Route("{departmentId}/ShortUserInfo")]
-        public async Task<IActionResult> GetUsersList([FromBody] string departmentId)
+        public async Task<IActionResult> GetUsersList([FromRoute] string departmentId)
         {
             var users = await mediator.Send(new GetUsersListQuery(departmentId));
 
