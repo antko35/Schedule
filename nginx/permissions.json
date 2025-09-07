@@ -1,0 +1,5 @@
+{
+  "/Department/addUserToDepartment": "manage_users",
+  "/Department/deleteFromDepartment": "manage_users",
+  "/Department": "manage_users"
+}
