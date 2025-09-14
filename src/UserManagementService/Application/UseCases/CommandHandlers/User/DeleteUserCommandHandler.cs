@@ -1,38 +1,50 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlers.User
+﻿using MediatR;
+using UserManagementService.Application.Extensions;
+using UserManagementService.Application.UseCases.Commands.User;
+using UserManagementService.Domain.Abstractions.IRabbitMq;
+using UserManagementService.Domain.Abstractions.IRepository;
+
+namespace UserManagementService.Application.UseCases.CommandHandlers.User;
+
+public class DeleteUserCommandHandler
+    : IRequestHandler<DeleteUserCommand>
 {
-    using MediatR;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using UserManagementService.Application.Extensions;
-    using UserManagementService.Application.UseCases.Commands.User;
-    using UserManagementService.Domain.Abstractions.IRepository;
+    private readonly IUserRepository userRepository;
+    private readonly IUserJobsRepository userJobsRepository;
+    private readonly IUserEventPublisher userEventPublisher;
 
-    public class DeleteUserCommandHandler
-        : IRequestHandler<DeleteUserCommand>
+    public DeleteUserCommandHandler(
+        IUserRepository userRepository,
+        IUserJobsRepository userJobsRepository,
+        IUserEventPublisher userEventPublisher)
     {
-        private readonly IUserRepository userRepository;
-        private readonly IUserJobsRepository userJobsRepository;
+        this.userRepository = userRepository;
+        this.userJobsRepository = userJobsRepository;
+        this.userEventPublisher = userEventPublisher;
+    }
 
-        public DeleteUserCommandHandler(IUserRepository userRepository,
-                                        IUserJobsRepository userJobsRepository)
+    public async Task Handle(DeleteUserCommand request, CancellationToken cancellationToken)
+    {
+        var user = await userRepository.GetByIdAsync(request.UserId);
+
+        user.EnsureExists("User not found");
+
+        await userRepository.RemoveAsync(request.UserId);
+
+        await DeleteUserSchedule(request.UserId);
+
+        await userJobsRepository.DeleteByUserId(request.UserId);
+    }
+
+    private async Task DeleteUserSchedule(string userId)
+    {
+        var userJobs = await userJobsRepository.GetUserJobsByUserIdAsync(userId);
+
+        var departments = userJobs.Select(userJob => userJob.DepartmentId).ToList();
+
+        foreach (var id in departments)
         {
-            this.userRepository = userRepository;
-            this.userJobsRepository = userJobsRepository;
-        }
-
-        public async Task Handle(DeleteUserCommand request, CancellationToken cancellationToken)
-        {
-            var user = await userRepository.GetByIdAsync(request.UserId);
-
-            user.EnsureExists("User not found");
-
-            await userRepository.RemoveAsync(request.UserId);
-
-            await userJobsRepository.DeleteByUserId(request.UserId);
+            await userEventPublisher.PublishUserDeleted(userId, id);
         }
     }
 }

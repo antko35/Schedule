@@ -135,5 +135,19 @@
 
             return Ok(deletedUserJob);
         }
+
+        /// <summary>
+        /// Delete department by Id.
+        /// </summary>
+        /// <param name="id">Department Id.</param>
+        /// <returns></returns>
+        [HttpDelete]
+        [Route("delete/{id:guid}")]
+        public async Task<IActionResult> DeleteDepartment(Guid id)
+        {
+            await mediator.Send(new DeleteDepartmentCommand(id));
+
+            return Ok();
+        }
     }
 }

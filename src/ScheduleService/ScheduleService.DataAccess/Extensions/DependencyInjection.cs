@@ -1,12 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using ScheduleService.DataAccess.Repository;
 using ScheduleService.Domain.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ScheduleService.DataAccess.EmailSender;
 
 namespace ScheduleService.DataAccess.Extensions
 {
