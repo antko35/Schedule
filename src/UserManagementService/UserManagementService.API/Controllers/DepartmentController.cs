@@ -142,8 +142,8 @@
         /// <param name="id">Department Id.</param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("delete/{id:guid}")]
-        public async Task<IActionResult> DeleteDepartment(Guid id)
+        [Route("delete/{id}")]
+        public async Task<IActionResult> DeleteDepartment(string id)
         {
             await mediator.Send(new DeleteDepartmentCommand(id));
 

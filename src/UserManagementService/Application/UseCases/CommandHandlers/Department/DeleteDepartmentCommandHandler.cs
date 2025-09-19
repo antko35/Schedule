@@ -23,17 +23,19 @@ public class DeleteDepartmentCommandHandler : IRequestHandler<DeleteDepartmentCo
 
     public async Task Handle(DeleteDepartmentCommand request, CancellationToken cancellationToken)
     {
-        var department = await _departmentRepository.GetByIdAsync(request.DepartmentId.ToString());
+        var department = await _departmentRepository.GetByIdAsync(request.DepartmentId);
 
         department.EnsureExists("Department not found");
 
-        var userJobs = await _userJobsRepository.GetUserJobsByDepartmentIdAsync(request.DepartmentId.ToString());
+        var userJobs = await _userJobsRepository.GetUserJobsByDepartmentIdAsync(request.DepartmentId);
 
         foreach (var userJob in userJobs)
         {
             await _userJobsRepository.RemoveAsync(userJob.Id);
 
-            await _userEventPublisher.PublishUserDeleted(userJob.UserId, request.DepartmentId.ToString());
+            await _userEventPublisher.PublishUserDeleted(userJob.UserId, request.DepartmentId);
         }
+
+        await _departmentRepository.RemoveAsync(request.DepartmentId);
     }
 }
