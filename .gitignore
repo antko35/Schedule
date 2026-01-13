@@ -396,6 +396,8 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
-# JetBrains Rider
-*.sln.iml
-rabbitmq/.erlang.cookie
+# JetBrains Rider RABBITMQ
+/rabbitmq/
+
+# Rider 
+idea/
