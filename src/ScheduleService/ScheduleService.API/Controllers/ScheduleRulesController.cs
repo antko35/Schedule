@@ -1,10 +1,10 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using ScheduleService.Application.UseCases.Commands.ScheduleRules;
-using ScheduleService.Application.UseCases.Queries.ScheduleRules;
-
-namespace ScheduleService.API.Controllers
+﻿namespace ScheduleService.API.Controllers
 {
+    using MediatR;
+    using Microsoft.AspNetCore.Mvc;
+    using ScheduleService.Application.UseCases.Commands.ScheduleRules;
+    using ScheduleService.Application.UseCases.Queries.ScheduleRules;
+
     [ApiController]
     [Route("[controller]")]
     public class ScheduleRulesController : ControllerBase
@@ -56,6 +56,24 @@ namespace ScheduleService.API.Controllers
         [Route("generateRules")]
         public async Task<IActionResult> CreateUserRules([FromBody] CreateScheduleRulesCommand command)
         {
+            await mediator.Send(command);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Creaste rules for schedule generation for specific month.
+        /// </summary>
+        /// <param name="departmentId"></param>
+        /// <param name="year"></param>
+        /// <param name="month"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("createRules/{departmentId}/{year:int}/{month:int}")]
+        public async Task<IActionResult> CreateRules(string departmentId, int year, int month)
+        {
+            var command = new CreateRulesForSpecificMonthCommand(departmentId, year, month);
+
             await mediator.Send(command);
 
             return Ok();

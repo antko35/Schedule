@@ -1,7 +1,6 @@
-using System.Runtime.InteropServices.JavaScript;
 using MediatR;
 using MongoDB.Bson;
-using MongoDB.Driver.Linq;
+using ScheduleService.Application.Services;
 using ScheduleService.Application.UseCases.Commands.ScheduleRules;
 using ScheduleService.DataAccess.Repository;
 using ScheduleService.Domain.Abstractions;
@@ -14,13 +13,15 @@ public class AddingScheduleRulesForNextMonthCommandHandler
 {
     private readonly IScheduleRepository scheduleRepository;
     private readonly IUserRuleRepository scheduleRuleRepository;
+    private readonly ScheduleRulesGenerator scheduleRulesGenerator;
 
     public AddingScheduleRulesForNextMonthCommandHandler(
         IUserRuleRepository scheduleRuleRepository,
-        IScheduleRepository scheduleRepository)
+        IScheduleRepository scheduleRepository, ScheduleRulesGenerator scheduleRulesGenerator)
     {
         this.scheduleRuleRepository = scheduleRuleRepository;
         this.scheduleRepository = scheduleRepository;
+        this.scheduleRulesGenerator = scheduleRulesGenerator;
     }
 
     public async Task Handle(AddingScheduleRulesForNextMonthCommand request, CancellationToken cancellationToken)
@@ -31,46 +32,16 @@ public class AddingScheduleRulesForNextMonthCommandHandler
         var currentMonth = currentDate.ToString("MMMM").ToLower();
         var nextMonth = nextMonthDate.ToString("MMMM").ToLower();
 
-        var allScheduleRules = await scheduleRuleRepository.GetAllRulesByMonth(currentMonth);
+        var existingScheduleRules = await scheduleRuleRepository.GetAllRulesByMonth(currentMonth);
 
-        if (allScheduleRules == null)
+        if (existingScheduleRules == null)
         {
             throw new InvalidOperationException("No ScheduleRules");
         }
 
-        await CreateAndAddRulesAndSchedules(allScheduleRules, nextMonthDate, nextMonth);
-    }
-
-    private async Task CreateAndAddRulesAndSchedules(
-        List<UserScheduleRules> allScheduleRules, DateTime nextMonthDate, string nextMonth)
-    {
-        var schedulesToAdd = new List<Domain.Models.Schedule>();
-        var rulesToAdd = new List<UserScheduleRules>();
-
-        foreach (var scheduleRule in allScheduleRules)
+        foreach (var scheduleRule in existingScheduleRules)
         {
-            var scheduleId = ObjectId.GenerateNewId().ToString();
-
-            var schedule = new Domain.Models.Schedule
-            {
-                Id = scheduleId,
-                MonthName = nextMonth,
-            };
-
-            var scheduleRules = new UserScheduleRules
-            {
-                UserId = scheduleRule.UserId,
-                DepartmentId = scheduleRule.DepartmentId,
-                Year = nextMonthDate.Year,
-                MonthName = nextMonth,
-                ScheduleId = scheduleId,
-            };
-
-            schedulesToAdd.Add(schedule);
-            rulesToAdd.Add(scheduleRules);
+            await scheduleRulesGenerator.CreateAndAddRulesAndSchedules(scheduleRule.UserId, scheduleRule.DepartmentId, nextMonthDate, nextMonth);
         }
-
-        await scheduleRuleRepository.AddRangeAsync(rulesToAdd);
-        await scheduleRepository.AddRangeAsync(schedulesToAdd);
     }
 }

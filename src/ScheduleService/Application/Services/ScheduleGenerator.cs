@@ -141,7 +141,7 @@ namespace ScheduleService.Application.Services
             TimeOnly startWork = userRules.StartWorkDayTime;
             TimeOnly endWork = startWork.AddHours(6).AddMinutes(30);
 
-            DateTime startTime, endTime;
+            DateTimeOffset startTime, endTime;
             if (firstShift)
             {
                 startTime = new DateTime(year, month, day, startWork.Hour, startWork.Minute, 0);

@@ -6,94 +6,125 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 using UserManagementService.Application.UseCases.Queries.User;
 
 namespace Infrastructure.RabbitMq;
 
-public class UserEmailsRpcServer : IHostedService
+public class UserEmailsRpcServer : BackgroundService
 {
-    private readonly ILogger<UserEmailsRpcServer> logger;
-    private IConnection? connection;
-    private IChannel? channel;
-    private AsyncEventingBasicConsumer? consumer;
-    private readonly ConnectionFactory factory;
-    
-    private readonly IServiceScopeFactory scopeFactory;
+    private readonly ILogger<UserEmailsRpcServer> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IConnection _connection; // Внедряется через Aspire
     
     private const string RequestQueue = "get_department_heads_emails";
 
-    public UserEmailsRpcServer(ILogger<UserEmailsRpcServer> logger, IServiceScopeFactory scopeFactory)
+    public UserEmailsRpcServer(
+        ILogger<UserEmailsRpcServer> logger, 
+        IServiceScopeFactory scopeFactory,
+        IConnection connection) // Получаем уже настроенное соединение
     {
-        this.logger = logger;
-        factory = new ConnectionFactory { HostName = "rabbitmq" };
-        this.scopeFactory = scopeFactory;
+        _logger = logger;
+        _scopeFactory = scopeFactory;
+        _connection = connection;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-
-        connection = await factory.CreateConnectionAsync();
-        channel = await connection.CreateChannelAsync();
-        
-        await channel.QueueDeclareAsync(queue: RequestQueue, durable: false, exclusive: false, autoDelete: false);
-
-        consumer = new AsyncEventingBasicConsumer(channel);
-        consumer.ReceivedAsync += async (model, ea) =>
+        while (!stoppingToken.IsCancellationRequested)
         {
-            var body = ea.Body.ToArray();
-           
-            var departmentsIds = JsonSerializer.Deserialize<List<string>>(body) ?? new List<string>();
-            
-            logger.LogInformation($"{departmentsIds}");
-             
-            var emails = await GetDepartmentHeadsEmails(departmentsIds);
-            
-            var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(emails));
-
-            IReadOnlyBasicProperties props = ea.BasicProperties;
-            var replyProps = new BasicProperties
+            try
             {
-                CorrelationId = props.CorrelationId
-            };
-            
-            await channel.BasicPublishAsync(
-                exchange: string.Empty,
-                routingKey: ea.BasicProperties.ReplyTo!,
-                mandatory: true,
-                basicProperties: replyProps,
-                body: responseBytes);
+                // Создаем канал
+                using var channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
-            await channel.BasicAckAsync(ea.DeliveryTag, false);
-        };
+                // Объявляем очередь для запросов
+                await channel.QueueDeclareAsync(
+                    queue: RequestQueue, 
+                    durable: false, 
+                    exclusive: false, 
+                    autoDelete: false, 
+                    cancellationToken: stoppingToken);
 
-        await channel.BasicConsumeAsync(queue: RequestQueue, autoAck: false, consumer: consumer);
+                // Ограничиваем количество одновременных запросов (QoS)
+                await channel.BasicQosAsync(0, 1, false, stoppingToken);
+
+                var consumer = new AsyncEventingBasicConsumer(channel);
+                
+                consumer.ReceivedAsync += async (model, ea) =>
+                {
+                    try
+                    {
+                        var body = ea.Body.ToArray();
+                        var departmentsIds = JsonSerializer.Deserialize<List<string>>(body) ?? new List<string>();
+                        
+                        _logger.LogInformation("RPC Request received for departments: {Departments}", string.Join(", ", departmentsIds));
+                         
+                        // Получаем данные через MediatR
+                        var emails = await GetDepartmentHeadsEmails(departmentsIds, stoppingToken);
+                        
+                        var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(emails));
+
+                        // Формируем ответные свойства (CorrelationId обязателен для RPC)
+                        var replyProps = new BasicProperties
+                        {
+                            CorrelationId = ea.BasicProperties.CorrelationId
+                        };
+                        
+                        // Отправляем ответ в очередь, указанную в ReplyTo
+                        await channel.BasicPublishAsync(
+                            exchange: string.Empty,
+                            routingKey: ea.BasicProperties.ReplyTo!,
+                            mandatory: true,
+                            basicProperties: replyProps,
+                            body: responseBytes,
+                            cancellationToken: stoppingToken);
+
+                        // Подтверждаем обработку сообщения
+                        await channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error processing RPC request");
+                        // В случае ошибки можно отправить пустой список или Nack
+                        await channel.BasicNackAsync(ea.DeliveryTag, false, false, stoppingToken);
+                    }
+                };
+
+                await channel.BasicConsumeAsync(queue: RequestQueue, autoAck: false, consumer: consumer, cancellationToken: stoppingToken);
+
+                _logger.LogInformation("RPC Server started. Waiting for requests on queue: {Queue}", RequestQueue);
+
+                // Ожидаем завершения работы
+                await Task.Delay(Timeout.Infinite, stoppingToken);
+            }
+            catch (BrokerUnreachableException)
+            {
+                _logger.LogWarning("RabbitMQ is not reachable. Retrying in 5 seconds...");
+                await Task.Delay(5000, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Unexpected error in RPC Server");
+                await Task.Delay(5000, stoppingToken);
+            }
+        }
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    private async Task<List<string>> GetDepartmentHeadsEmails(List<string> departmentIds, CancellationToken ct)
     {
-
-        if (channel is not null)
-        {
-            await channel.CloseAsync();
-        }
-
-        if (connection is not null)
-        {
-            await connection.CloseAsync();
-        }
-    }
-
-    private async Task<List<string>> GetDepartmentHeadsEmails(List<string> departmentId)
-    {
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
         
-        var query = new GetDepartmentHeadsEmailsQuery(departmentId);
-        
-        var responce = await mediator.Send(query, CancellationToken.None);
+        var query = new GetDepartmentHeadsEmailsQuery(departmentIds);
+        var response = await mediator.Send(query, ct);
 
-        logger.LogInformation($"{responce.ToArray()}");
+        _logger.LogInformation("Found {Count} emails", response.Count);
         
-        return responce;
+        return response;
     }
 }

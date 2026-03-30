@@ -6,6 +6,8 @@ using UserService.Infrastructure.Seeders;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.AddHost();
 
@@ -24,6 +26,8 @@ builder.AddPresentation();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 app.UseMiddleware<ExeptionHadlingMiddleware>();
 

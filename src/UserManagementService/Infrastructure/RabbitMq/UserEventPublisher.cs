@@ -3,6 +3,8 @@ using System.Text.Json;
 using RabbitMQ.Client;
 using UserManagementService.Domain.Abstractions.IRabbitMq;
 
+namespace Infrastructure.RabbitMq;
+
 public class UserEventPublisher: IUserEventPublisher
 {
     private const string ExchangeName = "user_events";

@@ -54,3 +54,4 @@ scheduleRulesId - id from ScheduleRules collection
 hoursPerMonth - hours from specific file(хз где, мб у папы на ффлешке либо у меня на винде, надо поискать)
 maxHoursPerDay - hours from specific file
 startWorkDayTime - 
+

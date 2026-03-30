@@ -119,5 +119,20 @@
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Export schedule.
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("export")]
+        public async Task<IActionResult> ExportSchedule([FromBody] ExportScheduleCommand command)
+        {
+            var fileBytes = await mediator.Send(command);
+
+            var fileName = "report.xlsx";
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
     }
 }

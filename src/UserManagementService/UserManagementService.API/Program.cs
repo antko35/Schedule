@@ -13,6 +13,12 @@ using UserManagementService.DataAccess.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
+builder.AddMongoDBClient("usermanagement-db");
+
+builder.AddRabbitMQClient("rabbitmq");
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -40,6 +46,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 app.UseMiddleware<ExeptionHadlingMiddleware>();
 

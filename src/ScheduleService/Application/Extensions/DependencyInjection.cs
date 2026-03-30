@@ -1,28 +1,31 @@
-﻿using ScheduleService.Application.Services;
+﻿namespace ScheduleService.Application.Extensions;
 
-namespace ScheduleService.Application.Extensions
+using System.Reflection;
+using FluentValidation;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using ScheduleService.Application.Extensions.Validation;
+using ScheduleService.Application.Services;
+
+public static class DependencyInjection
 {
-    using System.Reflection;
-    using FluentValidation;
-    using MediatR;
-    using Microsoft.Extensions.DependencyInjection;
-    using ScheduleService.Application.Extensions.Validation;
-
-    public static class DependencyInjection
+    public static IServiceCollection AddApplicatiobLayerDependencis(this IServiceCollection services)
     {
-        public static IServiceCollection AddApplicatiobLayerDependencis(this IServiceCollection services)
+        services.AddMediatR(cnf => cnf.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+        services.AddAutoMapper(cfg =>
         {
-            services.AddMediatR(cnf => cnf.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+            cfg.AddMaps(Assembly.GetExecutingAssembly());
+        });
 
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddScoped<UserEmailRpcService>();
 
-            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        services.AddScoped<ScheduleRulesGenerator>();
 
-            services.AddAutoMapper(Assembly.GetExecutingAssembly());
-
-            services.AddScoped<UserEmailRpcService>();
-
-            return services;
-        }
+        return services;
     }
 }

@@ -56,6 +56,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "src\UserM
 		{7BD1E600-9795-4DB6-AF84-CEEF14318AAD} = {7BD1E600-9795-4DB6-AF84-CEEF14318AAD}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Schedule.AppHost", "Schedule.AppHost\Schedule.AppHost.csproj", "{4497EE46-9F6D-414A-98ED-C4922B955898}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Schedule.ServiceDefaults", "Schedule.ServiceDefaults\Schedule.ServiceDefaults.csproj", "{C2B66BD8-61F9-4BE5-91A8-F1AAB68E1CB7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +134,14 @@ Global
 		{7C4C459B-5B07-417A-A2B2-95314B85E98A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C4C459B-5B07-417A-A2B2-95314B85E98A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C4C459B-5B07-417A-A2B2-95314B85E98A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4497EE46-9F6D-414A-98ED-C4922B955898}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4497EE46-9F6D-414A-98ED-C4922B955898}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4497EE46-9F6D-414A-98ED-C4922B955898}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4497EE46-9F6D-414A-98ED-C4922B955898}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2B66BD8-61F9-4BE5-91A8-F1AAB68E1CB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2B66BD8-61F9-4BE5-91A8-F1AAB68E1CB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2B66BD8-61F9-4BE5-91A8-F1AAB68E1CB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2B66BD8-61F9-4BE5-91A8-F1AAB68E1CB7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

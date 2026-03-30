@@ -1,4 +1,3 @@
-using System.Reflection;
 using ScheduleService.API.Extensions;
 using ScheduleService.API.Extensions.AppExtensions.Hangfire;
 using ScheduleService.Application.Extensions;
@@ -6,6 +5,12 @@ using ScheduleService.DataAccess.Extensions;
 using ScheduleService.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
+
+builder.AddMongoDBClient("schedule-db");
+
+builder.AddRabbitMQClient("rabbitmq");
 
 builder.Services.AddControllers();
 
@@ -25,7 +30,25 @@ builder.Services
 builder.Services
     .AddSwaggerExtension();
 
+builder.Services.AddAuthentication()
+    .AddKeycloakJwtBearer(
+        serviceName: "keycloak",
+        realm: "schedule-service",
+        configureOptions: options =>
+        {
+            options.Audience = "schedule-service";
+
+            if (builder.Environment.IsDevelopment())
+            {
+                options.RequireHttpsMetadata = false;
+            }
+        });
+
+builder.Services.AddAuthorizationBuilder();
+
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 app.UseMiddleware<ExeptionHadlingMiddleware>();
 

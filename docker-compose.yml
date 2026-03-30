@@ -29,7 +29,7 @@ services:
   user-service-pg-db:
     image: postgres:latest
     ports:
-      - "5432:5432" # Локальный порт → Порт внутри контейнера
+      - "5434:5432" # Локальный порт → Порт внутри контейнера
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -128,6 +128,18 @@ services:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
       - ME_CONFIG_MONGODB_ADMINPASSWORD=password
       - ME_CONFIG_MONGODB_SERVER=management-mongo
+        
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - ./containers/keycloak:/opt/keycloak/data
+    user: root # development only
 
 volumes:
   db-data:

@@ -12,6 +12,17 @@
             IConfiguration configuration)
         {
             services.Configure<DbOptions>(configuration.GetSection("DatabaseSettings"));
+
+            services.PostConfigure<DbOptions>(options =>
+            {
+                var aspireConnectionString = configuration.GetConnectionString("scheduleDb");
+
+                if (!string.IsNullOrEmpty(aspireConnectionString))
+                {
+                    options.ConnectionString = aspireConnectionString;
+                }
+            });
+
             services.AddSingleton<DbOptions>(sp =>
                 sp.GetRequiredService<IOptions<DbOptions>>().Value);
 
