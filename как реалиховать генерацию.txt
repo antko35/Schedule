@@ -1,0 +1,7 @@
+как реалиховать генерацию расписания:
+1. Сделать запрос в usermanagement сервис за именем и названием должности пользователей.
+2. как-то сопоставить ее с расписаниями
+3. либо делать шаблон руками, либо захардкодить какой-то шаблон.
+
+для excel использовать  ClosedXML https://www.google.com/search?client=ubuntu-sn&channel=fs&q=generate+excel+fron+.net#fpstate=ive&vld=cid:b3dad6ab,vid:o5wFWdujaGM,st:0 как пример раюоты
+
