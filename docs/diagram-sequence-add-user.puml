@@ -1,0 +1,95 @@
+@startuml "Sequence - Add User To Department"
+
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceParticipantBorderColor #4a86c8
+skinparam sequenceParticipantBackgroundColor #dce8f5
+skinparam sequenceGroupBorderColor #888
+skinparam sequenceGroupBackgroundColor #f5faff
+skinparam noteBorderColor #c8a84a
+skinparam noteBackgroundColor #fffbe6
+skinparam sequenceDividerBackgroundColor #e8f0e8
+skinparam sequenceDividerBorderColor #4a8c4a
+
+actor "Клиент" as Client
+
+box "UserManagementService" #f0f5ff
+    participant "Department\nController" as Controller
+    participant "AddUserToDepartment\nCommandHandler" as Handler
+    participant "UserRepository" as UserRepo
+    participant "DepartmentRepository" as DeptRepo
+    participant "UserJobsRepository" as JobRepo
+    participant "UserEventPublisher" as Publisher
+end box
+
+participant "RabbitMQ\n(user_events)" as MQ
+
+box "ScheduleService" #f0fff0
+    participant "UserCreated\nConsumer" as Consumer
+    participant "CreateScheduleRules\nCommandHandler" as RulesHandler
+    participant "ScheduleRepository" as SchedRepo
+    participant "UserRuleRepository" as RuleRepo
+end box
+
+== Валидация и проверка данных ==
+
+Client -> Controller : POST /Department/addUserToDepartment\n(userId, departmentId, role, ...)
+
+Controller -> Handler : Handle(AddUserToDepartmentCommand)
+
+Handler -> UserRepo : GetByIdAsync(userId)
+UserRepo --> Handler : User
+note right : 404, если пользователь\nне найден
+
+Handler -> DeptRepo : GetByIdAsync(departmentId)
+DeptRepo --> Handler : Department
+note right : 404, если подразделение\nне найдено
+
+Handler -> JobRepo : GetUserJobAsync(userId, departmentId)
+JobRepo --> Handler : UserJob?
+
+alt сотрудник уже в подразделении
+    Handler --> Controller : InvalidOperationException
+    Controller --> Client : 400 Bad Request
+end
+
+== Создание записи UserJob ==
+
+Handler -> JobRepo : AddAsync(newUserJob)
+note right
+  UserJob:
+  - UserId
+  - DepartmentId
+  - Role, Status
+  - Email, PhoneNumber
+end note
+
+== Публикация события в RabbitMQ ==
+
+Handler -> Publisher : PublishUserCreated(userId, departmentId)
+Publisher -> MQ : BasicPublish\nexchange: "user_events"\nroutingKey: "user_created"\nbody: { UserId, DepartmentId }
+
+Handler --> Controller : UserJob
+Controller --> Client : 200 OK + UserJob
+
+== Асинхронная обработка в ScheduleService ==
+
+MQ -> Consumer : доставка сообщения\n{ UserId, DepartmentId }
+
+Consumer -> RulesHandler : Send(CreateScheduleRulesCommand\n(userId, departmentId))
+
+par Параллельное сохранение
+    RulesHandler -> SchedRepo : AddAsync(new Schedule\n{ Id = scheduleId, MonthName })
+else
+    RulesHandler -> RuleRepo : AddAsync(new UserScheduleRules\n{ UserId, DepartmentId,\nScheduleId, MonthName, Year })
+end
+
+RulesHandler --> Consumer : (Schedule, UserScheduleRules)
+
+Consumer -> MQ : BasicAck
+
+note over Consumer
+  В случае ошибки — повтор через 5 сек.
+  (BrokerUnreachableException / Exception)
+end note
+
+@enduml

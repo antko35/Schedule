@@ -5,6 +5,7 @@ using Infrastructure.Extensions;
 using UserManagementService.API.Extensions;
 using UserManagementService.API.Extensions.AppExtensions;
 using UserManagementService.API.Extensions.AppExtensions.Hangfire;
+using UserManagementService.API.Keycloak;
 using UserManagementService.Application.Extensions;
 using UserManagementService.Application.UseCases.Commands.User;
 using UserManagementService.Data.Extensions;
@@ -15,15 +16,21 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.AddMongoDBClient("usermanagement-db");
+builder.AddMongoDBClient("userManagementDb");
 
 builder.AddRabbitMQClient("rabbitmq");
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-// API Layer
-builder.ConfigureGrpc();
+// Keycloak Admin API client
+builder.Services.AddHttpClient(
+    "keycloak-admin",
+    client =>
+{
+    client.BaseAddress = new Uri("http://keycloak");
+}).AddServiceDiscovery();
+builder.Services.AddScoped<IKeycloakAdminService, KeycloakAdminService>();
 
 // Application Layer
 builder.Services

@@ -14,16 +14,6 @@
             services.Configure<DbOptions>(
                 configuration.GetSection("DatabaseSettings"));
 
-            services.PostConfigure<DbOptions>(options =>
-            {
-                var aspireConnectionString = configuration.GetConnectionString("userManagementDb");
-
-                if (!string.IsNullOrEmpty(aspireConnectionString))
-                {
-                    options.ConnectionString = aspireConnectionString;
-                }
-            });
-
             services.AddSingleton<BaseDbOptions>(sp =>
                 sp.GetRequiredService<IOptions<DbOptions>>().Value);
 

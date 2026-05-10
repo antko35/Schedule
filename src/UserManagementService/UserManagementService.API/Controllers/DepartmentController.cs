@@ -31,6 +31,18 @@
         }
 
         /// <summary>
+        /// Get all department-user memberships (UserJob records)
+        /// </summary>
+        [HttpGet]
+        [Route("users")]
+        public async Task<IActionResult> GetAllDepartmentUsers()
+        {
+            var users = await mediator.Send(new GetAllDepartmentUsersQuery());
+
+            return Ok(users);
+        }
+
+        /// <summary>
         /// Get department by its own id
         /// </summary>
         /// <param name="id">Department id</param>

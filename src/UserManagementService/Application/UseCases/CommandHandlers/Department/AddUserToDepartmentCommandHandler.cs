@@ -26,7 +26,6 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
         this.departmentRepository = departmentRepository;
         this.userJobsRepository = userJobsRepository;
         this.userEventPublisher = userEventPublisher;
-
     }
 
     public async Task<UserJob> Handle(AddUserToDepartmentCommand request, CancellationToken cancellationToken)

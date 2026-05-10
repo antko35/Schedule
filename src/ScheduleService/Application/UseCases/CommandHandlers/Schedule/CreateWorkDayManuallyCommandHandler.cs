@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using MediatR;
+    using MongoDB.Bson;
     using ScheduleService.Application.Extensions;
     using ScheduleService.Application.UseCases.Commands.Schedule;
     using ScheduleService.DataAccess.Repository;
@@ -63,15 +64,33 @@
                 .ToString("MMMM")
                 .ToLower();
 
-            userSchedueRules = await userRuleRepository
+            this.userSchedueRules = await this.userRuleRepository
                 .GetMonthScheduleRules(
                 request.UserId,
                 request.DepartmentId,
                 monthName,
                 request.StartTime.Year);
 
-            userSchedueRules.EnsureExists($"Schedule rules not found, {monthName}");
+            if (this.userSchedueRules is null)
+            {
+                var scheduleId = ObjectId.GenerateNewId().ToString();
 
+                var schedule = new Schedule { Id = scheduleId, MonthName = monthName };
+                var rules = new UserScheduleRules
+                {
+                    UserId = request.UserId,
+                    DepartmentId = request.DepartmentId,
+                    Year = request.StartTime.Year,
+                    MonthName = monthName,
+                    ScheduleId = scheduleId,
+                };
+
+                await Task.WhenAll(
+                    this.scheduleRepository.AddAsync(schedule),
+                    this.userRuleRepository.AddAsync(rules));
+
+                this.userSchedueRules = rules;
+            }
         }
 
         private async Task<bool> IsExist(int day)

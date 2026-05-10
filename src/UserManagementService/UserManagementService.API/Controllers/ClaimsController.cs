@@ -1,82 +1,60 @@
-﻿namespace UserManagementService.API.Controllers;
+namespace UserManagementService.API.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
-using UserManagementService.API.GrpcClient.Services;
+using UserManagementService.API.Keycloak;
+using UserManagementService.API.Keycloak.Models;
 
 [ApiController]
 public class ClaimsController : ControllerBase
 {
-    private readonly UserClient userClient;
+    private readonly IKeycloakAdminService keycloakAdminService;
 
-    public ClaimsController(UserClient userClient)
+    public ClaimsController(IKeycloakAdminService keycloakAdminService)
     {
-        this.userClient = userClient;
+        this.keycloakAdminService = keycloakAdminService;
     }
 
     /// <summary>
-    /// Get all user permissions by email
+    /// Get all user attributes (claims) by email
     /// </summary>
     /// <param name="email">User email</param>
-    /// <remarks>
-    /// Call grpc method in user service
-    /// </remarks>
-    /// <returns></returns>
     [HttpGet]
     [Route("GetClaims/{email}")]
     public async Task<IActionResult> GetClaims([FromRoute] string email)
     {
-        var response = await userClient.GetUserClaimsAsync(email);
-
-        return Ok(response);
+        var claims = await this.keycloakAdminService.GetUserClaimsAsync(email);
+        return this.Ok(claims);
     }
 
     /// <summary>
-    /// Add cliam (permission) to user by email
+    /// Add a claim (attribute) to a Keycloak user
     /// </summary>
     /// <remarks>
-    /// Call grpc method in user service.
     /// ```
     /// POST
     /// {
-    ///     "email": "user@gmail.com", // users email
-    ///     "claimType": "12GKP", // Clinic name
-    ///     "claimValue": "UserManagment" // Claim (permission) name
+    ///     "email": "user@gmail.com",
+    ///     "claimType": "12GKP",
+    ///     "claimValue": "UserManagement"
     /// }
     /// ```
     /// </remarks>
-    /// <param name="request"></param>
-    /// <returns></returns>
     [HttpPost]
     [Route("AddClaim")]
-    public async Task<IActionResult> AddClaim(AddClaimRequest request)
+    public async Task<IActionResult> AddClaim(ClaimRequest request)
     {
-        await userClient.AddClaimAsync(request);
-
-        return Ok();
+        await this.keycloakAdminService.AddClaimAsync(request);
+        return this.Ok();
     }
 
     /// <summary>
-    /// Detete user claim (permission)
+    /// Delete a claim (attribute) from a Keycloak user
     /// </summary>
-    /// <remarks>
-    /// Call grpc method in user service.
-    /// ```
-    /// POST
-    /// {
-    ///     "email": "user@gmail.com", // users email
-    ///     "claimType": "12GKP", // Clinic name
-    ///     "claimValue": "UserManagment" // Claim (permission) name
-    /// }
-    /// ```
-    /// </remarks>
-    /// <param name="request"></param>
-    /// <returns></returns>
     [HttpPost]
     [Route("DeleteClaim")]
-    public async Task<IActionResult> DeleteClaim(AddClaimRequest request)
+    public async Task<IActionResult> DeleteClaim(ClaimRequest request)
     {
-        await userClient.DeleteClaimAsync(request);
-
-        return Ok();
+        await this.keycloakAdminService.DeleteClaimAsync(request);
+        return this.Ok();
     }
 }

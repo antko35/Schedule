@@ -3,6 +3,7 @@
     using System.ComponentModel;
     using System.Net;
     using System.Text.Json;
+    using MongoDB.Bson;
     using UserManagementService.Application.Extensions.Validation;
 
     public class ExeptionHadlingMiddleware
@@ -56,6 +57,11 @@
                     status = HttpStatusCode.BadRequest;
                     message = validationException.Message;
                     errors = (Dictionary<string, string[]>)validationException.Errors;
+                    break;
+
+                case BsonSerializationException bsonEx:
+                    status = HttpStatusCode.BadRequest;
+                    message = bsonEx.Message;
                     break;
 
                 default:

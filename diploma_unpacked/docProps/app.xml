@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+  <Template>Normal</Template>
+  <TotalTime>2642</TotalTime>
+  <Pages>30</Pages>
+  <Words>7318</Words>
+  <Characters>41716</Characters>
+  <Application>Microsoft Office Word</Application>
+  <DocSecurity>0</DocSecurity>
+  <Lines>347</Lines>
+  <Paragraphs>97</Paragraphs>
+  <ScaleCrop>false</ScaleCrop>
+  <HeadingPairs>
+    <vt:vector size="4" baseType="variant">
+      <vt:variant>
+        <vt:lpstr>Название</vt:lpstr>
+      </vt:variant>
+      <vt:variant>
+        <vt:i4>1</vt:i4>
+      </vt:variant>
+      <vt:variant>
+        <vt:lpstr>Заголовки</vt:lpstr>
+      </vt:variant>
+      <vt:variant>
+        <vt:i4>17</vt:i4>
+      </vt:variant>
+    </vt:vector>
+  </HeadingPairs>
+  <TitlesOfParts>
+    <vt:vector size="18" baseType="lpstr">
+      <vt:lpstr/>
+      <vt:lpstr>Описание и анализ объекта автоматизации</vt:lpstr>
+      <vt:lpstr>    Структура объекта автоматизации: структурные единицы, система управления и поряд</vt:lpstr>
+      <vt:lpstr>    Анализ существующей ИС (состав и структура задач, решаемых на объекте автоматиза</vt:lpstr>
+      <vt:lpstr>    Краткое описание и анализ существующих ИС, аналогичных разрабатываемой</vt:lpstr>
+      <vt:lpstr>    Постановка задачи на дипломное проектирование</vt:lpstr>
+      <vt:lpstr>Проектирование структуры программного комплекса</vt:lpstr>
+      <vt:lpstr>    Организационно-экономическая сущность задачи</vt:lpstr>
+      <vt:lpstr>    Структура программного комплекса</vt:lpstr>
+      <vt:lpstr>    Математическое и алгоритмическое обеспечение</vt:lpstr>
+      <vt:lpstr>    Информационное обеспечение</vt:lpstr>
+      <vt:lpstr>        Общая характеристика информационного обеспечения</vt:lpstr>
+      <vt:lpstr>        Входные данные</vt:lpstr>
+      <vt:lpstr>        Базы данных</vt:lpstr>
+      <vt:lpstr>        Выходные данные</vt:lpstr>
+      <vt:lpstr>    Техническое и системное программное обеспечение</vt:lpstr>
+      <vt:lpstr>    Эргономическое обеспечение</vt:lpstr>
+      <vt:lpstr>    Организационное обеспечение</vt:lpstr>
+    </vt:vector>
+  </TitlesOfParts>
+  <Company/>
+  <LinksUpToDate>false</LinksUpToDate>
+  <CharactersWithSpaces>48937</CharactersWithSpaces>
+  <SharedDoc>false</SharedDoc>
+  <HyperlinksChanged>false</HyperlinksChanged>
+  <AppVersion>16.0000</AppVersion>
+</Properties>

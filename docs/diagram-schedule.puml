@@ -1,0 +1,56 @@
+@startuml "ScheduleService - Domain"
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+skinparam classHeaderBackgroundColor #d5ecd5
+skinparam classBorderColor #4a8c4a
+skinparam ArrowColor #4a8c4a
+skinparam linetype ortho
+
+abstract class Entity <<abstract>> {
+    + Id : string
+}
+
+class Schedule {
+    + MonthName : string
+}
+
+class WorkDay {
+    + Day : int
+    + StartTime : DateTimeOffset
+    + EndTime : DateTimeOffset
+}
+
+class UserScheduleRules {
+    + UserId : string
+    + DepartmentId : string
+    + MonthName : string
+    + Year : int
+    + HoursPerMonth : float
+    + MaxHoursPerDay : float
+    + StartWorkDayTime : TimeOnly
+    + OnlyFirstShift : bool
+    + OnlySecondShift : bool
+    + EvenDOW : bool
+    + UnEvenDOW : bool
+    + EvenDOM : bool
+    + UnEvenDOM : bool
+}
+
+class Calendar {
+    + Year : int
+    + HolidayDate : DateOnly
+    + TransferDate : DateOnly
+    + MonthOfHoliday : int
+    + HolidayDayOfMonth : int
+    + DayOfWeek : DayOfWeek
+}
+
+Entity <|-- Schedule
+Entity <|-- UserScheduleRules
+Entity <|-- Calendar
+
+'Schedule "1" *-- "0..*" WorkDay : содержит >
+'UserScheduleRules "0..*" --> "1" Schedule : ScheduleId >
+
+@enduml
