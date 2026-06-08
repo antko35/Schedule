@@ -1,6 +1,5 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-
 var rabbit = builder.AddRabbitMQ("rabbitmq"); // Создаем сервер
 
 // 3. MongoDB для ScheduleService + MongoExpress
@@ -43,5 +42,16 @@ builder.AddViteApp("vue-frontend", "../Schedule/electron-vue") // Путь к п
     .WithExternalHttpEndpoints()     // Разрешаем доступ извне (браузера)
     .WithEnvironment("VITE_USER_API_URL", userService.GetEndpoint("https"))
     .WithEnvironment("VITE_SCHEDULE_API_URL", scheduleService.GetEndpoint("https"));
+
+// builder.AddViteApp("vue-frontend-1", "../Front/electron-vue") // Путь к папке с package.json
+//     .WithReference(userService)      
+//     .WithReference(scheduleService)  
+//     .WithReference(keycloak)
+//     .WithHttpEndpoint(name:"NewUi", port: 5173, env: "PORT") // Стандартный порт Vite
+//     .WithExternalHttpEndpoints()     // Разрешаем доступ извне (браузера)
+//     //.WithHttpsDeveloperCertificate()           // ← важно
+//     .WithDeveloperCertificateTrust(true)
+//     .WithEnvironment("VITE_USER_API_URL", userService.GetEndpoint("https"))
+//     .WithEnvironment("VITE_SCHEDULE_API_URL", scheduleService.GetEndpoint("https"));
 
 builder.Build().Run();

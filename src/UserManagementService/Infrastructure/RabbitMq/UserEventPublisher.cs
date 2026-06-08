@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using UserManagementService.Domain.Abstractions.IRabbitMq;
 
@@ -8,10 +9,23 @@ namespace Infrastructure.RabbitMq;
 public class UserEventPublisher: IUserEventPublisher
 {
     private const string ExchangeName = "user_events";
+    private readonly IConfiguration _configuration;
+
+    public UserEventPublisher(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
 
     public async Task PublishUserCreated(string userId, string departmentId)
     {
-        var factory = new ConnectionFactory { HostName = "rabbitmq" };
+        var connectionString =
+            _configuration.GetConnectionString("rabbitmq");
+        
+        var factory = new ConnectionFactory
+        {
+            Uri = new Uri(connectionString)
+        };
+        
         using var connection = await factory.CreateConnectionAsync();
         using var channel = await connection.CreateChannelAsync();
         
@@ -28,7 +42,13 @@ public class UserEventPublisher: IUserEventPublisher
     
     public async Task PublishUserDeleted(string userId, string departmentId)
     {
-        var factory = new ConnectionFactory { HostName = "rabbitmq" };
+        var connectionString =
+            _configuration.GetConnectionString("rabbitmq");
+        
+        var factory = new ConnectionFactory
+        {
+            Uri = new Uri(connectionString)
+        };
         using var connection = await factory.CreateConnectionAsync();
         using var channel = await connection.CreateChannelAsync();
         
