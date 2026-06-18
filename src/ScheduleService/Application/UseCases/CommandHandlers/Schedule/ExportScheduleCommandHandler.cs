@@ -13,7 +13,7 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
 {
     private const int FirstEmployeeRow = 9;
     private const int RowsPerEmployee = 3;
-    private const int TemplateEmployeeSlots = 3;
+    private const int TemplateEmployeeSlots = 1;
     private const int FirstDayColumn = 2;   // column B
     private const int LastDayColumn = 32;   // column AF (day 31)
     private const int DaysCountColumn = 33; // column AG
@@ -61,12 +61,6 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
 
             scheduleMap.TryGetValue(user.UserId, out var schedule);
             this.FillEmployeeBlock(ws, nameRow, startRow, endRow, user.FullName, schedule);
-        }
-
-        for (int i = userCount; i < TemplateEmployeeSlots; i++)
-        {
-            int nameRow = FirstEmployeeRow + (i * RowsPerEmployee);
-            this.ClearEmployeeBlock(ws, nameRow);
         }
 
         this.FillFooter(ws, extraRowsAdded, request.Year);
@@ -169,9 +163,9 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
             double endFraction = workDay.EndTime.TimeOfDay.TotalDays;
             double hoursFraction = endFraction - startFraction;
 
-            ws.Cells[nameRow, col].Value = hoursFraction;
-            ws.Cells[startRow, col].Value = startFraction;
-            ws.Cells[endRow, col].Value = endFraction;
+            ws.Cells[nameRow, col].Value = startFraction;
+            ws.Cells[startRow, col].Value = endFraction;
+            ws.Cells[endRow, col].Value = hoursFraction * 24;
 
             totalDays++;
             totalHours += hoursFraction * 24;
@@ -181,20 +175,10 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
         ws.Cells[nameRow, HoursTotalColumn].Value = totalHours;
     }
 
-    private void ClearEmployeeBlock(ExcelWorksheet ws, int nameRow)
+    private void FillFooter(ExcelWorksheet ws, int rowOffset, int year)
     {
-        for (int r = 0; r < RowsPerEmployee; r++)
-        {
-            ws.Cells[nameRow + r, 1].Value = string.Empty;
-            for (int col = FirstDayColumn; col <= HoursTotalColumn; col++)
-                ws.Cells[nameRow + r, col].Value = null;
-        }
-    }
-
-    private void FillFooter(ExcelWorksheet ws, int extraRowsAdded, int year)
-    {
-        int footerRow21 = 21 + extraRowsAdded;
-        int footerRow29 = 29 + extraRowsAdded;
+        int footerRow21 = 15 + rowOffset;
+        int footerRow29 = 23 + rowOffset;
 
         var createdByCell = ws.Cells[footerRow21, 1];
         if (createdByCell.Text.Contains("{WhoCreate}"))

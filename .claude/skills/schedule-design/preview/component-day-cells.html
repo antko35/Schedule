@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="../colors_and_type.css"><style>
+html,body{margin:0;padding:0;background:var(--bg-app);color:var(--fg);font-family:var(--font-sans)}
+.wrap{padding:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cell{aspect-ratio:1;border-radius:15px;background:#747070;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;overflow:hidden;font-size:11px;color:#fff;position:relative}
+.cell .num{font-size:18px;width:100%;padding:6px 0;text-align:center}
+.cell .time{padding:6px 0;width:100%;text-align:center;font-size:10px;opacity:.85}
+.green .num{background:#0d8126;border-radius:15px 15px 0 0}
+.red .num{background:#b95b18;border-radius:15px 15px 0 0}
+.weekend .num{background:#831111;border-radius:15px 15px 0 0}
+.today{background:#adadad;color:#fff}
+.today .num{background:#0d8126;border-radius:15px 15px 0 0}
+.today .time{color:#000;text-decoration:underline}
+.lbl{font-size:9px;text-transform:uppercase;color:#fff;opacity:.65;text-align:center;letter-spacing:.04em;margin-top:4px}
+</style></head><body>
+<div class="wrap">
+<div><div class="cell green"><div class="num">12</div><div class="time">08:00–14:30</div></div><div class="lbl">1 смена</div></div>
+<div><div class="cell red"><div class="num">13</div><div class="time">14:30–20:00</div></div><div class="lbl">2 смена</div></div>
+<div><div class="cell weekend"><div class="num">14</div><div class="time" style="opacity:.4">—</div></div><div class="lbl">выходной</div></div>
+<div><div class="cell today"><div class="num">15</div><div class="time">08:00–14:30</div></div><div class="lbl">сегодня</div></div>
+</div>
+</body></html>

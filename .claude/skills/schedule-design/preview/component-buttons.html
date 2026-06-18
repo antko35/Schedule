@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="../colors_and_type.css"><style>
+html,body{margin:0;padding:0;background:var(--bg-app);color:var(--fg);font-family:var(--font-sans)}
+.wrap{padding:18px;display:flex;gap:18px;align-items:center}
+.btn{height:45px;padding:0 24px;border:none;border-radius:4px;color:#fff;font-size:16px;cursor:pointer}
+.submit{background:#4caf50}
+.submit[disabled]{background:#cccccc;cursor:not-allowed}
+.reduct{height:50px;border-radius:15px;background:#474747;color:#dadada;text-transform:uppercase;display:inline-flex;align-items:center;padding:0 30px;font-size:14px;gap:14px}
+.close{background:#ff2626;border-radius:8px;height:30px;width:30px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:bold}
+</style></head><body>
+<div class="wrap">
+<button class="btn submit">Добавить</button>
+<button class="btn submit" disabled>· · ·</button>
+<div class="reduct">редактировать <span style="opacity:.6">✎</span></div>
+<span class="close">✕</span>
+</div>
+</body></html>
