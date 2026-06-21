@@ -22,6 +22,7 @@
         private readonly IUserRuleRepository userRuleRepository;
         private readonly IScheduleRepository scheduleRepository;
         private readonly ICalendarRepository calendarRepository;
+        private readonly ScheduleRulesGenerator scheduleRulesGenerator;
 
         private IEnumerable<UserScheduleRules> usersRules = new List<UserScheduleRules>();
         private List<Calendar?> officialHolidays = new List<Calendar?>();
@@ -30,11 +31,13 @@
         public GenerateDepartmentScheduleCommandHandler(
             IUserRuleRepository userRuleRepository,
             IScheduleRepository scheduleRepository,
-            ICalendarRepository calendarRepository)
+            ICalendarRepository calendarRepository,
+            ScheduleRulesGenerator scheduleRulesGenerator)
         {
             this.userRuleRepository = userRuleRepository;
             this.scheduleRepository = scheduleRepository;
             this.calendarRepository = calendarRepository;
+            this.scheduleRulesGenerator = scheduleRulesGenerator;
         }
 
         public async Task Handle(GenerateDepartmentScheduleCommand request, CancellationToken cancellationToken)
@@ -77,7 +80,25 @@
 
             if (!usersRules.Any())
             {
+                await CreateRulesForDepartment(departmentId, year, month, monthName);
+                this.usersRules = await userRuleRepository.GetUsersRulesByDepartment(departmentId, monthName, year);
+            }
+
+            if (!usersRules.Any())
+            {
                 throw new InvalidOperationException("Schedule rules for this department not found");
+            }
+        }
+
+        private async Task CreateRulesForDepartment(string departmentId, int year, int month, string monthName)
+        {
+            var departmentUsers = await userRuleRepository.GetUsersByDepartment(departmentId);
+            var targetDate = new DateTime(year, month, 1);
+
+            foreach (var userRule in departmentUsers)
+            {
+                await scheduleRulesGenerator.CreateAndAddRulesAndSchedules(
+                    userRule.UserId, departmentId, targetDate, monthName);
             }
         }
 

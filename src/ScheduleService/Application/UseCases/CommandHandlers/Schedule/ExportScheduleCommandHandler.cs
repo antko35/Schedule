@@ -18,6 +18,9 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
     private const int LastDayColumn = 32;   // column AF (day 31)
     private const int DaysCountColumn = 33; // column AG
     private const int HoursTotalColumn = 34; // column AH
+    private const int DayOfWeekRow = 7;
+
+    private static readonly string[] RussianDayNames = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
 
     private static readonly string[] RussianMonths =
     [
@@ -38,7 +41,11 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
 
     public async Task<byte[]> Handle(ExportScheduleCommand request, CancellationToken cancellationToken)
     {
-        var scheduleMap = await this.BuildScheduleMap(request);
+        var (scheduleMap, validUserIds) = await this.BuildScheduleMap(request);
+
+        var users = request.Users
+            .Where(u => validUserIds.Contains(u.UserId))
+            .ToList();
 
         var templateBytes = GetTemplateBytes();
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -48,13 +55,14 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
         var ws = package.Workbook.Worksheets[0];
 
         this.FillHeaders(ws, request);
+        this.FillDayOfWeekRow(ws, request.Year, request.Month);
 
-        int userCount = request.Users.Count;
+        int userCount = users.Count;
         int extraRowsAdded = this.EnsureEmployeeRows(ws, userCount);
 
         for (int i = 0; i < userCount; i++)
         {
-            var user = request.Users[i];
+            var user = users[i];
             int nameRow = FirstEmployeeRow + (i * RowsPerEmployee);
             int startRow = nameRow + 1;
             int endRow = nameRow + 2;
@@ -68,7 +76,7 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
         return await package.GetAsByteArrayAsync(cancellationToken);
     }
 
-    private async Task<Dictionary<string, DomainModels.Schedule>> BuildScheduleMap(ExportScheduleCommand request)
+    private async Task<(Dictionary<string, DomainModels.Schedule> Map, HashSet<string> ValidUserIds)> BuildScheduleMap(ExportScheduleCommand request)
     {
         var monthName = new DateOnly(request.Year, request.Month, 1)
             .ToString("MMMM", CultureInfo.InvariantCulture)
@@ -82,28 +90,32 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
         }
         catch (InvalidOperationException)
         {
-            return new Dictionary<string, DomainModels.Schedule>();
+            return (new Dictionary<string, DomainModels.Schedule>(), new HashSet<string>());
         }
 
         var map = new Dictionary<string, DomainModels.Schedule>();
+        var validUserIds = new HashSet<string>();
         foreach (var rule in usersRules)
         {
+            validUserIds.Add(rule.UserId);
             var schedule = await this.scheduleRepository.GetMonthSchedule(rule.ScheduleId);
             if (schedule is not null)
                 map[rule.UserId] = schedule;
         }
 
-        return map;
+        return (map, validUserIds);
     }
 
     private void FillHeaders(ExcelWorksheet ws, ExportScheduleCommand request)
     {
-        ws.Cells[4, 1].Value = request.DepartmentName;
-
-        var titleCell = ws.Cells[5, 1];
+        var titleCell = ws.Cells[4, 1];
         titleCell.Value = titleCell.Text
             .Replace("{MONTH}", RussianMonths[request.Month - 1])
             .Replace("{YEAR}", request.Year.ToString());
+
+        var deptCell = ws.Cells[5, 1];
+        deptCell.Value = deptCell.Text
+            .Replace("{DepartmentName}", request.DepartmentName);
     }
 
     private int EnsureEmployeeRows(ExcelWorksheet ws, int userCount)
@@ -159,12 +171,14 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
             if (col < FirstDayColumn || col > LastDayColumn)
                 continue;
 
-            double startFraction = workDay.StartTime.TimeOfDay.TotalDays;
-            double endFraction = workDay.EndTime.TimeOfDay.TotalDays;
+            double startFraction = workDay.StartTime.UtcDateTime.TimeOfDay.TotalDays;
+            double endFraction = workDay.EndTime.UtcDateTime.TimeOfDay.TotalDays;
             double hoursFraction = endFraction - startFraction;
 
             ws.Cells[nameRow, col].Value = startFraction;
+            ws.Cells[nameRow, col].Style.Numberformat.Format = "hh:mm";
             ws.Cells[startRow, col].Value = endFraction;
+            ws.Cells[startRow, col].Style.Numberformat.Format = "hh:mm";
             ws.Cells[endRow, col].Value = hoursFraction * 24;
 
             totalDays++;
@@ -173,6 +187,23 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
 
         ws.Cells[nameRow, DaysCountColumn].Value = totalDays;
         ws.Cells[nameRow, HoursTotalColumn].Value = totalHours;
+    }
+
+    private void FillDayOfWeekRow(ExcelWorksheet ws, int year, int month)
+    {
+        int daysInMonth = DateTime.DaysInMonth(year, month);
+
+        for (int day = 1; day <= daysInMonth; day++)
+        {
+            int col = day + 1;
+            var dayOfWeek = new DateTime(year, month, day).DayOfWeek;
+            ws.Cells[DayOfWeekRow, col].Value = RussianDayNames[(int)dayOfWeek];
+        }
+
+        for (int col = daysInMonth + 2; col <= LastDayColumn; col++)
+        {
+            ws.Cells[DayOfWeekRow, col].Value = null;
+        }
     }
 
     private void FillFooter(ExcelWorksheet ws, int rowOffset, int year)

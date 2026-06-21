@@ -144,13 +144,13 @@ namespace ScheduleService.Application.Services
             DateTimeOffset startTime, endTime;
             if (firstShift)
             {
-                startTime = new DateTime(year, month, day, startWork.Hour, startWork.Minute, 0);
-                endTime = new DateTime(year, month, day, endWork.Hour, endWork.Minute, 0);
+                startTime = new DateTime(year, month, day, startWork.Hour, startWork.Minute, 0, DateTimeKind.Utc);
+                endTime = new DateTime(year, month, day, endWork.Hour, endWork.Minute, 0, DateTimeKind.Utc);
             }
             else
             {
-                startTime = new DateTime(year, month, day, 14, 30, 0);
-                endTime = new DateTime(year, month, day, 21, 0, 0);
+                startTime = new DateTime(year, month, day, 14, 30, 0, DateTimeKind.Utc);
+                endTime = new DateTime(year, month, day, 21, 0, 0, DateTimeKind.Utc);
             }
 
             return new WorkDay

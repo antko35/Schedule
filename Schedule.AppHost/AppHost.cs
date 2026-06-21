@@ -34,7 +34,7 @@ var userService = builder.AddProject<Projects.UserManagementService_API>("user-m
     .WaitFor(rabbit)
     .WaitFor(managementDb);
 
-builder.AddViteApp("vue-frontend", "../Schedule/electron-vue") // Путь к папке с package.json
+builder.AddViteApp("vue-frontend", "../Front/electron-vue") // Путь к папке с package.json
     .WithReference(userService)      
     .WithReference(scheduleService)  
     .WithReference(keycloak)

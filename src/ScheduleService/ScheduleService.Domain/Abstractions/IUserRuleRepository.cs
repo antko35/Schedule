@@ -16,5 +16,7 @@ namespace ScheduleService.DataAccess.Repository
         Task<IEnumerable<UserScheduleRules>> GetAllByIds(string requestUserId, string requestDepartmentId);
 
         Task DeleteAll(string userId, string departmentId);
+
+        Task<IEnumerable<UserScheduleRules>> GetUsersByDepartment(string departmentId);
     }
 }

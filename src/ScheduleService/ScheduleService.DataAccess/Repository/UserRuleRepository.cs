@@ -69,6 +69,15 @@ namespace ScheduleService.DataAccess.Repository
             dbSet.DeleteManyAsync(filter);
         }
 
+        public async Task<IEnumerable<UserScheduleRules>> GetUsersByDepartment(string departmentId)
+        {
+            var filter = Builders<UserScheduleRules>.Filter.Eq(x => x.DepartmentId, departmentId);
+            var all = await dbSet.Find(filter).ToListAsync();
+            return all
+                .GroupBy(r => r.UserId)
+                .Select(g => g.First());
+        }
+
         public async Task<UserScheduleRules> GetMonthScheduleRules(string userId, string departmentId, string monthName, int year)
         {
             var filter = Builders<UserScheduleRules>.Filter.And(

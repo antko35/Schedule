@@ -35,8 +35,8 @@
             WorkDay newWorkDay = new WorkDay
             {
                 Day = request.StartTime.Day,
-                StartTime = request.StartTime,
-                EndTime = request.EndTime,
+                StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),
+                EndTime = DateTime.SpecifyKind(request.EndTime, DateTimeKind.Utc),
             };
 
             var isAlreadyExist = await IsExist(request.StartTime.Day);
