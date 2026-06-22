@@ -120,21 +120,44 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
 
     private int EnsureEmployeeRows(ExcelWorksheet ws, int userCount)
     {
-        if (userCount <= TemplateEmployeeSlots)
-            return 0;
+        // Capture template row heights before any insertions
+        double nameRowHeight = ws.Row(FirstEmployeeRow).Height;
+        double startRowHeight = ws.Row(FirstEmployeeRow + 1).Height;
+        double endRowHeight = ws.Row(FirstEmployeeRow + 2).Height;
 
-        int extraEmployees = userCount - TemplateEmployeeSlots;
-        int insertBase = FirstEmployeeRow + (TemplateEmployeeSlots * RowsPerEmployee);
-
-        for (int e = 0; e < extraEmployees; e++)
+        int extraRowsAdded = 0;
+        if (userCount > TemplateEmployeeSlots)
         {
-            int insertAt = insertBase + (e * RowsPerEmployee);
-            ws.InsertRow(insertAt, 1, FirstEmployeeRow);
-            ws.InsertRow(insertAt + 1, 1, FirstEmployeeRow + 1);
-            ws.InsertRow(insertAt + 2, 1, FirstEmployeeRow + 2);
+            int extraEmployees = userCount - TemplateEmployeeSlots;
+            int insertBase = FirstEmployeeRow + (TemplateEmployeeSlots * RowsPerEmployee);
+
+            for (int e = 0; e < extraEmployees; e++)
+            {
+                int insertAt = insertBase + (e * RowsPerEmployee);
+                ws.InsertRow(insertAt, 1, FirstEmployeeRow);
+                ws.InsertRow(insertAt + 1, 1, FirstEmployeeRow + 1);
+                ws.InsertRow(insertAt + 2, 1, FirstEmployeeRow + 2);
+            }
+
+            extraRowsAdded = extraEmployees * RowsPerEmployee;
         }
 
-        return extraEmployees * RowsPerEmployee;
+        // Apply uniform row heights and AG/AH merges to every employee block
+        for (int i = 0; i < userCount; i++)
+        {
+            int nameRow = FirstEmployeeRow + (i * RowsPerEmployee);
+            int startRow = nameRow + 1;
+            int endRow = nameRow + 2;
+
+            ws.Row(nameRow).Height = nameRowHeight;
+            ws.Row(startRow).Height = startRowHeight;
+            ws.Row(endRow).Height = endRowHeight;
+
+            ws.Cells[nameRow, DaysCountColumn, endRow, DaysCountColumn].Merge = true;
+            ws.Cells[nameRow, HoursTotalColumn, endRow, HoursTotalColumn].Merge = true;
+        }
+
+        return extraRowsAdded;
     }
 
     private void FillEmployeeBlock(

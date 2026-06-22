@@ -4,7 +4,6 @@ using MongoDB.Driver;
 using UserManagementService.DataAccess.Database;
 using UserManagementService.Domain.Abstractions.IRepository;
 using UserManagementService.Domain.Models;
-using ZstdSharp.Unsafe;
 
 public class UserJobsRepository : GenericRepository<UserJob>, IUserJobsRepository
 {
@@ -44,7 +43,7 @@ public class UserJobsRepository : GenericRepository<UserJob>, IUserJobsRepositor
     {
         var filter = Builders<UserJob>.Filter.And(
             Builders<UserJob>.Filter.In(u => u.DepartmentId, departmentIds),
-            Builders<UserJob>.Filter.Eq(u => u.Role, "departmentHead"));
+            Builders<UserJob>.Filter.Eq(u => u.Role, UserJobRole.DepartmentHead));
 
         var emails = await dbSet
             .Find(filter)

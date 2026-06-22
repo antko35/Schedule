@@ -10,23 +10,21 @@ using ScheduleService.Domain.Abstractions.Rabbit;
 public class UserEmailsRpcClient: IAsyncDisposable, IUserEmailsRpcClient
 {
     private const string RequestQueue = "get_department_heads_emails";
-    private readonly ConnectionFactory factory;
+    private readonly IConnection connection;
 
     private readonly ConcurrentDictionary<string, TaskCompletionSource<string>> callbackMapper
         = new();
-    
-    private IConnection? connection;
+
     private IChannel? channel;
     private string? replyQueueName;
-    
-    public UserEmailsRpcClient()
+
+    public UserEmailsRpcClient(IConnection connection)
     {
-        factory = new ConnectionFactory { HostName = "rabbitmq" };
+        this.connection = connection;
     }
 
     public async Task StartAsync()
     {
-        connection = await factory.CreateConnectionAsync();
         channel = await connection.CreateChannelAsync();
 
         // declare a server-named queue
@@ -95,11 +93,6 @@ public class UserEmailsRpcClient: IAsyncDisposable, IUserEmailsRpcClient
         if (channel is not null)
         {
             await channel.CloseAsync();
-        }
-
-        if (connection is not null)
-        {
-            await connection.CloseAsync();
         }
     }
 }

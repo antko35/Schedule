@@ -1,3 +1,4 @@
+using System.Globalization;
 using MediatR;
 using ScheduleService.Application.Services;
 using ScheduleService.Application.UseCases.Commands.Schedule;
@@ -49,9 +50,12 @@ public class SendPromptMonthlyCommandHandler
 
     private async Task SendEmails(List<EmailInfoDto> emails, string month)
     {
+        var parsedDate = DateTime.ParseExact(month, "MMMM", CultureInfo.InvariantCulture);
+        var monthName = new CultureInfo("ru-RU").DateTimeFormat.GetMonthName(parsedDate.Month);
+
         foreach (var email in emails)
         {
-            var body = $"{email.Email}, please fill schedule for next month({month})";
+            var body = $"{email.Email}, Составьте расписание на следующий месяц ({monthName})";
 
             await emailService.SendEmailAsync(email.Email, "Schedule Generation", body);
         }
