@@ -28,16 +28,14 @@ namespace ScheduleService.Application.Services
 
         private static List<WorkDay> CorrectGeneralTime(List<WorkDay> workDays, UserScheduleRules userRules)
         {
-            var workdaysCount = workDays.Count;
-            var totalTime = workdaysCount * 6.6;
+            var totalTime = workDays.Sum(w => (w.EndTime - w.StartTime).TotalHours);
 
-            if (totalTime != userRules.HoursPerMonth)
+            double hoursPerMonth = userRules.HoursPerMonth;
+            if (Math.Abs(totalTime - hoursPerMonth) > 1e-9)
             {
-                var timeDifference = userRules.HoursPerMonth - totalTime;
-                var dayToCorrect = workDays[workdaysCount - 1];
-                var newEndTime = dayToCorrect.EndTime.AddHours(timeDifference);
-
-                dayToCorrect.EndTime = newEndTime;
+                var timeDifference = hoursPerMonth - totalTime;
+                var dayToCorrect = workDays[workDays.Count - 1];
+                dayToCorrect.EndTime = dayToCorrect.EndTime.AddHours(timeDifference);
             }
 
             return workDays;
@@ -139,7 +137,9 @@ namespace ScheduleService.Application.Services
         private static WorkDay CreateWorkDayDto(UserScheduleRules userRules, int year, int month, int day, bool firstShift)
         {
             TimeOnly startWork = userRules.StartWorkDayTime;
-            TimeOnly endWork = startWork.AddHours(6).AddMinutes(30);
+            int shiftHours = (int)userRules.MaxHoursPerDay;
+            int shiftMinutes = (int)Math.Round((userRules.MaxHoursPerDay - shiftHours) * 60);
+            TimeOnly endWork = startWork.AddHours(shiftHours).AddMinutes(shiftMinutes);
 
             DateTimeOffset startTime, endTime;
             if (firstShift)
@@ -150,7 +150,7 @@ namespace ScheduleService.Application.Services
             else
             {
                 startTime = new DateTime(year, month, day, 14, 30, 0, DateTimeKind.Utc);
-                endTime = new DateTime(year, month, day, 21, 0, 0, DateTimeKind.Utc);
+                endTime = startTime.AddHours(shiftHours).AddMinutes(shiftMinutes);
             }
 
             return new WorkDay

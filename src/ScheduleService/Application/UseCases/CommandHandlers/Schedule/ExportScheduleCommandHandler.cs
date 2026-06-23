@@ -209,7 +209,7 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
         }
 
         ws.Cells[nameRow, DaysCountColumn].Value = totalDays;
-        ws.Cells[nameRow, HoursTotalColumn].Value = totalHours;
+        ws.Cells[nameRow, HoursTotalColumn].Value = Math.Round(totalHours, 2);
     }
 
     private void FillDayOfWeekRow(ExcelWorksheet ws, int year, int month)
