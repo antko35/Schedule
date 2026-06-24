@@ -31,6 +31,9 @@ app.MapDefaultEndpoints();
 
 app.UseMiddleware<ExeptionHadlingMiddleware>();
 
+// Apply EF Core migrations before seeding so the schema exists on a fresh database.
+app.ApplyMigrations();
+
 var scope = app.Services.CreateScope();
 var seeder = scope.ServiceProvider.GetRequiredService<IUserSeeder>();
 await seeder.Seed();
@@ -45,8 +48,6 @@ if (app.Environment.IsDevelopment())
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
         options.RoutePrefix = string.Empty;
     });
-
-    app.ApplyMigrations();
 }
 
 app.UseCors();

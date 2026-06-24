@@ -1,0 +1,196 @@
+# Self-contained compose to run the whole Schedule solution WITHOUT .NET Aspire.
+# All connection strings that Aspire normally injects are set here explicitly.
+# Run from this folder:  docker compose up -d   (or use run.ps1)
+
+services:
+  # ---------- Infrastructure ----------
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    hostname: rabbitmq
+    restart: always
+    ports:
+      - "15672:15672"   # management UI (guest/guest)
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
+  user-service-pg-db:
+    image: postgres:16
+    restart: always
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=users_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
+  schedule-service-mongo:
+    image: mongo:7
+    container_name: schedule-service-mongo
+    restart: always
+    ports:
+      - "27018:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - schedule-mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  management-mongo:
+    image: mongo:7
+    container_name: management-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - management-mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
+    command: start-dev --import-realm
+    ports:
+      - "8080:8080"
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import:ro
+      - keycloak-data:/opt/keycloak/data
+
+  # ---------- DB admin UIs (optional, handy for debugging) ----------
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    depends_on:
+      user-service-pg-db:
+        condition: service_healthy
+
+  schedule-service-mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8082:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=schedule-service-mongo
+    depends_on:
+      schedule-service-mongo:
+        condition: service_healthy
+
+  management-mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=management-mongo
+    depends_on:
+      management-mongo:
+        condition: service_healthy
+
+  # ---------- Application services ----------
+  user-service:
+    image: schedule/user-service:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: src/UserService/UserService.API/UserService.API.csproj
+        DLL: UserService.API.dll
+    restart: always
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      # Postgres connection (also present in appsettings.json, set here to be explicit):
+      - ConnectionStrings__postgresConnection=Host=user-service-pg-db;Port=5432;Database=users_db;Username=postgres;Password=postgres
+    depends_on:
+      user-service-pg-db:
+        condition: service_healthy
+
+  schedule-service:
+    image: schedule/schedule-service:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: src/ScheduleService/ScheduleService.API/ScheduleService.API.csproj
+        DLL: ScheduleService.API.dll
+    restart: always
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      # DataAccess + Hangfire read ConnectionStrings:scheduleDb; Aspire client uses schedule-db.
+      - ConnectionStrings__scheduleDb=mongodb://admin:password@schedule-service-mongo:27017/?authSource=admin
+      - ConnectionStrings__schedule-db=mongodb://admin:password@schedule-service-mongo:27017/?authSource=admin
+      - ConnectionStrings__rabbitmq=amqp://guest:guest@rabbitmq:5672
+      # Service discovery entry so AddKeycloakJwtBearer("keycloak") finds Keycloak:
+      - services__keycloak__http__0=http://keycloak:8080
+    depends_on:
+      schedule-service-mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  user-management-service:
+    image: schedule/user-management-service:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: src/UserManagementService/UserManagementService.API/UserManagementService.API.csproj
+        DLL: UserManagementService.API.dll
+    restart: always
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__userManagementDb=mongodb://admin:password@management-mongo:27017/?authSource=admin
+      - ConnectionStrings__rabbitmq=amqp://guest:guest@rabbitmq:5672
+      - services__keycloak__http__0=http://keycloak:8080
+    depends_on:
+      management-mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  management-mongo-data:
+  schedule-mongo-data:
+  rabbitmq-data:
+  keycloak-data:
