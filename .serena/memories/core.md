@@ -28,6 +28,9 @@ Each service follows Clean Architecture:
 
 Key patterns: MediatR commands/queries, FluentValidation pipeline behavior, StyleCop enforced, xUnit+Moq+FluentAssertions tests.
 
+## Frontend
+Angular 19 SPA in `FrontendAngular/` (own `.git`, not yet scaffolded). See `mem:frontend/core` for structure, stack, and feature memories.
+
 ## Workflow: Creating a Schedule
 1. POST `/User` on UserManagementService → creates user
 2. POST `/Department` → creates department

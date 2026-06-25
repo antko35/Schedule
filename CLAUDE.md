@@ -1,10 +1,22 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this 
+repository.
 
 ## Overview
 
 This is a .NET 10 microservices solution for employee schedule management. It uses **.NET Aspire** for local orchestration, **Keycloak** for authentication, **RabbitMQ** for async messaging, **gRPC** for synchronous inter-service calls, and **Hangfire** for background job scheduling.
+
+## Frontends — IMPORTANT: there are two, do NOT mix them up
+
+The repo contains two separate frontend folders. Do not copy code, patterns, or conventions between them, and do not apply one's instructions to the other:
+
+| Folder | Status | Stack | Notes |
+|---|---|---|---|
+| `FrontendAngular/` | **NEW — active** | Angular | The current frontend. Has its own `CLAUDE.md` (and its own `.git`). Use this for new frontend work. |
+| `Front/` | **OLD — legacy** | (previous frontend) | Kept for reference only. Do not change unless explicitly asked. |
+
+When working on frontend files, follow the `CLAUDE.md` inside that frontend's folder. The backend lives in `src/` (see below) and is the API contract for both.
 
 ## Running the Solution
 
