@@ -1,0 +1,55 @@
+{
+  "realm": "schedule-service",
+  "enabled": true,
+  "displayName": "Schedule Service",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 3600,
+  "clients": [
+    {
+      "clientId": "schedule-service",
+      "name": "Schedule Service API",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [ "*" ],
+      "webOrigins": [ "+" ],
+      "protocolMappers": [
+        {
+          "name": "schedule-service-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "schedule-service",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@schedule.local",
+      "firstName": "Admin",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Admin1234!",
+          "temporary": false
+        }
+      ],
+      "requiredActions": []
+    }
+  ]
+}

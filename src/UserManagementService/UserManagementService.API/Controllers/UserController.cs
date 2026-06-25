@@ -1,12 +1,14 @@
 ﻿namespace UserManagementService.API.Controllers
 {
     using MediatR;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using UserManagementService.Application.UseCases.Commands.User;
     using UserManagementService.Application.UseCases.Queries.User;
     using UserManagementService.Domain.Abstractions.IRepository;
     using UserManagementService.Domain.Models;
 
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UserController : ControllerBase

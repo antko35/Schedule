@@ -1,12 +1,14 @@
 ﻿namespace UserManagementService.API.Controllers
 {
     using MediatR;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using UserManagementService.Application.UseCases.Commands.Department;
     using UserManagementService.Application.UseCases.Queries.Department;
     using UserManagementService.Domain.Abstractions.IRepository;
     using UserManagementService.Domain.Models;
 
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class DepartmentController : ControllerBase

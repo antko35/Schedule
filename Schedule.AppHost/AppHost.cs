@@ -16,7 +16,8 @@ var managementDb = managementMongo.AddDatabase("userManagementDb");
 
 // 5. Keycloak
 var keycloak = builder.AddKeycloak("keycloak")
-    .WithDataVolume();
+    .WithDataVolume()
+    .WithRealmImport("keycloak");
 
 // --- СЕРВИСЫ ---
 
@@ -25,23 +26,26 @@ var scheduleService = builder.AddProject<Projects.ScheduleService_API>("schedule
     .WithReference(keycloak)
     .WithReference(rabbit)
     .WaitFor(rabbit)
-    .WaitFor(scheduleDb);
+    .WaitFor(scheduleDb)
+    .WaitFor(keycloak);
 
 var userService = builder.AddProject<Projects.UserManagementService_API>("user-management-service")
     .WithReference(managementDb)
     .WithReference(keycloak)
     .WithReference(rabbit)
     .WaitFor(rabbit)
-    .WaitFor(managementDb);
+    .WaitFor(managementDb)
+    .WaitFor(keycloak);
 
 builder.AddViteApp("vue-frontend", "../Front/electron-vue") // Путь к папке с package.json
-    .WithReference(userService)      
-    .WithReference(scheduleService)  
+    .WithReference(userService)
+    .WithReference(scheduleService)
     .WithReference(keycloak)
     .WithHttpEndpoint(name:"ui", port: 5173, env: "PORT") // Стандартный порт Vite
     .WithExternalHttpEndpoints()     // Разрешаем доступ извне (браузера)
     .WithEnvironment("VITE_USER_API_URL", userService.GetEndpoint("https"))
-    .WithEnvironment("VITE_SCHEDULE_API_URL", scheduleService.GetEndpoint("https"));
+    .WithEnvironment("VITE_SCHEDULE_API_URL", scheduleService.GetEndpoint("https"))
+    .WithEnvironment("VITE_KEYCLOAK_URL", keycloak.GetEndpoint("http"));
 
 // builder.AddViteApp("vue-frontend-1", "../Front/electron-vue") // Путь к папке с package.json
 //     .WithReference(userService)      

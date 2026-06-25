@@ -15,7 +15,6 @@ builder.AddRabbitMQClient("rabbitmq");
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddApplicatiobLayerDependencis();
 
@@ -27,8 +26,9 @@ builder.Services
 builder.Services
     .AddInfrastructureDependencis(builder.Configuration);
 
+var keycloakUrl = builder.Configuration.GetConnectionString("keycloak") ?? "http://localhost:8080";
 builder.Services
-    .AddSwaggerExtension();
+    .AddSwaggerExtension(keycloakUrl);
 
 builder.Services.AddAuthentication()
     .AddKeycloakJwtBearer(
@@ -61,6 +61,8 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
         options.RoutePrefix = string.Empty;
+        options.OAuthClientId("schedule-service");
+        options.OAuthUsePkce();
     });
 }
 

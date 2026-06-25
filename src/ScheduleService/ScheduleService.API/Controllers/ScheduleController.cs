@@ -1,10 +1,12 @@
 ﻿namespace ScheduleService.API.Controllers
 {
     using MediatR;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using ScheduleService.Application.UseCases.Commands.Schedule;
     using ScheduleService.Application.UseCases.Queries.Schedule;
 
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class ScheduleController : ControllerBase

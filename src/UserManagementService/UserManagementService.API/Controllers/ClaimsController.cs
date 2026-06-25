@@ -1,9 +1,11 @@
 namespace UserManagementService.API.Controllers;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserManagementService.API.Keycloak;
 using UserManagementService.API.Keycloak.Models;
 
+[Authorize]
 [ApiController]
 public class ClaimsController : ControllerBase
 {

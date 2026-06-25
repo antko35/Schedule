@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Keycloak.Authentication" Version="13.2.0-preview.1.26170.3" />
     <PackageReference Include="Aspire.MongoDB.Driver" Version="13.2.0" />
     <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.2.0" />
     <PackageReference Include="MediatR" Version="12.5.0" />
