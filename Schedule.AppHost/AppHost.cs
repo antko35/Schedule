@@ -58,4 +58,11 @@ builder.AddViteApp("vue-frontend", "../Front/electron-vue") // Путь к па�
 //     .WithEnvironment("VITE_USER_API_URL", userService.GetEndpoint("https"))
 //     .WithEnvironment("VITE_SCHEDULE_API_URL", scheduleService.GetEndpoint("https"));
 
+builder.AddViteApp("angular-frontend", "../FrontendAngular")
+    .WithReference(userService)
+    .WithReference(scheduleService)
+    .WithReference(keycloak)
+    .WithHttpEndpoint(name: "angular-ui", port: 4200)
+    .WithExternalHttpEndpoints();
+
 builder.Build().Run();
