@@ -22,6 +22,17 @@ Uses `toSignal(router.events.pipe(filter NavigationEnd, map urlAfterRedirects, s
 `borderColor` is a `computed()` that maps URL prefix to CSS variable.
 Applied via `[style.border-bottom-color]="borderColor()"` on the nav element.
 
+### Form reset after store success
+Smart page uses `viewChild(FormComponent)` (one per form type) and an `effect()` that
+watches `store.successMessage()`. On truthy value: calls `messageService.add(success)`,
+then calls `.reset()` on every viewChild ref (only the visible one is non-null), then
+`store.clearToast()`. Errors use a separate effect watching `store.error()`.
+
+### Lazy data loading triggered by activeForm
+Forms needing remote data (user list, dept list) are not pre-loaded.
+The smart page has an `effect()` watching `store.activeForm()` and calls
+`store.loadUsers()` / `store.loadDepartments()` only when the relevant form becomes active.
+
 ### Lazy loading
 All feature routes use `loadComponent` with dynamic import.
 Pattern: `loadComponent: () => import('./features/...').then(m => m.ComponentClass)`

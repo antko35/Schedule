@@ -48,6 +48,16 @@ builder.Services
 
 builder.Services.AddEndpointsApiExplorer();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.SetIsOriginAllowed(_ => builder.Environment.IsDevelopment())
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var keycloakUrl = builder.Configuration.GetConnectionString("keycloak") ?? "http://localhost:8080";
 const string realmName = "schedule-service";
 const string securitySchemeId = "oauth2";
@@ -119,6 +129,8 @@ app.UseMiddleware<ExeptionHadlingMiddleware>();
 app.ConfigureSwagger();
 
 app.ConfigureHangfire();
+
+app.UseCors();
 
 app.UseHttpsRedirection();
 

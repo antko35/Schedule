@@ -41,4 +41,6 @@ src/app/
 - Session 1 complete: scaffold, routing, tokens.css, interceptors, NavPill
 - Session 2 complete: Departments page fully implemented (store, service, 3 components, tests)
   See `mem:frontend/departments-feature` for full details.
-- Sessions 3–8: pending (control panel, schedule page, tests polish)
+- Session 3 complete: Control Panel page (sidebar, welcome dashboard, 6 implemented forms, store, UserApiService, FormHeaderComponent)
+  See `mem:frontend/control-panel-feature` for full details.
+- Sessions 4–8: pending (control panel departments forms, schedule page, tests polish)
