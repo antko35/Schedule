@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\UserManagementService\UserManagementService.API\UserManagementService.API.csproj" />
+    <ProjectReference Include="..\..\..\src\Services\UserManagementService\UserManagementService.API\UserManagementService.API.csproj" />
   </ItemGroup>
 
 </Project>

@@ -7,7 +7,7 @@
 **/node_modules/
 
 # Frontend (Electron) is built separately, not needed for service images.
-Front/
+legacy/electron-vue/
 
 # Unrelated / scratch folders at the repo root.
 diploma_unpacked/

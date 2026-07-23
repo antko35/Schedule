@@ -1,6 +1,6 @@
 # Frontend Core
 
-Angular 19 frontend for medical staff schedule management. Lives in `FrontendAngular/` (own `.git`). **Not yet scaffolded** — CLAUDE.md defines the intended structure.
+Angular 19 frontend for medical staff schedule management. Lives in `apps/web/` (own `.git`). **Not yet scaffolded** — CLAUDE.md defines the intended structure.
 
 ## Pages
 - `/schedule` — monthly schedule view/edit per doctor

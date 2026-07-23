@@ -1,6 +1,6 @@
 # Frontend Task Completion
 
-Run from `FrontendAngular/` after every coding task:
+Run from `apps/web/` after every coding task:
 
 ```powershell
 ng lint                        # ESLint — must pass clean

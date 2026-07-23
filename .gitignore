@@ -400,4 +400,9 @@ FodyWeavers.xsd
 *.sln.iml
 rabbitmq/.erlang.cookie
 
-FrontendAngular/
+# Independent frontend repositories
+/apps/web/
+/legacy/
+
+# Machine-specific Claude Code permissions and settings
+/.claude/settings.local.json

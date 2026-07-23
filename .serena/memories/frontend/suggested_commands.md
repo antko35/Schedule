@@ -1,12 +1,12 @@
 # Frontend Suggested Commands
 
-Project lives in `FrontendAngular/`. Run all commands from that directory.
+Project lives in `apps/web/`. Run all commands from that directory.
 
 **Note:** Project not yet scaffolded — `package.json` / `angular.json` don't exist yet. Scaffold first with Angular CLI.
 
 ## Scaffold (first-time only)
 ```powershell
-cd FrontendAngular
+cd apps/web
 ng new schedule-frontend --standalone --routing --style=css
 ```
 

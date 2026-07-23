@@ -23,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\ScheduleService\Application\ScheduleService.Application.csproj" />
-    <ProjectReference Include="..\..\..\src\ScheduleService\ScheduleService.API\ScheduleService.API.csproj" />
+    <ProjectReference Include="..\..\..\src\Services\ScheduleService\Application\ScheduleService.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Services\ScheduleService\ScheduleService.API\ScheduleService.API.csproj" />
   </ItemGroup>
 
 </Project>

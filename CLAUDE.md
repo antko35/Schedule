@@ -13,8 +13,8 @@ The repo contains two separate frontend folders. Do not copy code, patterns, or 
 
 | Folder | Status | Stack | Notes |
 |---|---|---|---|
-| `FrontendAngular/` | **NEW — active** | Angular | The current frontend. Has its own `CLAUDE.md` (and its own `.git`). Use this for new frontend work. |
-| `Front/` | **OLD — legacy** | (previous frontend) | Kept for reference only. Do not change unless explicitly asked. |
+| `apps/web/` | **NEW — active** | Angular | The current frontend. Has its own `CLAUDE.md` (and its own `.git`). Use this for new frontend work. |
+| `legacy/electron-vue/` | **OLD — legacy** | (previous frontend) | Kept for reference only. Do not change unless explicitly asked. |
 
 When working on frontend files, follow the `CLAUDE.md` inside that frontend's folder. The backend lives in `src/` (see below) and is the API contract for both.
 
@@ -22,7 +22,7 @@ When working on frontend files, follow the `CLAUDE.md` inside that frontend's fo
 
 **Preferred: via .NET Aspire (orchestrates all services + infra)**
 ```bash
-dotnet run --project Schedule.AppHost
+dotnet run --project src/AppHost
 ```
 This starts all three services, Keycloak, RabbitMQ, PostgreSQL, and MongoDB with service discovery wired automatically.
 
@@ -46,8 +46,8 @@ dotnet test tests/ScheduleServiceTests/Application/Application.csproj
 dotnet test tests/UserManagementTests/ClassLibrary3/UserManagementService.csproj
 
 # EF Core migrations (UserService only — uses PostgreSQL)
-dotnet ef migrations add <MigrationName> -s src/UserService/UserService.API -p src/UserService/Data
-dotnet ef database update -s src/UserService/UserService.API -p src/UserService/Data
+dotnet ef migrations add <MigrationName> -s src/Services/UserService/UserService.API -p src/Services/UserService/Data
+dotnet ef database update -s src/Services/UserService/UserService.API -p src/Services/UserService/Data
 ```
 
 ## Architecture
@@ -63,18 +63,18 @@ Three microservices, each following the same Clean Architecture layering:
 
 ### Services
 
-**UserService** (`src/UserService/`) — port 5001
+**UserService** (`src/Services/UserService/`) — port 5001
 - Stores users in **PostgreSQL** (Entity Framework Core)
 - Exposes a **gRPC server** (`Grpc/Protos/userService.proto`) consumed by UserManagementService
 - Runs a seeder on startup (`IUserSeeder`)
 
-**ScheduleService** (`src/ScheduleService/`) — port 5002
+**ScheduleService** (`src/Services/ScheduleService/`) — port 5002
 - Stores schedules and `UserScheduleRule` records in **MongoDB**
 - Authenticates via **Keycloak JWT** (realm: `schedule-service`, audience: `schedule-service`)
 - Uses **Hangfire** for background schedule generation jobs
 - Consumes RabbitMQ events from UserManagementService
 
-**UserManagementService** (`src/UserManagementService/`) — port 5003
+**UserManagementService** (`src/Services/UserManagementService/`) — port 5003
 - Stores departments and user-department memberships in **MongoDB**
 - Calls UserService over **gRPC** (`GrpcClient/Protos/userService.proto`)
 - Publishes events to **RabbitMQ** when users are added to departments

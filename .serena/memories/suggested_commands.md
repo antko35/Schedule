@@ -7,7 +7,7 @@ metadata:
 
 # Run (preferred — Aspire orchestrates everything)
 ```
-dotnet run --project Schedule.AppHost
+dotnet run --project src/AppHost
 ```
 
 # Alternative

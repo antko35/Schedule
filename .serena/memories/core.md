@@ -16,8 +16,8 @@ Three microservices under `src/`:
 | `UserManagementService/` | 5003 | MongoDB | gRPC client to UserService, RabbitMQ publisher |
 
 Shared projects:
-- `Schedule.ServiceDefaults/` — OpenTelemetry, health checks, service discovery (all services call `builder.AddServiceDefaults()`)
-- `Schedule.AppHost/` — .NET Aspire orchestration entry point
+- `src/ServiceDefaults/` — OpenTelemetry, health checks, service discovery (all services call `builder.AddServiceDefaults()`)
+- `src/AppHost/` — .NET Aspire orchestration entry point
 
 Each service follows Clean Architecture:
 - `*.API` — controllers, middleware, DI wiring
@@ -29,7 +29,7 @@ Each service follows Clean Architecture:
 Key patterns: MediatR commands/queries, FluentValidation pipeline behavior, StyleCop enforced, xUnit+Moq+FluentAssertions tests.
 
 ## Frontend
-Angular 19 SPA in `FrontendAngular/` (own `.git`, not yet scaffolded). See `mem:frontend/core` for structure, stack, and feature memories.
+Angular 19 SPA in `apps/web/` (own `.git`, not yet scaffolded). See `mem:frontend/core` for structure, stack, and feature memories.
 
 ## Workflow: Creating a Schedule
 1. POST `/User` on UserManagementService → creates user

@@ -28,4 +28,4 @@ Run tests:
 dotnet test Schedule.sln
 ```
 
-Frontend changes (Electron + Vue): manually run the app via `npm run dev` inside `Front/electron-vue/` and verify the UI.
+Frontend changes (Electron + Vue): manually run the app via `npm run dev` inside `legacy/electron-vue/electron-vue/` and verify the UI.

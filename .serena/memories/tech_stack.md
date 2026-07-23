@@ -6,8 +6,8 @@ metadata:
 ---
 
 - **Language**: C# / .NET 10 (projects target net10.0; some bin artifacts show net9.0 for older builds)
-- **Frontend**: Electron + Vue 3 (TypeScript) in `Front/electron-vue/`
-- **Orchestration**: .NET Aspire (`Schedule.AppHost`)
+- **Frontend**: Electron + Vue 3 (TypeScript) in `legacy/electron-vue/electron-vue/`
+- **Orchestration**: .NET Aspire (`src/AppHost`)
 - **Auth**: Keycloak (JWT, realm `schedule-service`, audience `schedule-service`)
 - **Messaging**: RabbitMQ (Aspire.RabbitMQ.Client)
 - **gRPC**: inter-service calls (UserService ↔ UserManagementService)
