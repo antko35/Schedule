@@ -40,4 +40,4 @@ builder.AddViteApp("angular-frontend", "../../apps/web")
     .WithHttpEndpoint(name: "angular-ui", port: 4200)
     .WithExternalHttpEndpoints();
 
-builder.Build().Run();
+await builder.Build().RunAsync();
