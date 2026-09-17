@@ -12,15 +12,17 @@ var managementMongo = builder.AddMongoDB("management-mongo")
     .WithMongoExpress();
 var managementDb = managementMongo.AddDatabase("userManagementDb");
 
-var keycloak = builder.AddKeycloak("keycloak")
+var keycloak = builder.AddKeycloak("keycloak", port: 8080)
     .WithDataVolume()
     .WithRealmImport("keycloak")
     .WithExternalHttpEndpoints();
+var keycloakPublicUrl = keycloak.GetEndpoint("http");
 
 var scheduleService = builder.AddProject<Projects.ScheduleService_API>("schedule-service")
     .WithReference(scheduleDb)
     .WithReference(keycloak)
     .WithReference(rabbit)
+    .WithEnvironment("Keycloak__PublicUrl", keycloakPublicUrl)
     .WaitFor(rabbit)
     .WaitFor(scheduleDb)
     .WaitFor(keycloak);
@@ -29,6 +31,7 @@ var userService = builder.AddProject<Projects.UserManagementService_API>("user-m
     .WithReference(managementDb)
     .WithReference(keycloak)
     .WithReference(rabbit)
+    .WithEnvironment("Keycloak__PublicUrl", keycloakPublicUrl)
     .WaitFor(rabbit)
     .WaitFor(managementDb)
     .WaitFor(keycloak);
@@ -38,6 +41,7 @@ builder.AddViteApp("angular-frontend", "../../apps/web")
     .WithReference(scheduleService)
     .WithReference(keycloak)
     .WithHttpEndpoint(name: "angular-ui", port: 4200)
-    .WithExternalHttpEndpoints();
+    .WithExternalHttpEndpoints()
+    .WaitFor(keycloak);
 
 await builder.Build().RunAsync();

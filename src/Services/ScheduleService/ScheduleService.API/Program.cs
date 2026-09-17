@@ -26,9 +26,11 @@ builder.Services
 builder.Services
     .AddInfrastructureDependencis(builder.Configuration);
 
-var keycloakUrl = builder.Configuration.GetConnectionString("keycloak") ?? "http://localhost:8080";
+var keycloakPublicUrl =
+    builder.Configuration["Keycloak:PublicUrl"]
+    ?? throw new InvalidOperationException("Keycloak:PublicUrl configuration is required.");
 builder.Services
-    .AddSwaggerExtension(keycloakUrl);
+    .AddSwaggerExtension(keycloakPublicUrl);
 
 builder.Services.AddAuthentication()
     .AddKeycloakJwtBearer(
@@ -37,6 +39,8 @@ builder.Services.AddAuthentication()
         configureOptions: options =>
         {
             options.Audience = "schedule-service";
+            options.TokenValidationParameters.ValidIssuer =
+                $"{keycloakPublicUrl.TrimEnd('/')}/realms/schedule-service";
 
             if (builder.Environment.IsDevelopment())
             {
@@ -67,6 +71,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

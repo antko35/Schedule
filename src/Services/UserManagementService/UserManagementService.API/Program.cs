@@ -1,16 +1,12 @@
-using Hangfire;
-using MediatR;
-using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Infrastructure.Extensions;
+using Microsoft.OpenApi.Models;
 using UserManagementService.API.Extensions;
 using UserManagementService.API.Extensions.AppExtensions;
 using UserManagementService.API.Extensions.AppExtensions.Hangfire;
 using UserManagementService.API.Keycloak;
 using UserManagementService.Application.Extensions;
-using UserManagementService.Application.UseCases.Commands.User;
 using UserManagementService.Data.Extensions;
-using UserManagementService.DataAccess.Database;
 using UserManagementService.DataAccess.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +27,7 @@ builder.Services.AddHttpClient(
 {
     client.BaseAddress = new Uri("http://keycloak");
 }).AddServiceDiscovery();
+
 builder.Services.AddScoped<IKeycloakAdminService, KeycloakAdminService>();
 
 // Application Layer
@@ -58,7 +55,9 @@ builder.Services.AddCors(options =>
     });
 });
 
-var keycloakUrl = builder.Configuration.GetConnectionString("keycloak") ?? "http://localhost:8080";
+var keycloakPublicUrl =
+    builder.Configuration["Keycloak:PublicUrl"]
+    ?? throw new InvalidOperationException("Keycloak:PublicUrl configuration is required.");
 const string realmName = "schedule-service";
 const string securitySchemeId = "oauth2";
 
@@ -69,6 +68,8 @@ builder.Services.AddAuthentication()
         configureOptions: options =>
         {
             options.Audience = realmName;
+            options.TokenValidationParameters.ValidIssuer =
+                $"{keycloakPublicUrl.TrimEnd('/')}/realms/{realmName}";
 
             if (builder.Environment.IsDevelopment())
             {
@@ -83,10 +84,12 @@ builder.Services.AddSwaggerGen(options =>
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 
-    var authUrl = new Uri($"{keycloakUrl.TrimEnd('/')}/realms/{realmName}/protocol/openid-connect/auth");
-    var tokenUrl = new Uri($"{keycloakUrl.TrimEnd('/')}/realms/{realmName}/protocol/openid-connect/token");
+    var authUrl = new Uri($"{keycloakPublicUrl.TrimEnd('/')}/realms/{realmName}/protocol/openid-connect/auth");
+    var tokenUrl = new Uri($"{keycloakPublicUrl.TrimEnd('/')}/realms/{realmName}/protocol/openid-connect/token");
 
-    options.AddSecurityDefinition(securitySchemeId, new OpenApiSecurityScheme
+    options.AddSecurityDefinition(
+        securitySchemeId,
+        new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.OAuth2,
         Flows = new OpenApiOAuthFlows
