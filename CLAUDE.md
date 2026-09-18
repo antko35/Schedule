@@ -5,7 +5,7 @@ repository.
 
 ## Overview
 
-This is a .NET 10 microservices solution for employee schedule management. It uses **.NET Aspire** for local orchestration, **Keycloak** for authentication, **RabbitMQ** for async messaging, **gRPC** for synchronous inter-service calls, and **Hangfire** for background job scheduling.
+This is a .NET 10 microservices solution for employee schedule management. It uses **.NET Aspire** for local orchestration, **Keycloak** for authentication, **RabbitMQ** for async messaging and RPC, and **Hangfire** for background job scheduling.
 
 ## Frontends — IMPORTANT: there are two, do NOT mix them up
 
@@ -24,7 +24,7 @@ When working on frontend files, follow the `CLAUDE.md` inside that frontend's fo
 ```bash
 dotnet run --project src/AppHost
 ```
-This starts all three services, Keycloak, RabbitMQ, PostgreSQL, and MongoDB with service discovery wired automatically.
+This starts both services, Keycloak, RabbitMQ, and MongoDB with service discovery wired automatically.
 
 **Alternative: via Docker Compose**
 ```bash
@@ -41,18 +41,13 @@ dotnet build Schedule.sln
 dotnet test Schedule.sln
 
 # Run tests for a single project
-dotnet test tests/UserServiceTests/UserServiceTests.csproj
 dotnet test tests/ScheduleServiceTests/Application/Application.csproj
 dotnet test tests/UserManagementTests/ClassLibrary3/UserManagementService.csproj
-
-# EF Core migrations (UserService only — uses PostgreSQL)
-dotnet ef migrations add <MigrationName> -s src/Services/UserService/UserService.API -p src/Services/UserService/Data
-dotnet ef database update -s src/Services/UserService/UserService.API -p src/Services/UserService/Data
 ```
 
 ## Architecture
 
-Three microservices, each following the same Clean Architecture layering:
+Two microservices, each following the same Clean Architecture layering:
 
 | Layer | Project suffix |
 |---|---|
@@ -63,11 +58,6 @@ Three microservices, each following the same Clean Architecture layering:
 
 ### Services
 
-**UserService** (`src/Services/UserService/`) — port 5001
-- Stores users in **PostgreSQL** (Entity Framework Core)
-- Exposes a **gRPC server** (`Grpc/Protos/userService.proto`) consumed by UserManagementService
-- Runs a seeder on startup (`IUserSeeder`)
-
 **ScheduleService** (`src/Services/ScheduleService/`) — port 5002
 - Stores schedules and `UserScheduleRule` records in **MongoDB**
 - Authenticates via **Keycloak JWT** (realm: `schedule-service`, audience: `schedule-service`)
@@ -75,15 +65,15 @@ Three microservices, each following the same Clean Architecture layering:
 - Consumes RabbitMQ events from UserManagementService
 
 **UserManagementService** (`src/Services/UserManagementService/`) — port 5003
-- Stores departments and user-department memberships in **MongoDB**
-- Calls UserService over **gRPC** (`GrpcClient/Protos/userService.proto`)
+- Stores users, departments, and user-department memberships in **MongoDB**
+- Manages authentication users and permissions through the **Keycloak Admin API**
 - Publishes events to **RabbitMQ** when users are added to departments
 - A new `UserScheduleRule` record in ScheduleService's DB is created automatically when a user is added to a department
 
 ### Shared infrastructure
 
 - **`Schedule.ServiceDefaults`** — shared Aspire defaults: OpenTelemetry (traces, metrics, logs), health checks, service discovery. Every service calls `builder.AddServiceDefaults()`.
-- **`Schedule.AppHost`** — Aspire orchestration entry point; references all three service projects and provisions Keycloak, RabbitMQ, PostgreSQL, MongoDB.
+- **`Schedule.AppHost`** — Aspire orchestration entry point; references both active service projects and provisions Keycloak, RabbitMQ, and MongoDB.
 
 ### Key patterns
 
@@ -97,14 +87,11 @@ Three microservices, each following the same Clean Architecture layering:
 
 | Service | Port |
 |---|---|
-| UserService API | 5001 |
 | ScheduleService API | 5002 |
 | UserManagementService API | 5003 |
 | RabbitMQ Management UI | 15672 |
-| PostgreSQL | 5434 |
 | MongoDB (schedule) | 27018 |
 | MongoDB (management) | 27017 |
-| pgAdmin | 5050 |
 | Mongo Express (schedule) | 8082 |
 | Mongo Express (management) | 8081 |
 

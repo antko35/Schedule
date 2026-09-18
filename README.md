@@ -1,6 +1,6 @@
 # Schedule
 
-Employee-schedule management system built with .NET 10 microservices. .NET Aspire orchestrates local development with Keycloak, RabbitMQ, PostgreSQL, and MongoDB.
+Employee-schedule management system built with .NET 10 microservices. .NET Aspire orchestrates local development with Keycloak, RabbitMQ, and MongoDB.
 
 ## Repository map
 
@@ -8,7 +8,7 @@ Employee-schedule management system built with .NET 10 microservices. .NET Aspir
 | --- | --- |
 | `src/AppHost/` | Aspire entry point for local orchestration. |
 | `src/ServiceDefaults/` | Shared observability, health-check, service-discovery, and resilience defaults. |
-| `src/Services/` | UserService, ScheduleService, and UserManagementService. |
+| `src/Services/` | ScheduleService and UserManagementService. |
 | `tests/` | Unit and application tests. |
 | `apps/web/` | Active Angular frontend; a separately managed Git repository. |
 | `legacy/electron-vue/` | Archived Electron/Vue frontend; a separately managed Git repository. |
