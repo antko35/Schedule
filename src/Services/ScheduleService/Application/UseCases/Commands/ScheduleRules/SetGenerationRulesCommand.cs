@@ -12,7 +12,7 @@ namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
 
         public float? MaxHoursPerDay { get; set; }
 
-        public TimeOnly StartWorkDayTime { get; set; } = new TimeOnly(0, 0, 0);
+        public TimeOnly? StartWorkDayTime { get; set; }
 
         public bool? OnlyFirstShift { get; set; }
 

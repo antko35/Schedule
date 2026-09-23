@@ -37,14 +37,14 @@
         public bool OnlySecondShift { get; set; }
 
         /// <summary>
-        /// Work first shift on even Day of week and second shift on uneven days.
-        /// Tuesday, Thursday.
+        /// Work the second shift on Monday, Wednesday, and Friday,
+        /// and the first shift on Tuesday and Thursday.
         /// </summary>
         public bool EvenDOW { get; set; }
 
         /// <summary>
-        /// uneven Day of week.
-        /// Monday, Wednesday, Friday.
+        /// Work the first shift on Monday, Wednesday, and Friday,
+        /// and the second shift on Tuesday and Thursday.
         /// </summary>
         public bool UnEvenDOW { get; set; }
 

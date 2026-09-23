@@ -14,10 +14,12 @@ namespace ScheduleService.Application.Validators.Commands.ScheduleRules
         public SetGenerationRulesCommandValidator()
         {
             RuleFor(x => x.HoursPerMonth)
-                .GreaterThan(0).WithMessage("HoursPerMonth must be greater than 0.");
+                .GreaterThan(0).WithMessage("HoursPerMonth must be greater than 0.")
+                .When(x => x.HoursPerMonth.HasValue);
 
             RuleFor(x => x.MaxHoursPerDay)
-                .GreaterThan(0).WithMessage("MaxHoursPerDay must be greater than 0.");
+                .GreaterThan(0).WithMessage("MaxHoursPerDay must be greater than 0.")
+                .When(x => x.MaxHoursPerDay.HasValue);
 
             RuleFor(x => x)
                 .Must(x =>

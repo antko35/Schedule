@@ -82,12 +82,9 @@
         }
 
         /// <summary>
-        /// Set hours per day and max working hours per day.
-        /// Set when user work`s first shift.
-        /// Ex: If user works first shift on even days of week set: EvenDOW: true.
-        /// If user works first shift on even days of month set: EvenDOM: true.
-        /// If user work`s only first shift set "onlyFirstShift : true".
-        /// If user work`s only second shift set "onlySecondShift : true".
+        /// Update schedule-generation rules for a user and month.
+        /// Omitted values remain unchanged. Supplying the six periodicity flags as false
+        /// selects manual scheduling. At most one periodicity flag can be true.
         /// </summary>
         /// <remarks>
         /// ```
@@ -96,13 +93,19 @@
         ///     "hoursPerMonth": 0,
         ///     "maxHoursPerDay": 0,
         ///     "startWorkDayTime": "string",
-        ///     "onlyFirstShift" : true,
-        ///     "onlySecondShift" : true,
+        ///     "onlyFirstShift" : false,
+        ///     "onlySecondShift" : false,
         ///     "evenDOW": true,
-        ///     "unEvenDOW": true,
-        ///     "evenDOM": true,
-        ///     "unEvenDOM": true
+        ///     "unEvenDOW": false,
+        ///     "evenDOM": false,
+        ///     "unEvenDOM": false
         ///     }.
+        ///
+        /// evenDOW uses the second shift on Monday, Wednesday, and Friday,
+        /// and the first shift on Tuesday and Thursday.
+        /// unEvenDOW uses the first shift on Monday, Wednesday, and Friday,
+        /// and the second shift on Tuesday and Thursday.
+        /// evenDOM and unEvenDOM use the first shift on even and odd month dates respectively.
         /// </remarks>
         /// <param name="command">Updated generation-rule values.</param>
         /// <returns>The persisted schedule-rule entity.</returns>

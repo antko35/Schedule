@@ -38,12 +38,11 @@ namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules
 
         private void ApplyRules(SetGenerationRulesCommand src, UserScheduleRules dest)
         {
-            if (IsValidMember(src.HoursPerMonth)) dest.HoursPerMonth = src.HoursPerMonth.Value;
-            if (IsValidMember(src.MaxHoursPerDay)) dest.MaxHoursPerDay = src.MaxHoursPerDay.Value;
-            if (IsValidMember(src.StartWorkDayTime)) dest.StartWorkDayTime = src.StartWorkDayTime;
+            if (src.HoursPerMonth.HasValue) dest.HoursPerMonth = src.HoursPerMonth.Value;
+            if (src.MaxHoursPerDay.HasValue) dest.MaxHoursPerDay = src.MaxHoursPerDay.Value;
+            if (src.StartWorkDayTime.HasValue) dest.StartWorkDayTime = src.StartWorkDayTime.Value;
 
-            if (src.OnlyFirstShift == true || src.OnlySecondShift == true || src.EvenDOW == true ||
-                src.UnEvenDOW == true || src.EvenDOM == true || src.UnEvenDOM == true)
+            if (HasShiftPeriodicity(src))
             {
                 ResetFlags(dest);
             }
@@ -56,6 +55,14 @@ namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules
             if (src.UnEvenDOM == true) dest.UnEvenDOM = true;
         }
 
+        private bool HasShiftPeriodicity(SetGenerationRulesCommand rules) =>
+            rules.OnlyFirstShift.HasValue ||
+            rules.OnlySecondShift.HasValue ||
+            rules.EvenDOW.HasValue ||
+            rules.UnEvenDOW.HasValue ||
+            rules.EvenDOM.HasValue ||
+            rules.UnEvenDOM.HasValue;
+
         private void ResetFlags(UserScheduleRules rules)
         {
             rules.OnlyFirstShift = false;
@@ -65,15 +72,5 @@ namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules
             rules.EvenDOM = false;
             rules.UnEvenDOM = false;
         }
-
-        private bool IsValidMember(object? srcMember) =>
-            srcMember switch
-            {
-                null => false,
-                TimeOnly time when time == default => false,
-                float floatValue when floatValue == default => false,
-                bool boolValue when boolValue == default => false,
-                _ => true
-            };
     }
 }
