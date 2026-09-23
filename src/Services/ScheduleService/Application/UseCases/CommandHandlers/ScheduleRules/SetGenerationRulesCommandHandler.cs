@@ -8,7 +8,7 @@ using ScheduleService.Domain.Models;
 
 namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules
 {
-    public class SetGenerationRulesCommandHandler : IRequestHandler<SetGenerationRulesCommand>
+    public class SetGenerationRulesCommandHandler : IRequestHandler<SetGenerationRulesCommand, UserScheduleRules>
     {
         private readonly IUserRuleRepository userRuleRepository;
         private readonly IMapper mapper;
@@ -21,7 +21,9 @@ namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules
             this.mapper = mapper;
         }
 
-        public async Task Handle(SetGenerationRulesCommand request, CancellationToken cancellationToken)
+        public async Task<UserScheduleRules> Handle(
+            SetGenerationRulesCommand request,
+            CancellationToken cancellationToken)
         {
             var rules = await userRuleRepository.GetByIdAsync(request.ScheduleRulesId);
 
@@ -30,6 +32,8 @@ namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules
             ApplyRules(request, rules);
 
             await userRuleRepository.UpdateAsync(rules);
+
+            return rules;
         }
 
         private void ApplyRules(SetGenerationRulesCommand src, UserScheduleRules dest)

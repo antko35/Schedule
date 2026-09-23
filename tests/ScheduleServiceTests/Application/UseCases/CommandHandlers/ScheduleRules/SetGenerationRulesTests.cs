@@ -35,9 +35,10 @@ public class SetGenerationRulesTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
+        result.Should().BeSameAs(existingRules);
         existingRules.EvenDOW.Should().BeTrue();
         existingRules.OnlyFirstShift.Should().BeFalse();
 

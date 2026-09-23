@@ -1,14 +1,10 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ScheduleService.Domain.Models;
 
 namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
 {
     public class SetGenerationRulesCommand
-        : IRequest
+        : IRequest<UserScheduleRules>
     {
         public string ScheduleRulesId { get; set; }
 

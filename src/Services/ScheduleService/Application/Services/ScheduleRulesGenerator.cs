@@ -16,7 +16,10 @@ public class ScheduleRulesGenerator
     }
 
     public async Task CreateAndAddRulesAndSchedules(
-        string userId, string departmentId, DateTime nextMonthDate, string nextMonth)
+        string userId,
+        string departmentId,
+        DateTime nextMonthDate,
+        string nextMonth)
     {
         var scheduleId = ObjectId.GenerateNewId().ToString();
 

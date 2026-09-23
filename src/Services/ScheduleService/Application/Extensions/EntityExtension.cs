@@ -1,12 +1,7 @@
-﻿using ScheduleService.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ScheduleService.Application.Extensions
+﻿namespace ScheduleService.Application.Extensions
 {
+    using ScheduleService.Domain.Models;
+
     public static class EntityExtension
     {
         public static void EnsureExists<T>(this T? entity, string errorMessage)

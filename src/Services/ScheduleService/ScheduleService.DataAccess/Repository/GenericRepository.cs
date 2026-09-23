@@ -1,14 +1,11 @@
 ﻿namespace ScheduleService.DataAccess.Repository
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
+    using Database;
+    using Domain.Abstractions;
+    using Domain.Models;
     using MongoDB.Driver;
-    using ScheduleService.DataAccess.Database;
-    using ScheduleService.Domain.Abstractions;
-    using ScheduleService.Domain.Models;
 
     public class GenericRepository<TEntity> : IGenericRepository<TEntity>
         where TEntity : Entity

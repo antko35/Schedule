@@ -1,10 +1,10 @@
 ﻿namespace ScheduleService.API.Controllers
 {
+    using Application.UseCases.Commands.ScheduleRules;
+    using Application.UseCases.Queries.ScheduleRules;
     using MediatR;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using ScheduleService.Application.UseCases.Commands.ScheduleRules;
-    using ScheduleService.Application.UseCases.Queries.ScheduleRules;
 
     [Authorize]
     [ApiController]
@@ -32,7 +32,7 @@
         }
 
         /// <summary>
-        /// Get rules for schedule generation.
+        /// Get rules for schedule generation for specific user in department.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="departmentId"></param>
@@ -64,7 +64,7 @@
         }
 
         /// <summary>
-        /// Creaste rules for schedule generation for specific month.
+        /// Create rules for schedule generation for specific month.
         /// </summary>
         /// <param name="departmentId"></param>
         /// <param name="year"></param>
@@ -104,14 +104,15 @@
         ///     "unEvenDOM": true
         ///     }.
         /// </remarks>
-        /// <returns></returns>
+        /// <param name="command">Updated generation-rule values.</param>
+        /// <returns>The persisted schedule-rule entity.</returns>
         [HttpPatch]
         [Route("setRules")]
         public async Task<IActionResult> SetGenerationRules(SetGenerationRulesCommand command)
         {
-            await mediator.Send(command);
+            var result = await mediator.Send(command);
 
-            return Ok();
+            return Ok(result);
         }
 
         /// <summary>

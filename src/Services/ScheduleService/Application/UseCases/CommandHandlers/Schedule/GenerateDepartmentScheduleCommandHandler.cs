@@ -81,6 +81,7 @@
             if (!usersRules.Any())
             {
                 await CreateRulesForDepartment(departmentId, year, month, monthName);
+
                 this.usersRules = await userRuleRepository.GetUsersRulesByDepartment(departmentId, monthName, year);
             }
 
@@ -98,7 +99,10 @@
             foreach (var userRule in departmentUsers)
             {
                 await scheduleRulesGenerator.CreateAndAddRulesAndSchedules(
-                    userRule.UserId, departmentId, targetDate, monthName);
+                    userRule.UserId,
+                    departmentId,
+                    targetDate,
+                    monthName);
             }
         }
 

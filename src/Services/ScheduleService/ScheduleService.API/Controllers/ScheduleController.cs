@@ -1,10 +1,10 @@
 ﻿namespace ScheduleService.API.Controllers
 {
+    using Application.UseCases.Commands.Schedule;
+    using Application.UseCases.Queries.Schedule;
     using MediatR;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using ScheduleService.Application.UseCases.Commands.Schedule;
-    using ScheduleService.Application.UseCases.Queries.Schedule;
 
     [Authorize]
     [ApiController]
@@ -91,6 +91,25 @@
         public async Task<IActionResult> GenerateMonthSchedule([FromBody] GenerateDepartmentScheduleCommand command)
         {
             await mediator.Send(command);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Generate a selected user's schedule for a month.
+        /// </summary>
+        /// <param name="userId">The user whose schedule will be generated.</param>
+        /// <param name="command">The department, year, and month used for generation.</param>
+        /// <param name="cancellationToken">Token used to cancel the request.</param>
+        /// <returns>An empty successful response.</returns>
+        [HttpPost]
+        [Route("{userId}/generate")]
+        public async Task<IActionResult> GenerateMonthScheduleForUser(
+            string userId,
+            [FromBody] GenerateScheduleCommand command,
+            CancellationToken cancellationToken)
+        {
+            await mediator.Send(command with { UserId = userId }, cancellationToken);
 
             return Ok();
         }

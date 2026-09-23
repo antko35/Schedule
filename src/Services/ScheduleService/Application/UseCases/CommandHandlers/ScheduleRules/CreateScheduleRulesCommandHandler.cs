@@ -1,15 +1,12 @@
 ﻿namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
+    using DataAccess.Repository;
+    using Domain.Abstractions;
+    using Domain.Models;
     using MediatR;
     using MongoDB.Bson;
-    using ScheduleService.DataAccess.Repository;
-    using ScheduleService.Domain.Abstractions;
-    using ScheduleService.Domain.Models;
 
     public record CreateScheduleRulesCommandHandler : IRequestHandler<CreateScheduleRulesCommand, (Schedule Schedule, UserScheduleRules ScheduleRules)>
     {

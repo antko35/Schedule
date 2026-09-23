@@ -1,15 +1,12 @@
 ﻿namespace ScheduleService.Application.UseCases.QueryHandlers.Calendar
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Domain.Abstractions;
+    using Domain.Models;
     using MediatR;
     using ScheduleService.Application.UseCases.Queries.Calendar;
-    using ScheduleService.Domain.Abstractions;
-    using ScheduleService.Domain.Models;
 
     public class GetYearHolidaysQueryHandler
         : IRequestHandler<GetYearHolidaysQuery, List<Calendar>>
