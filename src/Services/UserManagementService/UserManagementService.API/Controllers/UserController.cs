@@ -46,6 +46,24 @@
         }
 
         /// <summary>
+        /// Gets workers who are not assigned to the specified department.
+        /// </summary>
+        /// <param name="departmentId">The department identifier.</param>
+        /// <param name="cancellationToken">A token used to cancel the request.</param>
+        /// <returns>Workers available for assignment to the department.</returns>
+        [HttpGet("availableForDepartment/{departmentId}")]
+        public async Task<IActionResult> GetAvailableForDepartment(
+            [FromRoute] string departmentId,
+            CancellationToken cancellationToken)
+        {
+            var users = await mediator.Send(
+                new GetAvailableUsersForDepartmentQuery(departmentId),
+                cancellationToken);
+
+            return Ok(users);
+        }
+
+        /// <summary>
         /// Get full user info by id.
         /// Contatins general info and info about work in departments
         /// </summary>

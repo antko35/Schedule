@@ -27,6 +27,26 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             })
             .ToListAsync();
     }
-    
-    
+
+    public async Task<List<ShortUserInfo>> GetAvailableUsersForDepartmentAsync(
+        IEnumerable<string> existingUserIds,
+        CancellationToken cancellationToken)
+    {
+        var excludedUserIds = existingUserIds.ToList();
+
+        return await dbSet.AsQueryable()
+            .Where(user => !excludedUserIds.Contains(user.Id))
+            .OrderBy(user => user.LastName)
+            .ThenBy(user => user.FirstName)
+            .ThenBy(user => user.Patronymic)
+            .ThenBy(user => user.Id)
+            .Select(user => new ShortUserInfo
+            {
+                Id = user.Id,
+                FirstName = user.FirstName ?? string.Empty,
+                LastName = user.LastName ?? string.Empty,
+                Patronymic = user.Patronymic ?? string.Empty,
+            })
+            .ToListAsync(cancellationToken);
+    }
 }

@@ -15,13 +15,27 @@
         public AddUserToDepartmentCommandValidator()
         {
             RuleFor(x => x.UserId)
+                .NotEmpty()
                 .MustBeValidObjectId();
 
             RuleFor(x => x.DepartmentId)
+                .NotEmpty()
                 .MustBeValidObjectId();
 
+            RuleFor(x => x.Role)
+                .NotEmpty();
+
+            RuleFor(x => x.Status)
+                .NotEmpty();
+
             RuleFor(x => x.Email)
+                .NotEmpty()
                 .EmailAddress();
+
+            RuleFor(x => x.PhoneNumber)
+                .NotEmpty()
+                .Matches(@"\A\+375-[0-9]{2}-[0-9]{7}\z")
+                .WithMessage("PhoneNumber must match the +375-XX-XXXXXXX format.");
         }
     }
 }
