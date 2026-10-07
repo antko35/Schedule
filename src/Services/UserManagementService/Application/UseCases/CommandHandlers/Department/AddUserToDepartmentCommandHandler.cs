@@ -51,8 +51,8 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
            DepartmentId = request.DepartmentId,
            Role = request.Role,
            Status = request.Status,
-           Email = request.Email,
-           PhoneNumber = request.PhoneNumber,
+           Email = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email,
+           PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber,
         };
 
         await userJobsRepository.AddAsync(newUserJob);

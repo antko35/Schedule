@@ -22,7 +22,19 @@ public sealed class EditUserInDepartmentCommandValidator
         RuleFor(x => x.UserId)
             .MustBeValidObjectId();
 
+        RuleFor(x => x.Role)
+            .NotEmpty();
+
+        RuleFor(x => x.Status)
+            .NotEmpty();
+
         RuleFor(x => x.Email)
-            .EmailAddress();
+            .EmailAddress()
+            .When(x => !string.IsNullOrWhiteSpace(x.Email));
+
+        RuleFor(x => x.PhoneNumber)
+            .Matches(@"\A\+375-[0-9]{2}-[0-9]{7}\z")
+            .WithMessage("PhoneNumber must match the +375-XX-XXXXXXX format.")
+            .When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber));
     }
 }

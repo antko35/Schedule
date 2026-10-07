@@ -15,8 +15,6 @@ public class AddUserToDepartmentCommandValidatorTests
         { CreateValidCommand() with { DepartmentId = string.Empty }, "DepartmentId" },
         { CreateValidCommand() with { Role = string.Empty }, "Role" },
         { CreateValidCommand() with { Status = string.Empty }, "Status" },
-        { CreateValidCommand() with { Email = string.Empty }, "Email" },
-        { CreateValidCommand() with { PhoneNumber = string.Empty }, "PhoneNumber" },
     };
 
     [Theory]
@@ -62,6 +60,19 @@ public class AddUserToDepartmentCommandValidatorTests
         var result = new AddUserToDepartmentCommandValidator().Validate(command);
 
         result.Errors.Should().Contain(error => error.PropertyName == "PhoneNumber");
+    }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("", "")]
+    [InlineData("   ", "   ")]
+    public void Validate_ShouldAcceptMissingOptionalContactDetails(string? email, string? phoneNumber)
+    {
+        var command = CreateValidCommand() with { Email = email, PhoneNumber = phoneNumber };
+
+        var result = new AddUserToDepartmentCommandValidator().Validate(command);
+
+        result.IsValid.Should().BeTrue();
     }
 
     [Fact]

@@ -8,5 +8,5 @@ public record EditUserInDepartmentCommand(
     string UserId,
     string Role,
     string Status,
-    string Email,
-    string PhoneNumber) : IRequest<UserJob>;
+    string? Email,
+    string? PhoneNumber) : IRequest<UserJob>;

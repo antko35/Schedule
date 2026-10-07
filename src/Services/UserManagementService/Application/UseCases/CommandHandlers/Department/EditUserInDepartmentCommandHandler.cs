@@ -46,8 +46,8 @@
                 DepartmentId = department.Id,
                 Role = request.Role,
                 Status = request.Status,
-                PhoneNumber = request.PhoneNumber,
-                Email = request.Email,
+                PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber,
+                Email = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email,
             };
 
             await userJobsRepository.UpdateAsync(newUserJob);

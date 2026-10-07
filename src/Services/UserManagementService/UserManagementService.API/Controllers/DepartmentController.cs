@@ -97,21 +97,23 @@
         /// <summary>
         /// Add user to department
         /// </summary>
-        /// <param name="command"></param>
+        /// <param name="command">The membership details. Email and phone number are optional.</param>
         /// <remarks>
+        /// When provided, the phone number must match the +375-XX-XXXXXXX format.
+        ///
         /// ```
         /// POST
         /// {
         ///   "userId": "",
         ///   "departmentId": "",
-        ///   "role": "string", // role in this dep
-        ///   "status": "string" // working / vacation
-        ///   "email": "user@gmail.com",
-        ///   "phoneNumber": "+375-12-3456789"
+        ///   "role": "string",
+        ///   "status": "string",
+        ///   "email": null,
+        ///   "phoneNumber": null
         /// }
         /// ```
         /// </remarks>
-        /// <returns></returns>
+        /// <returns>The created department membership.</returns>
         [HttpPost]
         [Route("addUserToDepartment")]
          public async Task<IActionResult> AddUserToDepartment([FromBody] AddUserToDepartmentCommand command)
@@ -124,8 +126,8 @@
         /// <summary>
         /// Edit information about user in department
         /// </summary>
-        /// <param name="command"></param>
-        /// <returns></returns>
+        /// <param name="command">The membership details. Role and status are required; email and phone number are optional.</param>
+        /// <returns>The updated department membership.</returns>
         [HttpPut]
         [Route("editUserInDepartment")]
         public async Task<IActionResult> EditUserInDepartment([FromBody] EditUserInDepartmentCommand command)

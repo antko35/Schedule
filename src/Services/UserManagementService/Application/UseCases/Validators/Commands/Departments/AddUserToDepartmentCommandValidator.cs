@@ -29,13 +29,13 @@
                 .NotEmpty();
 
             RuleFor(x => x.Email)
-                .NotEmpty()
-                .EmailAddress();
+                .EmailAddress()
+                .When(x => !string.IsNullOrWhiteSpace(x.Email));
 
             RuleFor(x => x.PhoneNumber)
-                .NotEmpty()
                 .Matches(@"\A\+375-[0-9]{2}-[0-9]{7}\z")
-                .WithMessage("PhoneNumber must match the +375-XX-XXXXXXX format.");
+                .WithMessage("PhoneNumber must match the +375-XX-XXXXXXX format.")
+                .When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber));
         }
     }
 }
