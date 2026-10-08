@@ -1,110 +1,61 @@
 ﻿namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
 {
     using System;
-    using System.Globalization;
-    using System.Linq;
     using System.Threading.Tasks;
     using MediatR;
-    using MongoDB.Bson;
-    using ScheduleService.Application.Extensions;
+    using ScheduleService.Application.Services;
     using ScheduleService.Application.UseCases.Commands.Schedule;
-    using ScheduleService.DataAccess.Repository;
     using ScheduleService.Domain.Abstractions;
     using ScheduleService.Domain.Models;
 
     public class CreateWorkDayManuallyCommandHandler
         : IRequestHandler<CreateWorkDayManuallyCommand, WorkDay>
     {
-        private readonly IUserRuleRepository userRuleRepository;
         private readonly IScheduleRepository scheduleRepository;
-
-        private UserScheduleRules? userSchedueRules;
+        private readonly ScheduleMonthContextService monthContextService;
 
         public CreateWorkDayManuallyCommandHandler(
-            IUserRuleRepository userRuleRepository,
-            IScheduleRepository scheduleRepository)
+            IScheduleRepository scheduleRepository,
+            ScheduleMonthContextService monthContextService)
         {
-            this.userRuleRepository = userRuleRepository;
             this.scheduleRepository = scheduleRepository;
+            this.monthContextService = monthContextService;
         }
 
         public async Task<WorkDay> Handle(CreateWorkDayManuallyCommand request, CancellationToken cancellationToken)
         {
-            await GetUserScheduleRules(request);
-            
-            WorkDay newWorkDay = new WorkDay
+            var context = await this.monthContextService.GetOrCreateAsync(
+                request.UserId,
+                request.DepartmentId,
+                request.StartTime.Year,
+                request.StartTime.Month);
+            var scheduleId = context.Rules.ScheduleId;
+
+            var newWorkDay = new WorkDay
             {
                 Day = request.StartTime.Day,
                 StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),
                 EndTime = DateTime.SpecifyKind(request.EndTime, DateTimeKind.Utc),
             };
 
-            var isAlreadyExist = await IsExist(request.StartTime.Day);
+            var isAlreadyExist = await IsExist(scheduleId, request.StartTime.Day);
 
             if (isAlreadyExist)
             {
-                await scheduleRepository.UpdateWorkDayAsync(userSchedueRules.ScheduleId, newWorkDay);
+                await scheduleRepository.UpdateWorkDayAsync(scheduleId, newWorkDay);
             }
             else
             {
-                await scheduleRepository.AddWorkDayAsync(userSchedueRules.ScheduleId, newWorkDay);
+                await scheduleRepository.AddWorkDayAsync(scheduleId, newWorkDay);
             }
 
             return newWorkDay;
         }
 
-        private async Task CorrectWeekSchedule(DateTime requestStartTime)
+        private async Task<bool> IsExist(string scheduleId, int day)
         {
-            throw new NotImplementedException();
-        }
-
-        private async Task GetUserScheduleRules(CreateWorkDayManuallyCommand request)
-        {
-            string monthName = new DateTime(request.StartTime.Year, request.StartTime.Month, 1)
-                .ToString("MMMM")
-                .ToLower();
-
-            this.userSchedueRules = await this.userRuleRepository
-                .GetMonthScheduleRules(
-                request.UserId,
-                request.DepartmentId,
-                monthName,
-                request.StartTime.Year);
-
-            if (this.userSchedueRules is null)
-            {
-                var scheduleId = ObjectId.GenerateNewId().ToString();
-
-                var schedule = new Schedule { Id = scheduleId, MonthName = monthName };
-                var rules = new UserScheduleRules
-                {
-                    UserId = request.UserId,
-                    DepartmentId = request.DepartmentId,
-                    Year = request.StartTime.Year,
-                    MonthName = monthName,
-                    ScheduleId = scheduleId,
-                };
-
-                await Task.WhenAll(
-                    this.scheduleRepository.AddAsync(schedule),
-                    this.userRuleRepository.AddAsync(rules));
-
-                this.userSchedueRules = rules;
-            }
-        }
-
-        private async Task<bool> IsExist(int day)
-        {
-            var dailySchedule = await scheduleRepository.GetWorkDayAsync(userSchedueRules.ScheduleId, day);
-
-            if (dailySchedule == null)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            var dailySchedule = await scheduleRepository.GetWorkDayAsync(scheduleId, day);
+            return dailySchedule is not null;
         }
     }
 }

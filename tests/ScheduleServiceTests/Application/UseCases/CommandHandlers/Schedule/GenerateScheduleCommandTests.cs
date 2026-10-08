@@ -86,6 +86,42 @@ namespace Application.UseCases.CommandHandlers.Schedule
                 Times.Never);
         }
 
+        [Fact]
+        public async Task Handle_RejectsIncompleteRulesBeforeClearingSchedule()
+        {
+            var userId = ObjectId.GenerateNewId().ToString();
+            var departmentId = ObjectId.GenerateNewId().ToString();
+            var scheduleId = ObjectId.GenerateNewId().ToString();
+            var command = new GenerateScheduleCommand(departmentId, 2025, 2)
+            {
+                UserId = userId,
+            };
+            userRuleRepositoryMock
+                .Setup(x => x.GetMonthScheduleRules(userId, departmentId, "february", 2025))
+                .ReturnsAsync(new UserScheduleRules
+                {
+                    UserId = userId,
+                    DepartmentId = departmentId,
+                    ScheduleId = scheduleId,
+                });
+            calendarRepositoryMock
+                .Setup(x => x.GetMonthHolidays(2025, 2))
+                .ReturnsAsync(new List<ScheduleService.Domain.Models.Calendar>());
+            calendarRepositoryMock
+                .Setup(x => x.GetMonthTransferDays(2025, 2))
+                .ReturnsAsync(new List<ScheduleService.Domain.Models.Calendar>());
+
+            await Assert.ThrowsAsync<ScheduleService.Application.Extensions.Validation.ValidationException>(() =>
+                CreateHandler().Handle(command, CancellationToken.None));
+
+            scheduleRepositoryMock.Verify(
+                x => x.ClearMonthSchedule(It.IsAny<string>()),
+                Times.Never);
+            scheduleRepositoryMock.Verify(
+                x => x.AddWorkDayAsync(It.IsAny<string>(), It.IsAny<WorkDay>()),
+                Times.Never);
+        }
+
         private GenerateScheduleCommandHandler CreateHandler()
         {
             return new GenerateScheduleCommandHandler(

@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<UserEmailRpcService>();
 
         services.AddScoped<ScheduleRulesGenerator>();
+        services.AddScoped<ScheduleMonthContextService>();
 
         return services;
     }

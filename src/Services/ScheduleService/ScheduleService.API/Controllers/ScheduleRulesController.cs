@@ -49,6 +49,39 @@
         }
 
         /// <summary>
+        /// Create or replace schedule-generation rules for a selected user and month.
+        /// </summary>
+        /// <param name="userId">The user whose monthly rules will be saved.</param>
+        /// <param name="departmentId">The department in which the user works.</param>
+        /// <param name="year">The schedule year.</param>
+        /// <param name="month">The one-based schedule month.</param>
+        /// <param name="command">The complete generation-rule values.</param>
+        /// <param name="cancellationToken">Token used to cancel the request.</param>
+        /// <returns>The persisted monthly schedule rules.</returns>
+        [HttpPut]
+        [Route("rules/{userId}/{departmentId}/{year:int}/{month:int}")]
+        public async Task<IActionResult> SaveUserRules(
+            string userId,
+            string departmentId,
+            int year,
+            int month,
+            [FromBody] SaveGenerationRulesCommand command,
+            CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(
+                command with
+            {
+                UserId = userId,
+                DepartmentId = departmentId,
+                Year = year,
+                Month = month,
+            },
+                cancellationToken);
+
+            return Ok(result);
+        }
+
+        /// <summary>
         /// Auto creating userScheduleRules for schedule generation and schedule.
         /// Creating after adding user to department(in user management service).
         /// </summary>

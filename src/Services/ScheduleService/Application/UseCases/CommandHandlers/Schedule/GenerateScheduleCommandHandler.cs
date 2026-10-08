@@ -6,6 +6,7 @@ namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule;
 
 using MediatR;
 using Extensions;
+using Extensions.Validation;
 using Services;
 using ScheduleService.Application.UseCases.Commands.Schedule;
 using DataAccess.Repository;
@@ -45,6 +46,7 @@ public class GenerateScheduleCommandHandler : IRequestHandler<GenerateScheduleCo
 
         var userRules = await getRulesTask;
         userRules.EnsureExists("Schedule rules for this user not found");
+        EnsureRulesCanGenerate(userRules);
 
         var generatedDays = ScheduleGenerator.GenerateWorkDaysForUser(
             userRules,
@@ -58,6 +60,37 @@ public class GenerateScheduleCommandHandler : IRequestHandler<GenerateScheduleCo
         foreach (var workDay in generatedDays)
         {
             await scheduleRepository.AddWorkDayAsync(userRules.ScheduleId, workDay);
+        }
+    }
+
+    private static void EnsureRulesCanGenerate(Domain.Models.UserScheduleRules rules)
+    {
+        var errors = new Dictionary<string, string[]>();
+        if (rules.HoursPerMonth <= 0)
+        {
+            errors[nameof(rules.HoursPerMonth)] = new[] { "Hours per month must be greater than zero." };
+        }
+
+        if (rules.MaxHoursPerDay <= 0)
+        {
+            errors[nameof(rules.MaxHoursPerDay)] = new[] { "Hours per day must be greater than zero." };
+        }
+
+        if (rules.HoursPerMonth > 0 && rules.MaxHoursPerDay > 0
+            && rules.HoursPerMonth / rules.MaxHoursPerDay is < 15 or > 23)
+        {
+            errors["WorkDays"] = new[] { "The generated work day count must be between 15 and 23." };
+        }
+
+        if (!rules.OnlyFirstShift && !rules.OnlySecondShift && !rules.EvenDOW
+            && !rules.UnEvenDOW && !rules.EvenDOM && !rules.UnEvenDOM)
+        {
+            errors["Periodicity"] = new[] { "An automatic schedule periodicity must be selected." };
+        }
+
+        if (errors.Count > 0)
+        {
+            throw new ValidationException(errors);
         }
     }
 }
