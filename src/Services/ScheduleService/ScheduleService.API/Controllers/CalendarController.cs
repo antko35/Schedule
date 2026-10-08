@@ -19,6 +19,19 @@
         }
 
         /// <summary>
+        /// Gets all holidays with their transfer dates.
+        /// </summary>
+        /// <param name="cancellationToken">Token used to cancel the request.</param>
+        /// <returns>The complete holiday calendar ordered by holiday date.</returns>
+        [HttpGet("holidays")]
+        public async Task<IActionResult> GetHolidays(CancellationToken cancellationToken)
+        {
+            var response = await mediator.Send(new GetHolidaysQuery(), cancellationToken);
+
+            return Ok(response);
+        }
+
+        /// <summary>
         /// Get holidays by year.
         /// </summary>
         /// <param name="year"></param>
@@ -103,6 +116,22 @@
             await mediator.Send(command);
 
             return Ok();
+        }
+
+        /// <summary>
+        /// Deletes one or more holidays from the shared calendar.
+        /// </summary>
+        /// <param name="command">The holiday dates to delete.</param>
+        /// <param name="cancellationToken">Token used to cancel the request.</param>
+        /// <returns>An empty successful response when all selected holidays are deleted.</returns>
+        [HttpDelete("batch")]
+        public async Task<IActionResult> DeleteHolidays(
+            [FromBody] DeleteHolidaysCommand command,
+            CancellationToken cancellationToken)
+        {
+            await mediator.Send(command, cancellationToken);
+
+            return NoContent();
         }
     }
 }

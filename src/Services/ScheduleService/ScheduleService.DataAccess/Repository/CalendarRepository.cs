@@ -51,5 +51,13 @@
 
             return result;
         }
+
+        public async Task<long> RemoveHolidays(IReadOnlyCollection<DateOnly> holidays)
+        {
+            var filter = Builders<Calendar>.Filter.In(x => x.HolidayDate, holidays);
+            var result = await dbSet.DeleteManyAsync(filter);
+
+            return result.DeletedCount;
+        }
     }
 }

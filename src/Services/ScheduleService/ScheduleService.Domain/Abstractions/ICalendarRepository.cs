@@ -7,6 +7,9 @@ namespace ScheduleService.Domain.Abstractions
         Task<List<Calendar>> GetMonthHolidays(int year, int month);
 
         Task<List<Calendar>> GetMonthTransferDays(int year, int month);
+
         Task<List<Calendar>> GetYearHolidays(int year);
+
+        Task<long> RemoveHolidays(IReadOnlyCollection<DateOnly> holidays);
     }
 }
