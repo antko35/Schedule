@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ScheduleService.Application.Services;
 using Xunit;
 
 namespace Application.UseCases.CommandHandlers.Schedule
@@ -18,6 +19,7 @@ namespace Application.UseCases.CommandHandlers.Schedule
         private readonly Mock<IUserRuleRepository> userRuleRepositoryMock;
         private readonly Mock<IScheduleRepository> scheduleRepositoryMock;
         private readonly Mock<ICalendarRepository> calendarRepositoryMock;
+        private readonly Mock<ScheduleRulesGenerator> scheduleRulesGenerator;
 
         private readonly GenerateDepartmentScheduleCommandHandler handler;
         private readonly GenerateDepartmentScheduleCommand command;
@@ -27,11 +29,13 @@ namespace Application.UseCases.CommandHandlers.Schedule
             userRuleRepositoryMock = new Mock<IUserRuleRepository>();
             scheduleRepositoryMock = new Mock<IScheduleRepository>();
             calendarRepositoryMock = new Mock<ICalendarRepository>();
+            scheduleRulesGenerator = new Mock<ScheduleRulesGenerator>();
 
             handler = new GenerateDepartmentScheduleCommandHandler(
                 userRuleRepositoryMock.Object,
                 scheduleRepositoryMock.Object,
-                calendarRepositoryMock.Object);
+                calendarRepositoryMock.Object,
+                scheduleRulesGenerator.Object);
 
             command = new GenerateDepartmentScheduleCommand("id", 2025, 2);
         }

@@ -35,13 +35,95 @@ public class SetGenerationRulesTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
+        result.Should().BeSameAs(existingRules);
         existingRules.EvenDOW.Should().BeTrue();
         existingRules.OnlyFirstShift.Should().BeFalse();
 
         mockUserRuleRepository.Verify(repo => repo.UpdateAsync(existingRules), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldClearAllPeriodicityFlags_WhenAllFlagsAreExplicitlyFalse()
+    {
+        // Arrange
+        var command = new SetGenerationRulesCommand
+        {
+            ScheduleRulesId = "rule123",
+            OnlyFirstShift = false,
+            OnlySecondShift = false,
+            EvenDOW = false,
+            UnEvenDOW = false,
+            EvenDOM = false,
+            UnEvenDOM = false,
+        };
+        var existingRules = new UserScheduleRules
+        {
+            Id = command.ScheduleRulesId,
+            EvenDOM = true,
+        };
+
+        mockUserRuleRepository.Setup(repo => repo.GetByIdAsync(command.ScheduleRulesId))
+            .ReturnsAsync(existingRules);
+
+        // Act
+        await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        existingRules.OnlyFirstShift.Should().BeFalse();
+        existingRules.OnlySecondShift.Should().BeFalse();
+        existingRules.EvenDOW.Should().BeFalse();
+        existingRules.UnEvenDOW.Should().BeFalse();
+        existingRules.EvenDOM.Should().BeFalse();
+        existingRules.UnEvenDOM.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Handle_ShouldPreservePeriodicityFlags_WhenAllFlagsAreOmitted()
+    {
+        // Arrange
+        var command = new SetGenerationRulesCommand { ScheduleRulesId = "rule123" };
+        var existingRules = new UserScheduleRules
+        {
+            Id = command.ScheduleRulesId,
+            UnEvenDOW = true,
+        };
+
+        mockUserRuleRepository.Setup(repo => repo.GetByIdAsync(command.ScheduleRulesId))
+            .ReturnsAsync(existingRules);
+
+        // Act
+        await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        existingRules.UnEvenDOW.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_ShouldSetMidnightStartTime_WhenExplicitlyProvided()
+    {
+        // Arrange
+        var command = new SetGenerationRulesCommand
+        {
+            ScheduleRulesId = "rule123",
+            StartWorkDayTime = TimeOnly.MinValue,
+        };
+        var existingRules = new UserScheduleRules
+        {
+            Id = command.ScheduleRulesId,
+            StartWorkDayTime = new TimeOnly(8, 0),
+        };
+
+        mockUserRuleRepository.Setup(repo => repo.GetByIdAsync(command.ScheduleRulesId))
+            .ReturnsAsync(existingRules);
+
+        // Act
+        await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        existingRules.StartWorkDayTime.Should().Be(TimeOnly.MinValue);
     }
 
     [Fact]

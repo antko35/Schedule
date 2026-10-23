@@ -111,6 +111,7 @@ public class ScheduleGeneratorTests
         {
             EvenDOW = true,
             HoursPerMonth = 131,
+            MaxHoursPerDay = 6,
             StartWorkDayTime = new TimeOnly(8, 0),
         };
 
@@ -136,11 +137,9 @@ public class ScheduleGeneratorTests
         var result = ScheduleGenerator.GenerateWorkDaysForUser(userRules, year, month, officialHolidays, transferDays);
 
         // Assert
-        var lastWorkDay = result.Last();
-        var lastWorkDayLength = lastWorkDay.EndTime - lastWorkDay.StartTime;
+        var totalHours = result.Sum(workDay => (workDay.EndTime - workDay.StartTime).TotalHours);
 
-        lastWorkDayLength.Hours.Should().Be(5);
-        lastWorkDayLength.Minutes.Should().Be(30);
+        totalHours.Should().Be(131);
     }
 
     [Fact]
@@ -215,12 +214,12 @@ public class ScheduleGeneratorTests
 
             if (EvenDays.Contains(dayOfWeek))
             {
-                workDay.StartTime.Hour.Should().Be(8, $"On even days (Tue, Thu), the start time should be 8:00, but was {workDay.StartTime}");
+                workDay.StartTime.Hour.Should().Be(8, $"On Tuesday and Thursday, the start time should be 8:00, but was {workDay.StartTime}");
             }
             else
             {
-                workDay.StartTime.Hour.Should().Be(14, $"On odd days (Mon, Wed, Fri), the start time should be 14:00, but was {workDay.StartTime}");
-                workDay.StartTime.Minute.Should().Be(30, $"On odd days (Mon, Wed, Fri), the start minute should be 30, but was {workDay.StartTime}");
+                workDay.StartTime.Hour.Should().Be(14, $"On Monday, Wednesday, and Friday, the start time should be 14:30, but was {workDay.StartTime}");
+                workDay.StartTime.Minute.Should().Be(30, $"On Monday, Wednesday, and Friday, the start minute should be 30, but was {workDay.StartTime}");
             }
         }
     }
@@ -251,12 +250,12 @@ public class ScheduleGeneratorTests
 
             if (unEvenDays.Contains(dayOfWeek))
             {
-                workDay.StartTime.Hour.Should().Be(8, $"On even days (Tue, Thu), the start time should be 8:00, but was {workDay.StartTime}");
+                workDay.StartTime.Hour.Should().Be(8, $"On Monday, Wednesday, and Friday, the start time should be 8:00, but was {workDay.StartTime}");
             }
             else
             {
-                workDay.StartTime.Hour.Should().Be(14, $"On odd days (Mon, Wed, Fri), the start time should be 14:00, but was {workDay.StartTime}");
-                workDay.StartTime.Minute.Should().Be(30, $"On odd days (Mon, Wed, Fri), the start minute should be 30, but was {workDay.StartTime}");
+                workDay.StartTime.Hour.Should().Be(14, $"On Tuesday and Thursday, the start time should be 14:30, but was {workDay.StartTime}");
+                workDay.StartTime.Minute.Should().Be(30, $"On Tuesday and Thursday, the start minute should be 30, but was {workDay.StartTime}");
             }
         }
     }

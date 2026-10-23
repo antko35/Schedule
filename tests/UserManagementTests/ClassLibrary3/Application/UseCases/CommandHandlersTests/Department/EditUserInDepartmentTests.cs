@@ -70,6 +70,34 @@
         }
 
         [Fact]
+        public async Task EditUserInDepartment_MissingContactDetails_PersistsNullValues()
+        {
+            var commandWithoutContacts = command with { Email = " ", PhoneNumber = null };
+            var existingUserJob = new UserJob
+            {
+                Id = "job789",
+                UserId = commandWithoutContacts.UserId,
+                DepartmentId = commandWithoutContacts.DepartmentId,
+            };
+
+            userRepositoryMock.Setup(repo => repo.GetByIdAsync(commandWithoutContacts.UserId))
+                .ReturnsAsync(new User { Id = commandWithoutContacts.UserId });
+            departmentRepositoryMock.Setup(repo => repo.GetByIdAsync(commandWithoutContacts.DepartmentId))
+                .ReturnsAsync(new Department { Id = commandWithoutContacts.DepartmentId });
+            userJobsRepositoryMock
+                .Setup(repo => repo.GetUserJobAsync(commandWithoutContacts.UserId, commandWithoutContacts.DepartmentId))
+                .ReturnsAsync(existingUserJob);
+
+            var result = await handler.Handle(commandWithoutContacts, CancellationToken.None);
+
+            result.Email.Should().BeNull();
+            result.PhoneNumber.Should().BeNull();
+            userJobsRepositoryMock.Verify(
+                repo => repo.UpdateAsync(It.Is<UserJob>(job => job.Email == null && job.PhoneNumber == null)),
+                Times.Once);
+        }
+
+        [Fact]
         public async Task EditUserInDepartment_UserNotFound_ThrowKeyNotFoundException()
         {
             // Arrange

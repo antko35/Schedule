@@ -1,6 +1,7 @@
 using FluentAssertions;
 using MongoDB.Bson;
 using Moq;
+using ScheduleService.Application.Services;
 using ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
 using ScheduleService.Application.UseCases.Commands.ScheduleRules;
 using ScheduleService.DataAccess.Repository;
@@ -20,9 +21,13 @@ public class AddingScheduleRulesForNextMonthCommandTests
     {
         scheduleRepositoryMock = new Mock<IScheduleRepository>();
         scheduleRuleRepositoryMock = new Mock<IUserRuleRepository>();
+        var scheduleRulesGenerator = new ScheduleRulesGenerator(
+            scheduleRuleRepositoryMock.Object,
+            scheduleRepositoryMock.Object);
         handler = new AddingScheduleRulesForNextMonthCommandHandler(
             scheduleRuleRepositoryMock.Object,
-            scheduleRepositoryMock.Object
+            scheduleRepositoryMock.Object,
+            scheduleRulesGenerator
         );
     }
 
@@ -56,11 +61,11 @@ public class AddingScheduleRulesForNextMonthCommandTests
 
         // Assert
         scheduleRuleRepositoryMock.Verify(
-            repo => repo.AddRangeAsync(It.IsAny<IEnumerable<UserScheduleRules>>()),
+            repo => repo.AddAsync(It.IsAny<UserScheduleRules>()),
             Times.Once);
 
         scheduleRepositoryMock.Verify(
-            repo => repo.AddRangeAsync(It.IsAny<IEnumerable<ScheduleService.Domain.Models.Schedule>>()),
+            repo => repo.AddAsync(It.IsAny<ScheduleService.Domain.Models.Schedule>()),
             Times.Once);
     }
 
@@ -81,11 +86,11 @@ public class AddingScheduleRulesForNextMonthCommandTests
 
         // Assert
         scheduleRuleRepositoryMock.Verify(
-            repo => repo.AddRangeAsync(It.IsAny<IEnumerable<UserScheduleRules>>()),
+            repo => repo.AddAsync(It.IsAny<UserScheduleRules>()),
             Times.Never);
 
         scheduleRepositoryMock.Verify(
-            repo => repo.AddRangeAsync(It.IsAny<IEnumerable<ScheduleService.Domain.Models.Schedule>>()),
+            repo => repo.AddAsync(It.IsAny<ScheduleService.Domain.Models.Schedule>()),
             Times.Never);
     }
 

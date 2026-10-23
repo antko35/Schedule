@@ -1,4 +1,5 @@
 using Moq;
+using ScheduleService.Application.Services;
 using ScheduleService.Application.UseCases.CommandHandlers.Schedule;
 using ScheduleService.Application.UseCases.Commands.Schedule;
 using ScheduleService.DataAccess.Repository;
@@ -19,9 +20,13 @@ public class CreateWorkDayManuallyCommandTests
         this.userRuleRepositoryMock = new Mock<IUserRuleRepository>();
         this.scheduleRepositoryMock = new Mock<IScheduleRepository>();
 
-        this.handler = new CreateWorkDayManuallyCommandHandler(
+        var monthContextService = new ScheduleMonthContextService(
             userRuleRepositoryMock.Object,
             scheduleRepositoryMock.Object);
+
+        this.handler = new CreateWorkDayManuallyCommandHandler(
+            scheduleRepositoryMock.Object,
+            monthContextService);
     }
 
     [Fact]
@@ -42,6 +47,9 @@ public class CreateWorkDayManuallyCommandTests
             .Setup(repo => repo.GetMonthScheduleRules(
                 command.UserId, command.DepartmentId, It.IsAny<string>(), command.StartTime.Year))
             .ReturnsAsync(userRules);
+        scheduleRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(userRules.ScheduleId))
+            .ReturnsAsync(new ScheduleService.Domain.Models.Schedule { Id = userRules.ScheduleId });
 
         scheduleRepositoryMock
             .Setup(repo => repo.GetWorkDayAsync(userRules.ScheduleId, command.StartTime.Day))
@@ -76,6 +84,9 @@ public class CreateWorkDayManuallyCommandTests
             .Setup(repo => repo.GetMonthScheduleRules(
                 command.UserId, command.DepartmentId, It.IsAny<string>(), command.StartTime.Year))
             .ReturnsAsync(userRules);
+        scheduleRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(userRules.ScheduleId))
+            .ReturnsAsync(new ScheduleService.Domain.Models.Schedule { Id = userRules.ScheduleId });
 
         scheduleRepositoryMock
             .Setup(repo => repo.GetWorkDayAsync(userRules.ScheduleId, command.StartTime.Day))
@@ -87,6 +98,50 @@ public class CreateWorkDayManuallyCommandTests
         // Assert
         scheduleRepositoryMock.Verify(
             repo => repo.UpdateWorkDayAsync(userRules.ScheduleId, It.IsAny<WorkDay>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldCreateRulesAndSchedule_WhenMonthDoesNotExist()
+    {
+        var command = new CreateWorkDayManuallyCommand(
+            "userId",
+            "departmentId",
+            new DateTime(2025, 2, 10, 9, 0, 0),
+            new DateTime(2025, 2, 10, 15, 30, 0));
+        string? createdScheduleId = null;
+
+        userRuleRepositoryMock
+            .Setup(repo => repo.GetMonthScheduleRules(
+                command.UserId,
+                command.DepartmentId,
+                "february",
+                command.StartTime.Year))
+            .ReturnsAsync((UserScheduleRules?)null);
+        scheduleRepositoryMock
+            .Setup(repo => repo.AddAsync(It.IsAny<ScheduleService.Domain.Models.Schedule>()))
+            .Callback<ScheduleService.Domain.Models.Schedule>(schedule => createdScheduleId = schedule.Id)
+            .Returns(Task.CompletedTask);
+        userRuleRepositoryMock
+            .Setup(repo => repo.AddAsync(It.IsAny<UserScheduleRules>()))
+            .Returns(Task.CompletedTask);
+        scheduleRepositoryMock
+            .Setup(repo => repo.GetWorkDayAsync(It.IsAny<string>(), command.StartTime.Day))
+            .ReturnsAsync((ScheduleService.Domain.Models.Schedule?)null);
+
+        await handler.Handle(command, CancellationToken.None);
+
+        Assert.NotNull(createdScheduleId);
+        userRuleRepositoryMock.Verify(
+            repo => repo.AddAsync(It.Is<UserScheduleRules>(rules =>
+                rules.UserId == command.UserId
+                && rules.DepartmentId == command.DepartmentId
+                && rules.Year == command.StartTime.Year
+                && rules.MonthName == "february"
+                && rules.ScheduleId == createdScheduleId)),
+            Times.Once);
+        scheduleRepositoryMock.Verify(
+            repo => repo.AddWorkDayAsync(createdScheduleId!, It.IsAny<WorkDay>()),
             Times.Once);
     }
 }

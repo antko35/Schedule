@@ -1,0 +1,20 @@
+# Keep the Docker build context small and fast.
+**/bin/
+**/obj/
+**/.vs/
+**/.git/
+.git/
+**/node_modules/
+
+# Frontend (Electron) is built separately, not needed for service images.
+legacy/electron-vue/
+
+# Unrelated / scratch folders at the repo root.
+diploma_unpacked/
+docs/
+deploy/bundle/
+
+# Local artifacts
+**/*.user
+**/TestResults/
+certs/

@@ -73,6 +73,30 @@ namespace UserManagementService.Application.UseCases.CommandHandlersTests.Depart
         }
 
         [Fact]
+        public async Task AddUserToDepartment_MissingContactDetails_PersistsNullValues()
+        {
+            var commandWithoutContacts = command with { Email = " ", PhoneNumber = null };
+            var user = new User { Id = commandWithoutContacts.UserId };
+            var department = new Department { Id = commandWithoutContacts.DepartmentId };
+
+            userRepositoryMock.Setup(repo => repo.GetByIdAsync(commandWithoutContacts.UserId))
+                .ReturnsAsync(user);
+            departmentRepositoryMock.Setup(repo => repo.GetByIdAsync(commandWithoutContacts.DepartmentId))
+                .ReturnsAsync(department);
+            userJobsRepositoryMock
+                .Setup(repo => repo.GetUserJobAsync(commandWithoutContacts.UserId, commandWithoutContacts.DepartmentId))
+                .ReturnsAsync((UserJob)null);
+
+            var result = await handler.Handle(commandWithoutContacts, CancellationToken.None);
+
+            result.Email.Should().BeNull();
+            result.PhoneNumber.Should().BeNull();
+            userJobsRepositoryMock.Verify(
+                repo => repo.AddAsync(It.Is<UserJob>(job => job.Email == null && job.PhoneNumber == null)),
+                Times.Once);
+        }
+
+        [Fact]
         public async Task AddUserToDepartment_UserNotFound_ThrowKeyNotFoundException()
         {
             // Arrange

@@ -1,0 +1,204 @@
+/* =====================================================================
+   Schedule — Colors & Type tokens
+   --------------------------------------------------------------------- 
+   Source: electron-vue desktop app (Vue 3 + Vite). Dark UI with bright
+   per-section accents. All values lifted verbatim from the codebase.
+   ===================================================================== */
+
+:root {
+  /* ---------- Surface / background ---------- */
+  --bg-app: #2a2a2a;            /* root background — body */
+  --bg-elevated: #383837;       /* primary nav pill, raised chrome */
+  --bg-surface: #474747;        /* "reduct" CTA, control row resting */
+  --bg-surface-2: #494949;      /* profile card row */
+  --bg-surface-3: #555555;      /* department container */
+  --bg-surface-4: #585656;      /* input fill */
+  --bg-row: #484848;            /* department list row */
+  --bg-row-hover: #717171;      /* row hover state */
+  --bg-row-active: #7d7d7d;     /* sidebar li hover */
+  --bg-row-light: #a8a8a8;      /* hovered profile li */
+
+  /* Calendar-specific surfaces */
+  --bg-year-bar: #3d3e3f;       /* year selector strip */
+  --bg-month-bar: #474849;      /* month selector strip */
+  --bg-day-header: #505863;     /* day-of-week header cell */
+  --bg-day: #747070;             /* calendar day cell */
+  --bg-day-today: #adadad;      /* current day */
+  --bg-empty-cell: rgba(173, 166, 166, 0.19); /* off-month cells */
+
+  /* ---------- Text ---------- */
+  --fg: rgba(255, 255, 255, 0.87);   /* base body text */
+  --fg-strong: #ffffff;               /* hovered, primary */
+  --fg-muted: #c0c0c0;                /* department headings, letter dividers */
+  --fg-quiet: #c4c4c4;                /* idle nav links */
+  --fg-dim: #b3b3b3;                  /* separators */
+  --fg-on-accent: #ffffff;
+
+  /* ---------- Section accent colors ---------- */
+  --accent-schedule: #6bff6b;     /* Расписание page underline */
+  --accent-departments: #d8ff2b;  /* Отделения page underline */
+  --accent-control: #377bd3;      /* Панель управления page underline */
+  --accent-default: #ffd93d;      /* Fallback header underline */
+
+  /* ---------- Semantic shift colors (Calendar) ---------- */
+  --shift-first: #0d8126;     /* 1st shift, green-time top stripe */
+  --shift-second: #b95b18;    /* 2nd shift, red-time top stripe */
+  --shift-weekend: #831111;   /* weekend block */
+  --selected-doctor: #698c9c; /* doctor list selected */
+
+  /* ---------- Form action semantics ---------- */
+  --action-add: #04ff00;      /* "Добавить" link text */
+  --action-delete: #ff0000;   /* "Удалить" link text */
+  --action-redact: #f6ff00;   /* "Изменить" link text */
+  --action-add-soft: rgb(4, 255, 0);
+  --action-success: #4caf50;  /* submit button bg */
+  --action-success-disabled: #cccccc;
+
+  /* ---------- Inputs / borders ---------- */
+  --border-input: #cccccc;
+  --border-divider: rgba(120, 120, 120, 1);
+  --border-soft: #616161;
+  --border-dashed: rgb(117, 113, 113);
+
+  /* ---------- Scrollbar ---------- */
+  --scroll-thumb: #686868;
+
+  /* ---------- Destructive / close ---------- */
+  --close-bg: #ff2626;
+  --close-bg-hover: #ff0000;
+
+  /* ---------- Spinner ---------- */
+  --spinner-track: #f3f3f3;
+  --spinner-arc: #3498db;
+
+  /* =================================================================
+     TYPE — primitives
+     ================================================================= */
+  --font-sans: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', Times, serif; /* letter dividers */
+  --font-narrow: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+
+  --line-tight: 1.2;
+  --line-base: 1.5;
+
+  /* Sizes seen in the wild */
+  --fs-xs: 14px;
+  --fs-sm: 16px;     /* body / input */
+  --fs-md: 17px;     /* sidebar link */
+  --fs-lg: 18px;     /* form label, day cell */
+  --fs-xl: 20px;     /* page h1, day number */
+  --fs-2xl: 22px;    /* sidebar group heading */
+  --fs-3xl: 25px;    /* form header */
+  --fs-4xl: 30px;    /* year display */
+  --fs-5xl: 35px;    /* letter divider */
+  --fs-6xl: 36px;    /* month display */
+
+  /* =================================================================
+     RADII — clinic UI is very rounded
+     ================================================================= */
+  --radius-xs: 4px;     /* inputs, submit button */
+  --radius-sm: 8px;     /* small icon container */
+  --radius-md: 10px;    /* doctor name capsule */
+  --radius-lg: 15px;    /* day cell, reduct CTA */
+  --radius-xl: 20px;    /* form rows, department card body */
+  --radius-2xl: 30px;   /* chevron tap target */
+  --radius-pill: 35px;  /* primary nav pill */
+
+  /* =================================================================
+     SPACING — observed gaps
+     ================================================================= */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 15px;
+  --space-5: 20px;
+  --space-6: 25px;
+  --space-7: 30px;
+  --space-8: 50px;     /* nav pill gap */
+
+  /* =================================================================
+     MOTION — short, eased
+     ================================================================= */
+  --ease-base: ease;
+  --dur-tap: 100ms;
+  --dur-hover: 200ms;
+  --dur-reveal: 300ms;
+  --dur-chevron: 800ms;
+  --dur-border: 300ms;
+}
+
+/* =====================================================================
+   Semantic element styles — drop-in for prototypes
+   ===================================================================== */
+
+html, body {
+  background: var(--bg-app);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  line-height: var(--line-base);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-sans);
+  text-transform: uppercase;  /* Schedule app uppercases all headings */
+  margin: 0;
+}
+
+h1 { font-size: var(--fs-xl); }
+h2 { font-size: var(--fs-2xl); }
+h3 { font-size: var(--fs-lg); }
+
+p  { margin: 0; font-size: var(--fs-sm); }
+
+/* Letter divider — Russian alphabetical group header */
+.letter-divider {
+  color: var(--fg-muted);
+  font-family: var(--font-serif);
+  font-weight: bold;
+  font-size: var(--fs-5xl);
+  border-bottom: 1px solid currentColor;
+}
+
+/* Nav pill — the round-rect on top of every page */
+.nav-pill {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-pill);
+  border-bottom: 3px solid transparent;
+  transition: border-color var(--dur-reveal) var(--ease-base);
+}
+.nav-pill.is-schedule    { border-bottom-color: var(--accent-schedule); }
+.nav-pill.is-departments { border-bottom-color: var(--accent-departments); }
+.nav-pill.is-control     { border-bottom-color: var(--accent-control); }
+.nav-pill.is-default     { border-bottom-color: var(--accent-default); }
+
+/* Form input — dark field */
+.form-input {
+  background: var(--bg-surface-4);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-xs);
+  color: var(--fg-strong);
+  font-size: var(--fs-sm);
+  height: 45px;
+  padding: 0 10px;
+}
+
+/* Primary submit */
+.btn-submit {
+  height: 45px;
+  background: var(--action-success);
+  color: var(--fg-on-accent);
+  border: none;
+  border-radius: var(--radius-xs);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.btn-submit:disabled { background: var(--action-success-disabled); cursor: not-allowed; }
+
+/* Card surfaces */
+.card-department { background: var(--bg-surface-3); border-radius: var(--radius-xl); }
+.card-row        { background: var(--bg-surface-2); border-radius: var(--radius-xl); }
+.card-day        { background: var(--bg-day); border-radius: var(--radius-lg); }

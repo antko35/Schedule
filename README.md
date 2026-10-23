@@ -1,56 +1,48 @@
-# how to generate schedule (without registration)
-1. create user using post request on http://localhost:5003/User endpoint
-2. create department using post request on http://localhost:5003/Department endpoint
-3. add this person to department using http://localhost:5003/Department/addUserToDepartment
-request example:
-```cs
-{
-  "userId": "685aa69e582628e2ed3898a0",
-  "departmentId": "685aa709582628e2ed3898a2",
-  "role": "dentist",
-  "status": "working",
-  "email": "kovsheranton@gmail.com",
-  "phoneNumber": "+375445882123"
-}
-```
-After adding user to department in db schedule_db, Collection: UserScheduleRule new record will appear.
+# Schedule
 
+Employee-schedule management system built with .NET 10 microservices. .NET Aspire orchestrates local development with Keycloak, RabbitMQ, and MongoDB.
 
-## Manual schedule creating
-You can create schedule manually using http://localhost:5002/Schedule endpoints. Example:
-request :
-```cs
-{
-  "userId": "685aa69e582628e2ed3898a0",
-  "departmentId": "685aa709582628e2ed3898a2",
-  "startTime": "2025-06-24T08:00:00.000Z",
-  "endTime": "2025-06-24T14:30:00.000Z"
-}
+## Repository map
+
+| Path | Purpose |
+| --- | --- |
+| `src/AppHost/` | Aspire entry point for local orchestration. |
+| `src/ServiceDefaults/` | Shared observability, health-check, service-discovery, and resilience defaults. |
+| `src/Services/` | ScheduleService and UserManagementService. |
+| `tests/` | Unit and application tests. |
+| `apps/web/` | Active Angular frontend; a separately managed Git repository. |
+| `legacy/electron-vue/` | Archived Electron/Vue frontend; a separately managed Git repository. |
+| `docs/reference-materials/` | Historical spreadsheets and planning notes; not runtime assets. |
+| `docker-compose.yml` | Docker Compose alternative for local infrastructure and services. |
+
+The backend runtime template is embedded at `src/Services/ScheduleService/Application/Resources/scheduleTemplate.xlsx`; do not use the reference-material files as application resources.
+
+## Run locally
+
+Prerequisites: .NET SDK 10, Docker Desktop, and the user secrets required by the AppHost.
+
+```powershell
+dotnet run --project src/AppHost
 ```
-response : 
-```csharp
-{
-  "day": 24,
-  "startTime": "2025-06-24T08:00:00Z",
-  "endTime": "2025-06-24T14:30:00Z"
-}
+
+For the Docker Compose alternative:
+
+```powershell
+docker-compose up --build
 ```
-## How to fill ScheduleRules
-```csharp
-{
-  "scheduleRulesId": "string",
-  "hoursPerMonth": 0,
-  "maxHoursPerDay": 0,
-  "startWorkDayTime": "string",
-  "onlyFirstShift": true,
-  "onlySecondShift": true,
-  "evenDOW": true,
-  "unEvenDOW": true,
-  "evenDOM": true,
-  "unEvenDOM": true
-}
+
+## Build and test
+
+```powershell
+dotnet build Schedule.sln
+dotnet test Schedule.sln
 ```
-scheduleRulesId - id from ScheduleRules collection
-hoursPerMonth - hours from specific file(хз где, мб у папы на ффлешке либо у меня на винде, надо поискать)
-maxHoursPerDay - hours from specific file
-startWorkDayTime - 
+
+## Core workflow
+
+1. Create a user through UserManagementService.
+2. Create a department and add the user to it.
+3. The membership event creates a `UserScheduleRule` in ScheduleService.
+4. Configure the rule, then create schedules manually or let Hangfire generate them.
+
+For architecture, ports, API details, and contributor guidance, see [AGENTS.md](AGENTS.md).
