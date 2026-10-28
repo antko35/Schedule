@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -61,8 +61,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Schedule.ServiceDefaults", "src\ServiceDefaults\Schedule.ServiceDefaults.csproj", "{C2B66BD8-61F9-4BE5-91A8-F1AAB68E1CB7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostgreSqlIntegration", "tests\ScheduleServiceTests\PostgreSqlIntegration\PostgreSqlIntegration.csproj", "{D76AB9DF-FD84-4361-8892-9BFE09CA753E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheduleMongoImport", "tools\ScheduleMongoImport\ScheduleMongoImport.csproj", "{90BAE319-8BA9-4717-8BCA-1497A5F3C406}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E-EAC7-C090-1BA3-A61EC2A24D84}"
 EndProject
@@ -316,18 +314,6 @@ Global
 		{D76AB9DF-FD84-4361-8892-9BFE09CA753E}.Release|x64.Build.0 = Release|Any CPU
 		{D76AB9DF-FD84-4361-8892-9BFE09CA753E}.Release|x86.ActiveCfg = Release|Any CPU
 		{D76AB9DF-FD84-4361-8892-9BFE09CA753E}.Release|x86.Build.0 = Release|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Debug|x64.Build.0 = Debug|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Debug|x86.Build.0 = Debug|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Release|Any CPU.Build.0 = Release|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Release|x64.ActiveCfg = Release|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Release|x64.Build.0 = Release|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Release|x86.ActiveCfg = Release|Any CPU
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -357,6 +343,5 @@ Global
 		{97584FB3-B2B0-4AC0-BEA8-612665767683} = {99B2CF26-4FE1-444E-B47F-DCBC4910A78C}
 		{7C4C459B-5B07-417A-A2B2-95314B85E98A} = {1DF767BA-EE9D-4B55-95DE-B3437276502A}
 		{D76AB9DF-FD84-4361-8892-9BFE09CA753E} = {C76D6530-909A-430B-B731-EA1F3E23CD40}
-		{90BAE319-8BA9-4717-8BCA-1497A5F3C406} = {C76D6530-909A-430B-B731-EA1F3E23CD40}
 	EndGlobalSection
 EndGlobal
