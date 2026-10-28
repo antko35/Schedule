@@ -8,24 +8,6 @@ services:
     ports:
       - 15672:15672
 
-  user-service:
-    build:
-      context: ./src/Services/UserService
-      dockerfile: UserService.API/Dockerfile
-    ports:
-      - "5001:8080" # Локальный порт → Порт внутри контейнера
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/server-cert.pfx
-    depends_on:
-      - user-service-pg-db
-    volumes:
-      - ./certs:/https:ro
-    command: >
-      sh -c "dotnet ef database update -s ./src/Services/UserService/UserService.API -p ./src/Services/UserService/Data &&
-             dotnet UserService.API.dll"
-  
   user-service-pg-db:
     image: postgres:latest
     ports:
