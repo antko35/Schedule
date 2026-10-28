@@ -1,164 +1,105 @@
+namespace ScheduleService.Application.Services;
+
 using ScheduleService.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using MongoDB.Driver.Linq;
 
-namespace ScheduleService.Application.Services
+public static class ScheduleGenerator
 {
-    public static class ScheduleGenerator
+    public static IReadOnlyList<WorkShift> GenerateWorkShiftsForUser(
+        ScheduleGenerationRule rule,
+        IEnumerable<CalendarException> officialHolidays,
+        IEnumerable<CalendarException> transferDays,
+        string monthlyScheduleId)
     {
-        public static List<WorkDay> GenerateWorkDaysForUser(
-            UserScheduleRules userRules,
-            int year,
-            int month,
-            IEnumerable<Calendar> officialHolidays,
-            IEnumerable<Calendar> transferDays)
+        ArgumentNullException.ThrowIfNull(rule);
+        ArgumentNullException.ThrowIfNull(officialHolidays);
+        ArgumentNullException.ThrowIfNull(transferDays);
+        ArgumentException.ThrowIfNullOrWhiteSpace(monthlyScheduleId);
+
+        if (rule.TargetMinutes <= 0)
         {
-            int daysInMonth = DateTime.DaysInMonth(year, month);
-
-            var generatedDays = Generate(officialHolidays, transferDays, userRules, daysInMonth, year, month);
-
-            generatedDays = CorrectGeneralTime(generatedDays, userRules);
-
-            return generatedDays;
+            throw new InvalidOperationException($"Rule {rule.Id} must define positive monthly hours.");
         }
 
-        private static List<WorkDay> CorrectGeneralTime(List<WorkDay> workDays, UserScheduleRules userRules)
+        if (rule.MaxShiftMinutes <= 0)
         {
-            var totalTime = workDays.Sum(w => (w.EndTime - w.StartTime).TotalHours);
+            throw new InvalidOperationException($"Rule {rule.Id} must define positive daily hours.");
+        }
 
-            double hoursPerMonth = userRules.HoursPerMonth;
-            if (Math.Abs(totalTime - hoursPerMonth) > 1e-9)
+        if (rule.Pattern == ShiftPattern.Manual)
+        {
+            throw new InvalidOperationException($"Rule {rule.Id} must define a shift pattern before generation.");
+        }
+
+        var holidays = officialHolidays.Select(item => item.HolidayDate).ToHashSet();
+        var transfers = transferDays
+            .Where(item => item.TransferDate.HasValue)
+            .GroupBy(item => item.TransferDate!.Value)
+            .ToDictionary(group => group.Key, group => group.First().HolidayDate);
+        var shifts = new List<WorkShift>();
+        var remainingMinutes = rule.TargetMinutes;
+        var daysInMonth = DateTime.DaysInMonth(rule.Period.Year, rule.Period.Month);
+
+        for (var day = 1; day <= daysInMonth && remainingMinutes > 0; day++)
+        {
+            var workDate = new DateOnly(rule.Period.Year, rule.Period.Month, day);
+            if (holidays.Contains(workDate))
             {
-                var timeDifference = hoursPerMonth - totalTime;
-                var dayToCorrect = workDays[workDays.Count - 1];
-                dayToCorrect.EndTime = dayToCorrect.EndTime.AddHours(timeDifference);
+                continue;
             }
 
-            return workDays;
-        }
-
-        private static List<WorkDay> Generate(IEnumerable<Calendar> officialHolidays, IEnumerable<Calendar> transferDays, UserScheduleRules userRules, int daysInMonth, int year, int month)
-        {
-            var generatedDays = new List<WorkDay>();
-
-            for (int day = 1; day <= daysInMonth; day++)
+            var effectiveDayOfWeek = workDate.DayOfWeek;
+            if (transfers.TryGetValue(workDate, out var replacedDate))
             {
-                var currentDay = new DateTime(year, month, day);
-                DayOfWeek dayOfWeek = currentDay.DayOfWeek;
-
-                // Пропуск праздничных дней
-                if (officialHolidays.Any(x => x.HolidayDayOfMonth == day))
+                if (replacedDate.Month != rule.Period.Month)
                 {
                     continue;
                 }
 
-                // Проверка на перенесенные дни
-                bool isTransferDay = transferDays.Any(x => x?.TransferDate?.Day == day);
-                if ((dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday) && !isTransferDay)
-                {
-                    continue;
-                }
-
-                if (isTransferDay)
-                {
-                    var replacedDay = transferDays.FirstOrDefault(x => x?.TransferDate?.Day == day);
-                    if (replacedDay == null || replacedDay.HolidayDate.Month != month)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        dayOfWeek = replacedDay.HolidayDate.DayOfWeek;
-                    }
-                }
-
-                bool isFirstShift = false;
-
-                if (userRules.OnlyFirstShift)
-                {
-                    isFirstShift = true;
-                }
-                else if (userRules.OnlySecondShift)
-                {
-                    isFirstShift = false;
-                }
-                else
-                {
-                    if (userRules.EvenDOW)
-                    {
-                        if (dayOfWeek == DayOfWeek.Tuesday || dayOfWeek == DayOfWeek.Thursday)
-                        {
-                            isFirstShift = true;
-                        }
-                    }
-
-                    if (userRules.UnEvenDOW)
-                    {
-                        if (dayOfWeek == DayOfWeek.Monday || dayOfWeek == DayOfWeek.Wednesday || dayOfWeek == DayOfWeek.Friday)
-                        {
-                            isFirstShift = true;
-                        }
-                    }
-
-                    if (userRules.EvenDOM)
-                    {
-                        if (day % 2 == 0)
-                        {
-                            isFirstShift = true;
-                        }
-                    }
-
-                    if (userRules.UnEvenDOM)
-                    {
-                        if (day % 2 != 0)
-                        {
-                            isFirstShift = true;
-                        }
-                    }
-                }
-
-                if (isFirstShift)
-                {
-                    generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: true));
-                }
-                else
-                {
-                    generatedDays.Add(CreateWorkDayDto(userRules, year, month, day, firstShift: false));
-                }
+                effectiveDayOfWeek = replacedDate.DayOfWeek;
+            }
+            else if (effectiveDayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            {
+                continue;
             }
 
-            return generatedDays;
+            var startsAt = IsFirstShift(rule.Pattern, effectiveDayOfWeek, day)
+                ? rule.FirstShiftStart
+                : rule.SecondShiftStart;
+            var durationMinutes = Math.Min(rule.MaxShiftMinutes, remainingMinutes);
+            var startsAtUtc = CreateUtc(rule.Period.Year, rule.Period.Month, day, startsAt);
+            var endsAtUtc = startsAtUtc.AddMinutes(durationMinutes);
+
+            shifts.Add(new WorkShift(
+                Guid.NewGuid(),
+                monthlyScheduleId,
+                workDate,
+                startsAtUtc,
+                endsAtUtc));
+            remainingMinutes -= durationMinutes;
         }
 
-        private static WorkDay CreateWorkDayDto(UserScheduleRules userRules, int year, int month, int day, bool firstShift)
+        if (remainingMinutes > 0)
         {
-            TimeOnly startWork = userRules.StartWorkDayTime;
-            int shiftHours = (int)userRules.MaxHoursPerDay;
-            int shiftMinutes = (int)Math.Round((userRules.MaxHoursPerDay - shiftHours) * 60);
-            TimeOnly endWork = startWork.AddHours(shiftHours).AddMinutes(shiftMinutes);
-
-            DateTimeOffset startTime, endTime;
-            if (firstShift)
-            {
-                startTime = new DateTime(year, month, day, startWork.Hour, startWork.Minute, 0, DateTimeKind.Utc);
-                endTime = new DateTime(year, month, day, endWork.Hour, endWork.Minute, 0, DateTimeKind.Utc);
-            }
-            else
-            {
-                startTime = new DateTime(year, month, day, 14, 30, 0, DateTimeKind.Utc);
-                endTime = startTime.AddHours(shiftHours).AddMinutes(shiftMinutes);
-            }
-
-            return new WorkDay
-            {
-                Day = day,
-                StartTime = startTime,
-                EndTime = endTime,
-            };
+            throw new InvalidOperationException(
+                $"Rule {rule.Id} cannot fit its monthly target within the available workdays and maximum shift length.");
         }
+
+        return shifts;
     }
+
+    private static bool IsFirstShift(ShiftPattern pattern, DayOfWeek dayOfWeek, int dayOfMonth) =>
+        pattern switch
+        {
+            ShiftPattern.FirstShiftOnly => true,
+            ShiftPattern.SecondShiftOnly => false,
+            ShiftPattern.AlternateByWeekdayA => dayOfWeek is DayOfWeek.Tuesday or DayOfWeek.Thursday,
+            ShiftPattern.AlternateByWeekdayB => dayOfWeek is DayOfWeek.Monday or DayOfWeek.Wednesday or DayOfWeek.Friday,
+            ShiftPattern.AlternateByMonthDayA => dayOfMonth % 2 == 0,
+            ShiftPattern.AlternateByMonthDayB => dayOfMonth % 2 != 0,
+            ShiftPattern.Manual => false,
+            _ => throw new ArgumentOutOfRangeException(nameof(pattern), pattern, "Unknown shift pattern."),
+        };
+
+    private static DateTime CreateUtc(int year, int month, int day, TimeOnly time) =>
+        new(year, month, day, time.Hour, time.Minute, time.Second, DateTimeKind.Utc);
 }

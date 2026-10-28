@@ -4,17 +4,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ScheduleService.Domain.Models;
+using ScheduleService.Application.Contracts;
 
 namespace ScheduleService.Application.UseCases.Commands.Schedule
 {
     public class AddWorkingSaturdayCommand
         : IRequest
     {
-        public string ScheduleId { get; set; }
+        public string ScheduleId { get; set; } = string.Empty;
 
-        public WorkDay Saturday { get; set; }
+        public WorkDayDto Saturday { get; set; } = new();
 
-        public List<WorkDay> WorkingDays { get; set; } = new List<WorkDay>();
+        public List<WorkDayDto> WorkingDays { get; set; } = new List<WorkDayDto>();
     }
 }

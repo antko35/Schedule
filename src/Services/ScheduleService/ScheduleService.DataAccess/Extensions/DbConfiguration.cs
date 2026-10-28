@@ -1,34 +1,32 @@
-﻿namespace ScheduleService.DataAccess.Extensions
+namespace ScheduleService.DataAccess.Extensions;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using ScheduleService.DataAccess.Database;
+
+public static class DbConfiguration
 {
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Options;
-    using ScheduleService.DataAccess.Database;
+    public const string ConnectionStringName = "applicationDb";
 
-    public static class DbConfiguration
+    public static IServiceCollection ConfigureDb(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        public static IServiceCollection ConfigureDb(
-            this IServiceCollection services,
-            IConfiguration configuration)
+        var connectionString = configuration.GetConnectionString(ConnectionStringName);
+        if (string.IsNullOrWhiteSpace(connectionString))
         {
-            services.Configure<DbOptions>(configuration.GetSection("DatabaseSettings"));
-
-            services.PostConfigure<DbOptions>(options =>
-            {
-                var aspireConnectionString = configuration.GetConnectionString("scheduleDb");
-
-                if (!string.IsNullOrEmpty(aspireConnectionString))
-                {
-                    options.ConnectionString = aspireConnectionString;
-                }
-            });
-
-            services.AddSingleton<DbOptions>(sp =>
-                sp.GetRequiredService<IOptions<DbOptions>>().Value);
-
-            services.AddSingleton<DbContext>();
-
-            return services;
+            throw new InvalidOperationException(
+                $"Connection string '{ConnectionStringName}' is not configured.");
         }
+
+        services.AddDbContext<ScheduleDbContext>(options =>
+            options.UseNpgsql(
+                connectionString,
+                npgsqlOptions => npgsqlOptions.MigrationsHistoryTable(
+                    "__EFMigrationsHistory",
+                    ScheduleDbContext.SchemaName)));
+
+        return services;
     }
 }

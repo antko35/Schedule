@@ -1,36 +1,50 @@
-using MediatR;
-using ScheduleService.Application.UseCases.Commands.ScheduleRules;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Abstractions;
-
 namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
 
-public class DeleteRulesAndScheduleCommandHandler : IRequestHandler<DeleteRulesAndScheduleCommand>
+using MediatR;
+using ScheduleService.DataAccess.Database;
+using ScheduleService.Application.UseCases.Commands.ScheduleRules;
+using ScheduleService.Domain.Abstractions;
+
+public sealed class DeleteRulesAndScheduleCommandHandler
+    : IRequestHandler<DeleteRulesAndScheduleCommand>
 {
     private readonly IScheduleRepository scheduleRepository;
-    private readonly IUserRuleRepository userRuleRepository;
+    private readonly IScheduleGenerationRuleRepository ruleRepository;
+    private readonly ScheduleDbContext dbContext;
 
     public DeleteRulesAndScheduleCommandHandler(
         IScheduleRepository scheduleRepository,
-        IUserRuleRepository userRuleRepository)
+        IScheduleGenerationRuleRepository ruleRepository,
+        ScheduleDbContext dbContext)
     {
         this.scheduleRepository = scheduleRepository;
-        this.userRuleRepository = userRuleRepository;
+        this.ruleRepository = ruleRepository;
+        this.dbContext = dbContext;
     }
 
-    public async Task Handle(DeleteRulesAndScheduleCommand request, CancellationToken cancellationToken)
+    public async Task Handle(
+        DeleteRulesAndScheduleCommand request,
+        CancellationToken cancellationToken)
     {
-        var allUserRules = await userRuleRepository.GetAllByIds(request.UserId, request.DepartmentId);
+        var rules = await ruleRepository.GetAllByUserDepartmentAsync(
+            request.UserId,
+            request.DepartmentId,
+            cancellationToken);
 
-        var tasks = new List<Task>();
-        foreach (var userRule in allUserRules)
+        foreach (var rule in rules)
         {
-            var task = scheduleRepository.DeleteScheduleAsync(userRule.ScheduleId);
-            tasks.Add(task);
+            var schedule = await scheduleRepository.GetAsync(
+                rule.UserId,
+                rule.DepartmentId,
+                rule.Period,
+                cancellationToken);
+            if (schedule is not null)
+            {
+                scheduleRepository.Remove(schedule);
+            }
         }
 
-        await Task.WhenAll(tasks);
-
-        await userRuleRepository.DeleteAll(request.UserId, request.DepartmentId);
+        ruleRepository.RemoveRange(rules);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

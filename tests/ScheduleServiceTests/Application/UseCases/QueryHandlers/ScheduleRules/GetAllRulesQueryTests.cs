@@ -1,57 +1,55 @@
-using FluentAssertions;
-using MongoDB.Bson;
-using Moq;
-using ScheduleService.Application.UseCases.QueryHandlers.ScheduleRules;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Models;
-using Xunit;
-
 namespace Application.UseCases.QueryHandlers.ScheduleRules;
 
-public class GetAllRulesQueryTests
+using ScheduleService.Application.UseCases.Queries.ScheduleRules;
+using ScheduleService.Application.UseCases.QueryHandlers.ScheduleRules;
+
+public sealed class GetAllRulesQueryTests
 {
-    private readonly Mock<IUserRuleRepository> userRuleRepositoryMock;
-    private readonly GetAllRulesQueryHandler hander;
-
-    public GetAllRulesQueryTests()
-    {
-        userRuleRepositoryMock = new Mock<IUserRuleRepository>();
-        hander = new GetAllRulesQueryHandler(userRuleRepositoryMock.Object);
-    }
-
     [Fact]
-    public async Task Handle_ReturnsRules()
+    public async Task Handle_ReturnsCurrentRulesWithScheduleIdentifiers()
     {
-        // Arrange
-        var rules = new List<UserScheduleRules>()
-        {
-            new UserScheduleRules() { Id = ObjectId.GenerateNewId().ToString() },
-            new UserScheduleRules() { Id = ObjectId.GenerateNewId().ToString() },
-        };
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var schedules = new Mock<IScheduleRepository>();
+        var now = DateTime.UtcNow;
+        var period = new DateOnly(now.Year, now.Month, 1);
+        var rule = new ScheduleGenerationRule(
+            "rule-id",
+            "user-id",
+            "department-id",
+            period,
+            480,
+            480,
+            new TimeOnly(8, 0),
+            new TimeOnly(14, 30),
+            ShiftPattern.FirstShiftOnly);
+        var oldRule = new ScheduleGenerationRule(
+            "old-rule-id",
+            "old-user-id",
+            "department-id",
+            period.AddMonths(-1),
+            600,
+            300,
+            new TimeOnly(9, 0),
+            new TimeOnly(15, 0),
+            ShiftPattern.SecondShiftOnly);
+        var schedule = new MonthlySchedule(
+            "schedule-id",
+            "user-id",
+            "department-id",
+            period,
+            DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc));
+        rules.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([oldRule, rule]);
+        schedules.Setup(x => x.GetAsync("user-id", "department-id", period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(schedule);
+        var handler = new GetAllRulesQueryHandler(rules.Object, schedules.Object);
 
-        userRuleRepositoryMock.Setup(x => x.GetAllAsync()).ReturnsAsync(rules);
+        var result = (await handler.Handle(new GetAllRulesQuery(), CancellationToken.None)).ToList();
 
-        // Act
-        var result = await hander.Handle(null, CancellationToken.None);
-
-        // Assert
-        result.Should().BeEquivalentTo(rules);
-    }
-
-    [Fact]
-    public async Task Handle_ReturnsEmptyList()
-    {
-        // Arrange
-        var rules = new List<UserScheduleRules>()
-        {
-        };
-
-        userRuleRepositoryMock.Setup(x => x.GetAllAsync()).ReturnsAsync(rules);
-
-        // Act
-        var result = await hander.Handle(null, CancellationToken.None);
-
-        // Assert
-        result.Should().BeEquivalentTo(rules);
+        result.Should().HaveCount(2);
+        result.Select(item => item.Id).Should().ContainInOrder("old-rule-id", "rule-id");
+        result[0].ScheduleId.Should().BeEmpty();
+        result[1].ScheduleId.Should().Be(schedule.Id);
+        result[1].HoursPerMonth.Should().Be(8);
     }
 }

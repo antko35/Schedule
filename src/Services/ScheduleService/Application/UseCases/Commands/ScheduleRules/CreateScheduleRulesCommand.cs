@@ -1,8 +1,14 @@
-﻿namespace ScheduleService.Application.UseCases.Commands.ScheduleRules;
+﻿using MediatR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ScheduleService.Application.Contracts;
 
-using MediatR;
-using Domain.Models;
-
-public record CreateScheduleRulesCommand(
-    string UserId,
-    string DepartmentId) : IRequest<(Schedule Schedule, UserScheduleRules ScheduleRules)>;
+namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
+{
+    public record CreateScheduleRulesCommand(
+        string UserId,
+        string DepartmentId) : IRequest<(ScheduleDto Schedule, ScheduleRulesDto ScheduleRules)>;
+}

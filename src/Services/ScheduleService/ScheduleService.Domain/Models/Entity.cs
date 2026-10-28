@@ -1,17 +1,16 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace ScheduleService.Domain.Models;
 
-namespace ScheduleService.Domain.Models
+public abstract class Entity
 {
-    public class Entity
+    protected Entity()
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
     }
+
+    protected Entity(string id)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        Id = id;
+    }
+
+    public string Id { get; protected set; } = string.Empty;
 }

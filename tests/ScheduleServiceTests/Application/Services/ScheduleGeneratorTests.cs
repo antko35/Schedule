@@ -1,334 +1,144 @@
+namespace Application.Services;
+
 using FluentAssertions;
 using ScheduleService.Application.Services;
 using ScheduleService.Domain.Models;
 using Xunit;
 
-namespace Application.Services;
-
-public class ScheduleGeneratorTests
+public sealed class ScheduleGeneratorTests
 {
-    public IEnumerable<int> unEvenDays = new List<int>()
-    {
-        1, 3, 5,
-    };
-
-    public IEnumerable<int> EvenDays = new List<int>()
-    {
-        2, 4,
-    };
-
     [Fact]
-    public void GenerateWorkDaysForUser_NoHolidays_NoTransferDays_ShouldGenerateCorrectWorkDays()
+    public void GenerateWorkShiftsForUser_ShouldSkipOrdinaryWeekends()
     {
-        // Arrange
-        var userRules = new UserScheduleRules
-        {
-            EvenDOW = true,
-            HoursPerMonth = 132,
-            StartWorkDayTime = new TimeOnly(8, 0),
-        };
+        var rule = CreateRule(1_440, 480, ShiftPattern.FirstShiftOnly);
 
-        int year = 2025;
-        int month = 2;
-        var officialHolidays = new List<Calendar>();
-        var transferDays = new List<Calendar>();
+        var result = ScheduleGenerator.GenerateWorkShiftsForUser(rule, [], [], "schedule-id");
 
-        // Act
-        var result = ScheduleGenerator.GenerateWorkDaysForUser(userRules, year, month, officialHolidays, transferDays);
-
-        // Assert
-        Assert.Equal(20, result.Count);
+        result.Select(shift => shift.WorkDate.Day).Should().Equal(1, 2, 5);
     }
 
     [Fact]
-    public void GenerateWorkDaysForUser_WithHolidays_ShouldSkipHolidays()
+    public void GenerateWorkShiftsForUser_ShouldIncludeTransferredSaturday()
     {
-        // Arrange
-        var userRules = new UserScheduleRules
-        {
-            EvenDOW = true,
-            HoursPerMonth = 132,
-            StartWorkDayTime = new TimeOnly(8, 0),
-        };
+        var rule = CreateRule(960, 480, ShiftPattern.FirstShiftOnly);
+        var transfer = new CalendarException(
+            "transfer-id",
+            new DateOnly(2026, 10, 2),
+            new DateOnly(2026, 10, 3));
 
-        int year = 2025;
-        int month = 5;
-        var officialHolidays = new List<Calendar>
-        {
-            new Calendar { HolidayDayOfMonth = 1 },
-            new Calendar { HolidayDayOfMonth = 9 },
-        };
-        var transferDays = new List<Calendar>();
+        var result = ScheduleGenerator.GenerateWorkShiftsForUser(
+            rule,
+            [transfer],
+            [transfer],
+            "schedule-id");
 
-        // Act
-        var result = ScheduleGenerator.GenerateWorkDaysForUser(userRules, year, month, officialHolidays, transferDays);
+        result.Select(shift => shift.WorkDate.Day).Should().Equal(1, 3);
+    }
 
-        // Assert
-        result.Count.Should().Be(20); // 22 дня - 2 праздника
+    [Theory]
+    [InlineData(ShiftPattern.AlternateByWeekdayA, 8, 0)]
+    [InlineData(ShiftPattern.AlternateByWeekdayB, 14, 30)]
+    public void GenerateWorkShiftsForUser_ShouldApplyWeekdayPattern(
+        ShiftPattern pattern,
+        int expectedHour,
+        int expectedMinute)
+    {
+        var rule = CreateRule(240, 240, pattern);
+
+        var result = ScheduleGenerator.GenerateWorkShiftsForUser(rule, [], [], "schedule-id");
+
+        result.Should().ContainSingle();
+        result[0].StartsAtUtc.Hour.Should().Be(expectedHour);
+        result[0].StartsAtUtc.Minute.Should().Be(expectedMinute);
     }
 
     [Fact]
-    public void GenerateWorkDaysForUser_WithTransferDays_ShouldHandleTransferDays()
+    public void GenerateWorkShiftsForUser_ShouldRejectManualPattern()
     {
-        // Arrange
-        var userRules = new UserScheduleRules
-        {
-            EvenDOW = true,
-            HoursPerMonth = 132,
-            StartWorkDayTime = new TimeOnly(8, 0),
-        };
+        var rule = CreateRule(480, 240, ShiftPattern.Manual);
 
-        int year = 2025;
-        int month = 1;
-        var officialHolidays = new List<Calendar>
-        {
-            new Calendar { HolidayDayOfMonth = 1 },
-            new Calendar { HolidayDayOfMonth = 2 },
-            new Calendar { HolidayDayOfMonth = 6, TransferDate = new DateOnly(2025, 1, 11), },
-            new Calendar { HolidayDayOfMonth = 7 },
-        };
-        var transferDays = new List<Calendar>
-        {
-            new Calendar
-            {
-                 HolidayDayOfMonth = 6,
-                 TransferDate = new DateOnly(2025, 1, 11),
-            },
-        };
+        var action = () => ScheduleGenerator.GenerateWorkShiftsForUser(rule, [], [], "schedule-id");
 
-        // Act
-        var result = ScheduleGenerator.GenerateWorkDaysForUser(userRules, year, month, officialHolidays, transferDays);
-
-        // Assert
-        result.Count.Should().Be(20);
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*shift pattern*");
     }
 
     [Fact]
-    public void GenerateWorkDaysForUser_CorrectGeneralTime()
+    public void GenerateWorkShiftsForUser_ShouldUseTargetAndMaximumShiftMinutes()
     {
-        // Arrange
-        var userRules = new UserScheduleRules
-        {
-            EvenDOW = true,
-            HoursPerMonth = 131,
-            MaxHoursPerDay = 6,
-            StartWorkDayTime = new TimeOnly(8, 0),
-        };
+        var rule = CreateRule(500, 240, ShiftPattern.FirstShiftOnly);
 
-        int year = 2025;
-        int month = 1;
-        var officialHolidays = new List<Calendar>
-        {
-            new Calendar { HolidayDayOfMonth = 1 },
-            new Calendar { HolidayDayOfMonth = 2 },
-            new Calendar { HolidayDayOfMonth = 6, TransferDate = new DateOnly(2025, 1, 11), },
-            new Calendar { HolidayDayOfMonth = 7 },
-        };
-        var transferDays = new List<Calendar>
-        {
-            new Calendar
-            {
-                HolidayDayOfMonth = 6,
-                TransferDate = new DateOnly(2025, 1, 11),
-            },
-        };
+        var result = ScheduleGenerator.GenerateWorkShiftsForUser(rule, [], [], "schedule-id");
 
-        // Act
-        var result = ScheduleGenerator.GenerateWorkDaysForUser(userRules, year, month, officialHolidays, transferDays);
-
-        // Assert
-        var totalHours = result.Sum(workDay => (workDay.EndTime - workDay.StartTime).TotalHours);
-
-        totalHours.Should().Be(131);
+        result.Should().HaveCount(3);
+        (result[0].EndsAtUtc - result[0].StartsAtUtc).Should().Be(TimeSpan.FromMinutes(240));
+        (result[2].EndsAtUtc - result[2].StartsAtUtc).Should().Be(TimeSpan.FromMinutes(20));
+        result.Sum(shift => (shift.EndsAtUtc - shift.StartsAtUtc).TotalMinutes).Should().Be(500);
     }
 
     [Fact]
-    public void GenerateWorkDaysForUser_FirstShiftRules_ShouldGenerateFirstShift()
+    public void GenerateWorkShiftsForUser_ShouldRejectTargetThatCannotFitInMonth()
     {
-        // Arrange
-        var userRules = new UserScheduleRules
-        {
-            OnlyFirstShift = true,
-            HoursPerMonth = 132,
-            StartWorkDayTime = new TimeOnly(9, 0),
-        };
+        var rule = CreateRule(10_000, 240, ShiftPattern.FirstShiftOnly);
 
-        int year = 2025;
-        int month = 2;
-        var officialHolidays = new List<Calendar>();
-        var transferDays = new List<Calendar>();
+        var action = () => ScheduleGenerator.GenerateWorkShiftsForUser(rule, [], [], "schedule-id");
 
-        // Act
-        var result = ScheduleGenerator.GenerateWorkDaysForUser(userRules, year, month, officialHolidays, transferDays);
-
-        // Assert
-        result.Should().AllSatisfy(x => x.StartTime.Hour.Should().Be(9));
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*cannot fit its monthly target*");
     }
 
     [Fact]
-    public void GenerateWorkDaysForUser_SecondShiftRules_ShouldGenerateSecondShift()
+    public void GenerateWorkShiftsForUser_ShouldSkipHoliday()
     {
-        // Arrange
-        var userRules = new UserScheduleRules
-        {
-            OnlySecondShift = true,
-            HoursPerMonth = 132,
-        };
+        var rule = CreateRule(480, 240, ShiftPattern.FirstShiftOnly);
+        var holiday = new CalendarException("holiday-id", new DateOnly(2026, 10, 1));
 
-        int year = 2025;
-        int month = 2;
-        var officialHolidays = new List<Calendar>();
-        var transferDays = new List<Calendar>();
+        var result = ScheduleGenerator.GenerateWorkShiftsForUser(rule, [holiday], [], "schedule-id");
 
-        // Act
-        var result = ScheduleGenerator.GenerateWorkDaysForUser(userRules, year, month, officialHolidays, transferDays);
-
-        // Assert
-        result.Should().AllSatisfy(x => x.StartTime.Hour.Should().Be(14));
-        result.Should().AllSatisfy(x => x.StartTime.Minute.Should().Be(30));
+        result.Should().NotContain(shift => shift.WorkDate == holiday.HolidayDate);
+        result[0].WorkDate.Should().Be(new DateOnly(2026, 10, 2));
     }
 
     [Fact]
-    public void GenerateWorkDaysForUser_EvenDOW()
+    public void GenerateWorkShiftsForUser_ShouldUseConfiguredSecondShiftStart()
     {
-        // Arrange
-        var userRules = new UserScheduleRules
-        {
-            EvenDOW = true,
-            HoursPerMonth = 132,
-            StartWorkDayTime = new TimeOnly(8, 0),
-        };
+        var rule = CreateRule(240, 240, ShiftPattern.SecondShiftOnly);
 
-        int year = 2025;
-        int month = 2;
-        var officialHolidays = new List<Calendar>();
-        var transferDays = new List<Calendar>();
+        var result = ScheduleGenerator.GenerateWorkShiftsForUser(rule, [], [], "schedule-id");
 
-        // Act
-        var result = ScheduleGenerator.GenerateWorkDaysForUser(userRules, year, month, officialHolidays, transferDays);
-
-        // Assert
-        foreach (var workDay in result)
-        {
-            int dayOfWeek = (int)workDay.StartTime.Date.DayOfWeek;
-
-            if (EvenDays.Contains(dayOfWeek))
-            {
-                workDay.StartTime.Hour.Should().Be(8, $"On Tuesday and Thursday, the start time should be 8:00, but was {workDay.StartTime}");
-            }
-            else
-            {
-                workDay.StartTime.Hour.Should().Be(14, $"On Monday, Wednesday, and Friday, the start time should be 14:30, but was {workDay.StartTime}");
-                workDay.StartTime.Minute.Should().Be(30, $"On Monday, Wednesday, and Friday, the start minute should be 30, but was {workDay.StartTime}");
-            }
-        }
+        result.Should().ContainSingle();
+        result[0].StartsAtUtc.Hour.Should().Be(14);
+        result[0].StartsAtUtc.Minute.Should().Be(30);
+        result[0].StartsAtUtc.Kind.Should().Be(DateTimeKind.Utc);
     }
 
-    [Fact]
-    public void GenerateWorkDaysForUser_UnEvenDOW()
+    [Theory]
+    [InlineData(ShiftPattern.AlternateByMonthDayA, 2)]
+    [InlineData(ShiftPattern.AlternateByMonthDayB, 1)]
+    public void GenerateWorkShiftsForUser_ShouldApplyMonthDayPattern(
+        ShiftPattern pattern,
+        int expectedFirstShiftDay)
     {
-        // Arrange
-        var userRules = new UserScheduleRules
-        {
-            UnEvenDOW = true,
-            HoursPerMonth = 132,
-            StartWorkDayTime = new TimeOnly(8, 0),
-        };
+        var rule = CreateRule(480, 240, pattern);
 
-        int year = 2025;
-        int month = 2;
-        var officialHolidays = new List<Calendar>();
-        var transferDays = new List<Calendar>();
+        var result = ScheduleGenerator.GenerateWorkShiftsForUser(rule, [], [], "schedule-id");
 
-        // Act
-        var result = ScheduleGenerator.GenerateWorkDaysForUser(userRules, year, month, officialHolidays, transferDays);
-
-        // Assert
-        foreach (var workDay in result)
-        {
-            int dayOfWeek = (int)workDay.StartTime.Date.DayOfWeek;
-
-            if (unEvenDays.Contains(dayOfWeek))
-            {
-                workDay.StartTime.Hour.Should().Be(8, $"On Monday, Wednesday, and Friday, the start time should be 8:00, but was {workDay.StartTime}");
-            }
-            else
-            {
-                workDay.StartTime.Hour.Should().Be(14, $"On Tuesday and Thursday, the start time should be 14:30, but was {workDay.StartTime}");
-                workDay.StartTime.Minute.Should().Be(30, $"On Tuesday and Thursday, the start minute should be 30, but was {workDay.StartTime}");
-            }
-        }
+        result.Single(shift => shift.WorkDate.Day == expectedFirstShiftDay)
+            .StartsAtUtc.Hour.Should().Be(8);
     }
 
-    [Fact]
-    public void GenerateWorkDaysForUser_EvenDOM()
-    {
-        // Arrange
-        var userRules = new UserScheduleRules
-        {
-            EvenDOM = true,
-            HoursPerMonth = 132,
-            StartWorkDayTime = new TimeOnly(8, 0),
-        };
-
-        int year = 2025;
-        int month = 2;
-        var officialHolidays = new List<Calendar>();
-        var transferDays = new List<Calendar>();
-
-        // Act
-        var result = ScheduleGenerator.GenerateWorkDaysForUser(userRules, year, month, officialHolidays, transferDays);
-
-        // Assert
-        foreach (var workDay in result)
-        {
-            int dayOfMonth = workDay.StartTime.Date.Day;
-
-            if (dayOfMonth % 2 == 0)
-            {
-                workDay.StartTime.Hour.Should().Be(8, $"On even days, the start time should be 8:00, but was {workDay.StartTime}");
-            }
-            else
-            {
-                workDay.StartTime.Hour.Should().Be(14, $"On odd days , the start time should be 14:00, but was {workDay.StartTime}");
-                workDay.StartTime.Minute.Should().Be(30, $"On odd days , the start minute should be 30, but was {workDay.StartTime}");
-            }
-        }
-    }
-
-    [Fact]
-    public void GenerateWorkDaysForUser_UnEvenDOM()
-    {
-        // Arrange
-        var userRules = new UserScheduleRules
-        {
-            UnEvenDOM = true,
-            HoursPerMonth = 132,
-            StartWorkDayTime = new TimeOnly(8, 0),
-        };
-
-        int year = 2025;
-        int month = 2;
-        var officialHolidays = new List<Calendar>();
-        var transferDays = new List<Calendar>();
-
-        // Act
-        var result = ScheduleGenerator.GenerateWorkDaysForUser(userRules, year, month, officialHolidays, transferDays);
-
-        // Assert
-        foreach (var workDay in result)
-        {
-            int dayOfMonth = workDay.StartTime.Date.Day;
-
-            if (dayOfMonth % 2 != 0)
-            {
-                workDay.StartTime.Hour.Should().Be(8, $"On even days, the start time should be 8:00, but was {workDay.StartTime}");
-            }
-            else
-            {
-                workDay.StartTime.Hour.Should().Be(14, $"On odd days , the start time should be 14:00, but was {workDay.StartTime}");
-                workDay.StartTime.Minute.Should().Be(30, $"On odd days , the start minute should be 30, but was {workDay.StartTime}");
-            }
-        }
-    }
+    private static ScheduleGenerationRule CreateRule(
+        int targetMinutes,
+        int maxShiftMinutes,
+        ShiftPattern pattern) =>
+        new(
+            "rule-id",
+            "user-id",
+            "department-id",
+            new DateOnly(2026, 10, 1),
+            targetMinutes,
+            maxShiftMinutes,
+            new TimeOnly(8, 0),
+            new TimeOnly(14, 30),
+            pattern);
 }

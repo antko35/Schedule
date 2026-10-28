@@ -1,62 +1,22 @@
-using FluentAssertions;
-using Moq;
-using ScheduleService.Application.UseCases.Queries.Calendar;
-using ScheduleService.Application.UseCases.QueryHandlers.Calendar;
-using ScheduleService.Domain.Abstractions;
-using Xunit;
-
 namespace Application.UseCases.QueryHandlers.Calendar;
 
-public class GetYearHolidaysQueryTests
+using ScheduleService.Application.UseCases.Queries.Calendar;
+using ScheduleService.Application.UseCases.QueryHandlers.Calendar;
+
+public sealed class GetYearHolidaysQueryTests
 {
-    private readonly Mock<ICalendarRepository> calendarRepositoryMock;
-    private readonly GetYearHolidaysQueryHandler handler;
-    
-    public GetYearHolidaysQueryTests()
-    {
-        calendarRepositoryMock = new Mock<ICalendarRepository>();
-        handler = new GetYearHolidaysQueryHandler(calendarRepositoryMock.Object);
-    }
-    
     [Fact]
-    public async Task Handle_ShouldReturnEmptyList()
+    public async Task Handle_MapsYearHolidays()
     {
-        // Arrange
-        var query = new GetYearHolidaysQuery(2025);
+        var repository = new Mock<ICalendarRepository>();
+        var holiday = new CalendarException("holiday-id", new DateOnly(2026, 12, 25));
+        repository.Setup(x => x.GetYearHolidaysAsync(2026, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([holiday]);
+        var handler = new GetYearHolidaysQueryHandler(repository.Object);
 
-        calendarRepositoryMock.Setup(repo => repo.GetYearHolidays(It.IsAny<int>()))
-            .ReturnsAsync((List<ScheduleService.Domain.Models.Calendar>?)null);
+        var result = await handler.Handle(new GetYearHolidaysQuery(2026), CancellationToken.None);
 
-        // Act
-        var result = await handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().BeNull();
-    }
-    
-    [Fact]
-    public async Task Handle_ShouldReturnHolidays()
-    {
-        // Arrange
-        var holidays = new List<ScheduleService.Domain.Models.Calendar>
-        {
-            new ScheduleService.Domain.Models.Calendar()
-            {
-                Id = "1",
-                HolidayDate = new DateOnly(2025, 1, 1),
-                TransferDate = new DateOnly(2025, 1, 2),
-            },
-        };
-
-        var query = new GetYearHolidaysQuery(2025);
-
-        calendarRepositoryMock.Setup(repo => repo.GetYearHolidays(It.IsAny<int>()))
-            .ReturnsAsync(holidays);
-
-        // Act
-        var result = await handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().BeEquivalentTo(holidays);
+        result.Should().ContainSingle().Which.Year.Should().Be(2026);
+        result[0].HolidayDayOfMonth.Should().Be(25);
     }
 }

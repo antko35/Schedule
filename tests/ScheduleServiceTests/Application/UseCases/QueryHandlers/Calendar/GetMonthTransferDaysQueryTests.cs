@@ -1,64 +1,24 @@
-using FluentAssertions;
-using Moq;
-using ScheduleService.Application.UseCases.Queries.Calendar;
-using ScheduleService.Application.UseCases.QueryHandlers.Calendar;
-using ScheduleService.Domain.Abstractions;
-using Xunit;
-
 namespace Application.UseCases.QueryHandlers.Calendar;
 
-public class GetMonthTransferDaysQueryTests
+using ScheduleService.Application.UseCases.Queries.Calendar;
+using ScheduleService.Application.UseCases.QueryHandlers.Calendar;
+
+public sealed class GetMonthTransferDaysQueryTests
 {
-    private readonly Mock<ICalendarRepository> calendarRepositoryMock;
-    private readonly GetMonthTransferDaysQueryHandler handler;
-
-    public GetMonthTransferDaysQueryTests()
-    {
-        calendarRepositoryMock = new Mock<ICalendarRepository>();
-        handler = new GetMonthTransferDaysQueryHandler(calendarRepositoryMock.Object);
-    }
-    
     [Fact]
-    public async Task Handle_ShouldReturnEmptyList()
+    public async Task Handle_MapsMonthlyTransferDays()
     {
-        // Arrange
-        var holidays = new List<ScheduleService.Domain.Models.Calendar> { };
+        var repository = new Mock<ICalendarRepository>();
+        var transfer = new CalendarException(
+            "holiday-id",
+            new DateOnly(2026, 9, 30),
+            new DateOnly(2026, 10, 3));
+        repository.Setup(x => x.GetMonthTransferDaysAsync(new DateOnly(2026, 10, 1), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([transfer]);
+        var handler = new GetMonthTransferDaysQueryHandler(repository.Object);
 
-        var query = new GetMonthTransferDaysQuery(2025, 1);
+        var result = await handler.Handle(new GetMonthTransferDaysQuery(2026, 10), CancellationToken.None);
 
-        calendarRepositoryMock.Setup(repo => repo.GetMonthHolidays(It.IsAny<int>(), It.IsAny<int>()))
-            .ReturnsAsync((List<ScheduleService.Domain.Models.Calendar>?)null);
-
-        // Act
-        var result = await handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().BeNull();
-    }
-    
-    [Fact]
-    public async Task Handle_ShouldReturnTransferDays()
-    {
-        // Arrange
-        var holidays = new List<ScheduleService.Domain.Models.Calendar>
-        {
-            new ScheduleService.Domain.Models.Calendar()
-            {
-                Id = "1",
-                HolidayDate = new DateOnly(2025, 1, 1),
-                TransferDate = new DateOnly(2025, 1, 2),
-            },
-        };
-
-        var query = new GetMonthTransferDaysQuery(2025, 1);
-
-        calendarRepositoryMock.Setup(repo => repo.GetMonthTransferDays(It.IsAny<int>(), It.IsAny<int>()))
-            .ReturnsAsync(holidays);
-
-        // Act
-        var result = await handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().BeEquivalentTo(holidays);
+        result.Should().ContainSingle().Which.TransferDate.Should().Be(transfer.TransferDate);
     }
 }

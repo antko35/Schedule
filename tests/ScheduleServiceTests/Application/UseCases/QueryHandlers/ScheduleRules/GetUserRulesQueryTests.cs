@@ -1,75 +1,52 @@
-using FluentAssertions;
-using MongoDB.Bson;
-using Moq;
-using ScheduleService.Application.UseCases.Queries.ScheduleRules;
-using ScheduleService.Application.UseCases.QueryHandlers.ScheduleRules;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Models;
-using Xunit;
-
 namespace Application.UseCases.QueryHandlers.ScheduleRules;
 
-public class GetUserRulesQueryTests
+using Application;
+using ScheduleService.Application.UseCases.Queries.ScheduleRules;
+using ScheduleService.Application.UseCases.QueryHandlers.ScheduleRules;
+
+public sealed class GetUserRulesQueryTests
 {
-    private readonly Mock<IUserRuleRepository> userRuleRepositoryMock;
-    private readonly GetUserRulesQueryHandler hander;
-
-    public GetUserRulesQueryTests()
-    {
-        userRuleRepositoryMock = new Mock<IUserRuleRepository>();
-        hander = new GetUserRulesQueryHandler(userRuleRepositoryMock.Object);
-    }
-
     [Fact]
-    public async Task Handle_ReturnsUserRules()
+    public async Task Handle_RejectsMissingRuleWithoutReadingSchedule()
     {
-        // Arrange
-        var userId = ObjectId.GenerateNewId().ToString();
-        var departmentId = ObjectId.GenerateNewId().ToString();
-        var monthName = "january";
-        var year = 2025;
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var schedules = new Mock<IScheduleRepository>();
+        rules.Setup(x => x.GetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ScheduleGenerationRule?)null);
+        var handler = new GetUserRulesQueryHandler(rules.Object, schedules.Object);
 
-        var rules = new UserScheduleRules()
-        {
-            Id = ObjectId.GenerateNewId().ToString(),
-        };
+        var action = () => handler.Handle(
+            new GetUserRulesQuery("user-id", "department-id", 10, 2026),
+            CancellationToken.None);
 
-        var query = new GetUserRulesQuery(userId, departmentId, 1, year);
-
-        userRuleRepositoryMock.Setup(
-            x => x.GetMonthScheduleRules(userId, departmentId, monthName, year))
-            .ReturnsAsync(rules);
-
-        // Act
-        var result = await hander.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().BeEquivalentTo(rules);
-        userRuleRepositoryMock.Verify(r => r.GetMonthScheduleRules(userId, departmentId, monthName, year), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_Throws_NotFoundException()
-    {
-        // Arrange
-        var userId = ObjectId.GenerateNewId().ToString();
-        var departmentId = ObjectId.GenerateNewId().ToString();
-        var monthName = "january";
-        var year = 2025;
-
-        var rules = new UserScheduleRules() { };
-
-        var query = new GetUserRulesQuery(userId, departmentId, 1, year);
-
-        userRuleRepositoryMock.Setup(
-                x => x.GetMonthScheduleRules(userId, departmentId, monthName, year))
-            .ReturnsAsync((UserScheduleRules)null);
-
-        // Act
-        var act = async () => hander.Handle(query, CancellationToken.None);
-
-        // Assert
-        act.Should().ThrowAsync<KeyNotFoundException>()
+        await action.Should().ThrowAsync<KeyNotFoundException>()
             .WithMessage("Rules not found");
+        schedules.Verify(x => x.GetAsync(
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<DateOnly>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_ReturnsRuleWithRelatedScheduleId()
+    {
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var schedules = new Mock<IScheduleRepository>();
+        var rule = TestSupport.CreateRule();
+        var schedule = TestSupport.CreateSchedule();
+        rules.Setup(x => x.GetAsync("user-id", "department-id", TestSupport.Period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rule);
+        schedules.Setup(x => x.GetAsync("user-id", "department-id", TestSupport.Period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(schedule);
+        var handler = new GetUserRulesQueryHandler(rules.Object, schedules.Object);
+
+        var result = await handler.Handle(
+            new GetUserRulesQuery("user-id", "department-id", 10, 2026),
+            CancellationToken.None);
+
+        result.Id.Should().Be(rule.Id);
+        result.ScheduleId.Should().Be(schedule.Id);
+        result.OnlyFirstShift.Should().BeTrue();
     }
 }

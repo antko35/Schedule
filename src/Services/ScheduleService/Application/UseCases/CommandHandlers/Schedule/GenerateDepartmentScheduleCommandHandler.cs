@@ -1,120 +1,84 @@
-﻿namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
+namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule;
+
+using MediatR;
+using ScheduleService.DataAccess.Database;
+using ScheduleService.Application.Services;
+using ScheduleService.Application.UseCases.Commands.Schedule;
+using ScheduleService.Domain.Abstractions;
+using ScheduleService.Domain.Models;
+
+public sealed class GenerateDepartmentScheduleCommandHandler
+    : IRequestHandler<GenerateDepartmentScheduleCommand>
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.Metrics;
-    using System.Linq;
-    using System.Security.Cryptography;
-    using System.Security.Cryptography.X509Certificates;
-    using System.Text;
-    using System.Threading.Tasks;
-    using MediatR;
-    using Microsoft.VisualBasic;
-    using ScheduleService.Application.Services;
-    using ScheduleService.Application.UseCases.Commands.Schedule;
-    using ScheduleService.DataAccess.Repository;
-    using ScheduleService.Domain.Abstractions;
-    using ScheduleService.Domain.Models;
+    private readonly IScheduleGenerationRuleRepository ruleRepository;
+    private readonly IScheduleRepository scheduleRepository;
+    private readonly ICalendarRepository calendarRepository;
+    private readonly ScheduleDbContext dbContext;
 
-    public class GenerateDepartmentScheduleCommandHandler
-        : IRequestHandler<GenerateDepartmentScheduleCommand>
+    public GenerateDepartmentScheduleCommandHandler(
+        IScheduleGenerationRuleRepository ruleRepository,
+        IScheduleRepository scheduleRepository,
+        ICalendarRepository calendarRepository,
+        ScheduleDbContext dbContext)
     {
-        private readonly IUserRuleRepository userRuleRepository;
-        private readonly IScheduleRepository scheduleRepository;
-        private readonly ICalendarRepository calendarRepository;
-        private readonly ScheduleRulesGenerator scheduleRulesGenerator;
+        this.ruleRepository = ruleRepository;
+        this.scheduleRepository = scheduleRepository;
+        this.calendarRepository = calendarRepository;
+        this.dbContext = dbContext;
+    }
 
-        private IEnumerable<UserScheduleRules> usersRules = new List<UserScheduleRules>();
-        private List<Calendar?> officialHolidays = new List<Calendar?>();
-        private List<Calendar?> transferDays = new List<Calendar?>();
-
-        public GenerateDepartmentScheduleCommandHandler(
-            IUserRuleRepository userRuleRepository,
-            IScheduleRepository scheduleRepository,
-            ICalendarRepository calendarRepository,
-            ScheduleRulesGenerator scheduleRulesGenerator)
+    public async Task Handle(
+        GenerateDepartmentScheduleCommand request,
+        CancellationToken cancellationToken)
+    {
+        var period = new DateOnly(request.Year, request.Month, 1);
+        var rules = await ruleRepository.GetByDepartmentAsync(
+            request.DepartmentId,
+            period,
+            cancellationToken);
+        if (rules.Count == 0)
         {
-            this.userRuleRepository = userRuleRepository;
-            this.scheduleRepository = scheduleRepository;
-            this.calendarRepository = calendarRepository;
-            this.scheduleRulesGenerator = scheduleRulesGenerator;
+            throw new InvalidOperationException("Schedule rules for this department not found");
         }
 
-        public async Task Handle(GenerateDepartmentScheduleCommand request, CancellationToken cancellationToken)
+        EnsureRulesCanBeGenerated(rules);
+
+        // All repositories share one scoped EF Core DbContext. Its async queries must not overlap.
+        var holidays = await calendarRepository.GetMonthHolidaysAsync(period, cancellationToken);
+        var transferDays = await calendarRepository.GetMonthTransferDaysAsync(period, cancellationToken);
+
+        var updatedAtUtc = DateTime.UtcNow;
+        foreach (var rule in rules)
         {
-            var getRulesTask = GetUsersRulesForScheduleGeneration(request.Year, request.Month, request.DepartmentId);
-            var getHolidaysTask = GetHolidays(request.Year, request.Month);
-
-            await Task.WhenAll(getRulesTask, getHolidaysTask);
-
-            await GenerateAndAdd(request.Year, request.Month);
+            var schedule = await scheduleRepository.GetAsync(
+                rule.UserId,
+                rule.DepartmentId,
+                rule.Period,
+                cancellationToken)
+                ?? throw new KeyNotFoundException($"Schedule for rule {rule.Id} not found");
+            var shifts = ScheduleGenerator.GenerateWorkShiftsForUser(
+                rule,
+                holidays,
+                transferDays,
+                schedule.Id);
+            schedule.ReplaceShifts(shifts, updatedAtUtc);
         }
 
-        private async Task GenerateAndAdd(int year, int month)
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static void EnsureRulesCanBeGenerated(
+        IReadOnlyList<ScheduleGenerationRule> rules)
+    {
+        var invalidRule = rules.FirstOrDefault(rule =>
+            rule.TargetMinutes <= 0
+            || rule.MaxShiftMinutes <= 0
+            || rule.Pattern == ShiftPattern.Manual);
+
+        if (invalidRule is not null)
         {
-            foreach (var userRules in usersRules)
-            {
-                await scheduleRepository.ClearMonthSchedule(userRules.ScheduleId);
-
-                var generatedDays = ScheduleGenerator.GenerateWorkDaysForUser(
-                    userRules,
-                    year,
-                    month,
-                    officialHolidays,
-                    transferDays);
-
-                foreach (var workDay in generatedDays)
-                {
-                    await scheduleRepository.AddWorkDayAsync(userRules.ScheduleId, workDay);
-                }
-            }
-        }
-
-        private async Task GetUsersRulesForScheduleGeneration(int year, int month, string departmentId)
-        {
-            string monthName = new DateTime(year, month, 1)
-                .ToString("MMMM")
-                .ToLower();
-
-            this.usersRules = await userRuleRepository.GetUsersRulesByDepartment(departmentId, monthName, year);
-
-            if (!usersRules.Any())
-            {
-                await CreateRulesForDepartment(departmentId, year, month, monthName);
-
-                this.usersRules = await userRuleRepository.GetUsersRulesByDepartment(departmentId, monthName, year);
-            }
-
-            if (!usersRules.Any())
-            {
-                throw new InvalidOperationException("Schedule rules for this department not found");
-            }
-        }
-
-        private async Task CreateRulesForDepartment(string departmentId, int year, int month, string monthName)
-        {
-            var departmentUsers = await userRuleRepository.GetUsersByDepartment(departmentId);
-            var targetDate = new DateTime(year, month, 1);
-
-            foreach (var userRule in departmentUsers)
-            {
-                await scheduleRulesGenerator.CreateAndAddRulesAndSchedules(
-                    userRule.UserId,
-                    departmentId,
-                    targetDate,
-                    monthName);
-            }
-        }
-
-        private async Task GetHolidays(int year, int month)
-        {
-            var task1 = calendarRepository.GetMonthHolidays(year, month);
-            var task2 = calendarRepository.GetMonthTransferDays(year, month);
-
-            await Task.WhenAll(task1, task2);
-
-            this.officialHolidays = task1.Result;
-            this.transferDays = task2.Result;
+            throw new InvalidOperationException(
+                $"Schedule rule {invalidRule.Id} must define positive hours and a shift pattern before generation.");
         }
     }
 }

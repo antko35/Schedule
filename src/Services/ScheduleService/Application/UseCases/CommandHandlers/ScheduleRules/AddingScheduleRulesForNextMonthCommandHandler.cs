@@ -1,47 +1,89 @@
-using MediatR;
-using MongoDB.Bson;
-using ScheduleService.Application.Services;
-using ScheduleService.Application.UseCases.Commands.ScheduleRules;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Abstractions;
-using ScheduleService.Domain.Models;
-
 namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
 
-public class AddingScheduleRulesForNextMonthCommandHandler
+using MediatR;
+using ScheduleService.DataAccess.Database;
+using ScheduleService.Application.UseCases.Commands.ScheduleRules;
+using Domain.Abstractions;
+using Domain.Models;
+
+public sealed class AddingScheduleRulesForNextMonthCommandHandler
     : IRequestHandler<AddingScheduleRulesForNextMonthCommand>
 {
+    private readonly IScheduleGenerationRuleRepository ruleRepository;
     private readonly IScheduleRepository scheduleRepository;
-    private readonly IUserRuleRepository scheduleRuleRepository;
-    private readonly ScheduleRulesGenerator scheduleRulesGenerator;
+    private readonly ScheduleDbContext dbContext;
 
     public AddingScheduleRulesForNextMonthCommandHandler(
-        IUserRuleRepository scheduleRuleRepository,
-        IScheduleRepository scheduleRepository, ScheduleRulesGenerator scheduleRulesGenerator)
+        IScheduleGenerationRuleRepository ruleRepository,
+        IScheduleRepository scheduleRepository,
+        ScheduleDbContext dbContext)
     {
-        this.scheduleRuleRepository = scheduleRuleRepository;
+        this.ruleRepository = ruleRepository;
         this.scheduleRepository = scheduleRepository;
-        this.scheduleRulesGenerator = scheduleRulesGenerator;
+        this.dbContext = dbContext;
     }
 
-    public async Task Handle(AddingScheduleRulesForNextMonthCommand request, CancellationToken cancellationToken)
+    public async Task Handle(
+        AddingScheduleRulesForNextMonthCommand request,
+        CancellationToken cancellationToken)
     {
-        var currentDate = DateTime.Now;
-        var nextMonthDate = currentDate.AddMonths(1);
-
-        var currentMonth = currentDate.ToString("MMMM").ToLower();
-        var nextMonth = nextMonthDate.ToString("MMMM").ToLower();
-
-        var existingScheduleRules = await scheduleRuleRepository.GetAllRulesByMonth(currentMonth);
-
-        if (existingScheduleRules == null)
+        var now = DateTime.UtcNow;
+        var currentPeriod = new DateOnly(now.Year, now.Month, 1);
+        var nextPeriod = currentPeriod.AddMonths(1);
+        var currentRules = await ruleRepository.GetAllByMonthAsync(currentPeriod, cancellationToken);
+        if (currentRules.Count == 0)
         {
             throw new InvalidOperationException("No ScheduleRules");
         }
 
-        foreach (var scheduleRule in existingScheduleRules)
+        var hasChanges = false;
+        foreach (var currentRule in currentRules)
         {
-            await scheduleRulesGenerator.CreateAndAddRulesAndSchedules(scheduleRule.UserId, scheduleRule.DepartmentId, nextMonthDate, nextMonth);
+            var schedule = await scheduleRepository.GetAsync(
+                currentRule.UserId,
+                currentRule.DepartmentId,
+                nextPeriod,
+                cancellationToken);
+            var nextRule = await ruleRepository.GetAsync(
+                currentRule.UserId,
+                currentRule.DepartmentId,
+                nextPeriod,
+                cancellationToken);
+
+            if (schedule is null)
+            {
+                schedule = new MonthlySchedule(
+                    Guid.NewGuid().ToString("N"),
+                    currentRule.UserId,
+                    currentRule.DepartmentId,
+                    nextPeriod,
+                    now);
+                await scheduleRepository.AddAsync(schedule, cancellationToken);
+                hasChanges = true;
+            }
+
+            if (nextRule is null)
+            {
+                nextRule = new ScheduleGenerationRule(
+                    Guid.NewGuid().ToString("N"),
+                    currentRule.UserId,
+                    currentRule.DepartmentId,
+                    nextPeriod,
+                    currentRule.TargetMinutes,
+                    currentRule.MaxShiftMinutes,
+                    currentRule.FirstShiftStart,
+                    currentRule.SecondShiftStart,
+                    currentRule.Pattern);
+
+                await ruleRepository.AddAsync(nextRule, cancellationToken);
+
+                hasChanges = true;
+            }
+        }
+
+        if (hasChanges)
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 }

@@ -10,10 +10,10 @@ public sealed class SaveGenerationRulesCommandValidator
     public SaveGenerationRulesCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .MustBeValidObjectId();
+            .NotEmpty().MaximumLength(128);
 
         RuleFor(x => x.DepartmentId)
-            .MustBeValidObjectId();
+            .NotEmpty().MaximumLength(128);
 
         RuleFor(x => x.Year)
             .InclusiveBetween(2000, 2100);

@@ -1,96 +1,63 @@
-using Moq;
-using ScheduleService.Application.UseCases.CommandHandlers.Schedule;
-using ScheduleService.Application.UseCases.Commands.Schedule;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Abstractions;
-using ScheduleService.Domain.Models;
-using Xunit;
-
 namespace Application.UseCases.CommandHandlers.Schedule;
 
-public class DeleteUserMonthScheduleTests
+using Application;
+using ScheduleService.Application.UseCases.CommandHandlers.Schedule;
+using ScheduleService.Application.UseCases.Commands.Schedule;
+
+public sealed class DeleteUserMonthScheduleTests
 {
-        private readonly Mock<IScheduleRepository> mockScheduleRepository;
-        private readonly Mock<IUserRuleRepository> mockUserRuleRepository;
-        private readonly DeleteUserMonthScheduleCommandHandler handler;
+    [Fact]
+    public async Task Handle_ReturnsNothingToDeleteWithoutCommit_WhenScheduleIsEmpty()
+    {
+        var repository = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var schedule = TestSupport.CreateSchedule();
+        repository.Setup(x => x.GetAsync("user-id", "department-id", TestSupport.Period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(schedule);
+        var handler = new DeleteUserMonthScheduleCommandHandler(repository.Object, dbContext.Object);
 
-        public DeleteUserMonthScheduleTests()
-        {
-            this.mockScheduleRepository = new Mock<IScheduleRepository>();
-            this.mockUserRuleRepository = new Mock<IUserRuleRepository>();
-            this.handler = new DeleteUserMonthScheduleCommandHandler(
-                mockScheduleRepository.Object,
-                mockUserRuleRepository.Object);
-        }
+        var result = await handler.Handle(
+            new DeleteUserMonthScheduleCommand("user-id", "department-id", 10, 2026),
+            CancellationToken.None);
 
-        [Fact]
-        public async Task Handle_ShouldDeleteSchedule_WhenScheduleExists()
-        {
-            // Arrange
-            var request = new DeleteUserMonthScheduleCommand("user1", "dept1", 2, 2025);
+        result.Should().Be("Nothing to delete");
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
 
-            var userRules = new UserScheduleRules
-            {
-                ScheduleId = "schedule1",
-            };
+    [Fact]
+    public async Task Handle_RejectsMissingScheduleWithoutCommit()
+    {
+        var repository = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        repository.Setup(x => x.GetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MonthlySchedule?)null);
+        var handler = new DeleteUserMonthScheduleCommandHandler(repository.Object, dbContext.Object);
 
-            mockUserRuleRepository
-                .Setup(x => x.GetMonthScheduleRules(request.UserId, request.DepartmentId, It.IsAny<string>(), request.Year))
-                .ReturnsAsync(userRules);
+        var action = () => handler.Handle(
+            new DeleteUserMonthScheduleCommand("user-id", "department-id", 10, 2026),
+            CancellationToken.None);
 
-            mockScheduleRepository
-                .Setup(x => x.ClearMonthSchedule(userRules.ScheduleId))
-                .ReturnsAsync(new MongoDB.Driver.UpdateResult.Acknowledged(1, 1, null));
+        await action.Should().ThrowAsync<KeyNotFoundException>();
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
 
-            // Act
-            var result = await handler.Handle(request, CancellationToken.None);
+    [Fact]
+    public async Task Handle_ClearsAllShiftsAndCommits()
+    {
+        var repository = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var schedule = TestSupport.CreateSchedule();
+        schedule.SetShift(TestSupport.CreateShift(), TestSupport.Utc(2026, 9, 2));
+        repository.Setup(x => x.GetAsync("user-id", "department-id", TestSupport.Period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(schedule);
+        var handler = new DeleteUserMonthScheduleCommandHandler(repository.Object, dbContext.Object);
 
-            // Assert
-            Assert.Equal($" Schedule {userRules.ScheduleId} was cleaned.", result);
-            mockScheduleRepository.Verify(x => x.ClearMonthSchedule(userRules.ScheduleId), Times.Once);
-        }
+        var result = await handler.Handle(
+            new DeleteUserMonthScheduleCommand("user-id", "department-id", 10, 2026),
+            CancellationToken.None);
 
-        [Fact]
-        public async Task Handle_ShouldReturnNothingToDelete_WhenScheduleIsEmpty()
-        {
-            // Arrange
-            var request = new DeleteUserMonthScheduleCommand("user1", "dept1", 2, 2025);
-
-            var userRules = new UserScheduleRules
-            {
-                ScheduleId = "schedule1"
-            };
-
-            mockUserRuleRepository
-                .Setup(x => x.GetMonthScheduleRules(request.UserId, request.DepartmentId, It.IsAny<string>(), request.Year))
-                .ReturnsAsync(userRules);
-
-            mockScheduleRepository
-                .Setup(x => x.ClearMonthSchedule(userRules.ScheduleId))
-                .ReturnsAsync(new MongoDB.Driver.UpdateResult.Acknowledged(0, 0, null));
-
-            // Act
-            var result = await handler.Handle(request, CancellationToken.None);
-
-            // Assert
-            Assert.Equal("Nothing to delete", result);
-            mockScheduleRepository.Verify(x => x.ClearMonthSchedule(userRules.ScheduleId), Times.Once);
-        }
-
-        [Fact]
-        public async Task Handle_ShouldThrowException_WhenUserRulesNotFound()
-        {
-            // Arrange
-            var request = new DeleteUserMonthScheduleCommand("user1", "dept1", 2, 2025);
-
-            mockUserRuleRepository
-                .Setup(x => x.GetMonthScheduleRules(request.UserId, request.DepartmentId, "february", request.Year))
-                .ReturnsAsync((UserScheduleRules)null);
-
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-                handler.Handle(request, CancellationToken.None));
-
-            Assert.Equal("Invalid input", exception.Message);
-        }
+        result.Should().Contain("schedule-id");
+        schedule.WorkShifts.Should().BeEmpty();
+        dbContext.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
+    }
 }

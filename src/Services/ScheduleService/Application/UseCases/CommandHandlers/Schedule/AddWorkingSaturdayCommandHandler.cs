@@ -1,108 +1,98 @@
-﻿using MediatR;
+namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule;
+
+using MediatR;
+using ScheduleService.DataAccess.Database;
+using ScheduleService.Application.Contracts;
+using ScheduleService.Application.Extensions;
 using ScheduleService.Application.UseCases.Commands.Schedule;
 using ScheduleService.Domain.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MongoDB.Driver.Linq;
-using ScheduleService.Application.Extensions;
 using ScheduleService.Domain.Models;
 
-namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
+public sealed class AddWorkingSaturdayCommandHandler : IRequestHandler<AddWorkingSaturdayCommand>
 {
-    public class AddWorkingSaturdayCommandHandler
-        : IRequestHandler<AddWorkingSaturdayCommand>
+    private readonly IScheduleRepository scheduleRepository;
+    private readonly ScheduleDbContext dbContext;
+
+    public AddWorkingSaturdayCommandHandler(
+        IScheduleRepository scheduleRepository,
+        ScheduleDbContext dbContext)
     {
-        private readonly IScheduleRepository scheduleRepository;
-
-        public AddWorkingSaturdayCommandHandler(IScheduleRepository scheduleRepository)
-        {
-            this.scheduleRepository = scheduleRepository;
-        }
-
-        public async Task Handle(AddWorkingSaturdayCommand request, CancellationToken cancellationToken)
-        {
-            await IsScheduleExist(request.ScheduleId);
-
-            await IsSatturdayAlreadyExist(request.ScheduleId, request.Saturday);
-
-            await ValidateNewWorkDays(request);
-
-            await AddSaturday(request.Saturday, request.ScheduleId);
-
-            await UpdateWorkDaysInMonth(request);
-        }
-
-        private async Task IsSatturdayAlreadyExist(string scheduleId, WorkDay saturday)
-        {
-            var day = await scheduleRepository.GetWorkDayAsync(scheduleId, saturday.Day);
-            if (day != null)
-            {
-                throw new InvalidOperationException("Saturday already exist");
-            }
-        }
-
-        private async Task ValidateNewWorkDays(AddWorkingSaturdayCommand request)
-        {
-            TimeSpan newTotalTime = TimeSpan.Zero;
-            TimeSpan oldTotalTime = TimeSpan.Zero;
-
-            CheckDaysCount(request.WorkingDays);
-
-            foreach (var workDay in request.WorkingDays)
-            {
-                var day = await scheduleRepository.GetWorkDayAsync(request.ScheduleId, workDay.Day);
-                day.EnsureExists($"No work found for this day({workDay})");
-
-                var dayLength = workDay.EndTime.Subtract(workDay.StartTime);
-                if (dayLength.Hours < 4)
-                {
-                    throw new InvalidOperationException("Minimum work day length is 4 hours");
-                }
-
-                newTotalTime += dayLength;
-                oldTotalTime += day.WorkDays.First().EndTime.Subtract(day.WorkDays.First().StartTime);
-            }
-
-            IsTimeEqual(newTotalTime, oldTotalTime, request.Saturday);
-        }
-
-        private void IsTimeEqual(TimeSpan newTotalTime, TimeSpan oldTotalTime, WorkDay saturday )
-        {
-            var timeDiff = oldTotalTime - newTotalTime;
-            var saturdayLength = saturday.EndTime.Subtract(saturday.StartTime);
-            if (timeDiff != saturdayLength)
-            {
-                throw new InvalidOperationException($"Invalid time difference {timeDiff}");
-            }
-        }
-
-        private void CheckDaysCount(List<WorkDay> workDays)
-        {
-            var count = workDays.Count;
-            if (count != 5)
-            {
-                throw new InvalidOperationException("Should be 5 updated days");
-            }
-        }
-
-        private async Task IsScheduleExist(string requestScheduleId)
-        {
-            var schedule = await scheduleRepository.GetByIdAsync(requestScheduleId);
-
-            schedule.EnsureExists("Schedule not found");
-        }
-
-        private async Task UpdateWorkDaysInMonth(AddWorkingSaturdayCommand request)
-        {
-            await scheduleRepository.UpdateWorkDaysAsync(request.ScheduleId, request.WorkingDays);
-        }
-
-        private async Task AddSaturday(WorkDay saturday, string scheduleId)
-        {
-            await scheduleRepository.AddWorkDayAsync(scheduleId, saturday);
-        }
+        this.scheduleRepository = scheduleRepository;
+        this.dbContext = dbContext;
     }
+
+    public async Task Handle(
+        AddWorkingSaturdayCommand request,
+        CancellationToken cancellationToken)
+    {
+        var schedule = await scheduleRepository.GetByIdAsync(request.ScheduleId, cancellationToken);
+        schedule.EnsureExists("Schedule not found");
+
+        var saturdayStartUtc = AsUtc(request.Saturday.StartTime);
+        var saturdayEndUtc = AsUtc(request.Saturday.EndTime);
+        var saturdayDate = DateOnly.FromDateTime(saturdayStartUtc);
+        if (schedule!.WorkShifts.Any(shift => shift.WorkDate == saturdayDate))
+        {
+            throw new InvalidOperationException("Saturday already exist");
+        }
+
+        if (request.WorkingDays.Count != 5)
+        {
+            throw new InvalidOperationException("Should be 5 updated days");
+        }
+
+        var replacementShifts = new List<WorkShift>(request.WorkingDays.Count);
+        var oldTotalTime = TimeSpan.Zero;
+        var newTotalTime = TimeSpan.Zero;
+        foreach (var workDay in request.WorkingDays)
+        {
+            var startsAtUtc = AsUtc(workDay.StartTime);
+            var endsAtUtc = AsUtc(workDay.EndTime);
+            var workDate = DateOnly.FromDateTime(startsAtUtc);
+            var existingShift = schedule.WorkShifts.SingleOrDefault(shift => shift.WorkDate == workDate)
+                ?? throw new KeyNotFoundException($"No work found for this day ({workDate:yyyy-MM-dd})");
+            var duration = endsAtUtc - startsAtUtc;
+            if (duration < TimeSpan.FromHours(4))
+            {
+                throw new InvalidOperationException("Minimum work day length is 4 hours");
+            }
+
+            oldTotalTime += existingShift.EndsAtUtc - existingShift.StartsAtUtc;
+            newTotalTime += duration;
+            replacementShifts.Add(new WorkShift(
+                existingShift.Id,
+                schedule.Id,
+                workDate,
+                startsAtUtc,
+                endsAtUtc));
+        }
+
+        if (oldTotalTime - newTotalTime != saturdayEndUtc - saturdayStartUtc)
+        {
+            throw new InvalidOperationException($"Invalid time difference {oldTotalTime - newTotalTime}");
+        }
+
+        var updatedAtUtc = DateTime.UtcNow;
+        foreach (var shift in replacementShifts)
+        {
+            schedule.SetShift(shift, updatedAtUtc);
+        }
+
+        schedule.SetShift(
+            new WorkShift(
+                Guid.NewGuid(),
+                schedule.Id,
+                saturdayDate,
+                saturdayStartUtc,
+                saturdayEndUtc),
+            updatedAtUtc);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static DateTime AsUtc(DateTime value) => value.Kind switch
+    {
+        DateTimeKind.Utc => value,
+        DateTimeKind.Local => value.ToUniversalTime(),
+        _ => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+    };
 }

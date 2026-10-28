@@ -1,48 +1,46 @@
-﻿using AutoMapper;
+namespace ScheduleService.Application.UseCases.CommandHandlers.Calendar;
 
-namespace ScheduleService.Application.UseCases.CommandHandlers.Calendar
+using MediatR;
+using ScheduleService.DataAccess.Database;
+using ScheduleService.Application.Contracts;
+using ScheduleService.Application.Mapping;
+using ScheduleService.Application.UseCases.Commands.Calendar;
+using ScheduleService.Domain.Abstractions;
+using ScheduleService.Domain.Models;
+
+public sealed class AddOfficialHolidayCommandHandler
+    : IRequestHandler<AddOfficialHolidayCommand, CalendarDto>
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using MediatR;
-    using ScheduleService.Application.UseCases.Commands.Calendar;
-    using ScheduleService.Domain.Abstractions;
-    using ScheduleService.Domain.Models;
+    private readonly ICalendarRepository calendarRepository;
+    private readonly ScheduleDbContext dbContext;
 
-    public class AddOfficialHolidayCommandHandler
-        : IRequestHandler<AddOfficialHolidayCommand, Calendar>
+    public AddOfficialHolidayCommandHandler(
+        ICalendarRepository calendarRepository,
+        ScheduleDbContext dbContext)
     {
-        private readonly ICalendarRepository calendarRepository;
-        private readonly IMapper mapper;
+        this.calendarRepository = calendarRepository;
+        this.dbContext = dbContext;
+    }
 
-        public AddOfficialHolidayCommandHandler(ICalendarRepository calendarRepository, IMapper mapper)
+    public async Task<CalendarDto> Handle(
+        AddOfficialHolidayCommand request,
+        CancellationToken cancellationToken)
+    {
+        var period = new DateOnly(request.Holiday.Year, request.Holiday.Month, 1);
+        var holidays = await calendarRepository.GetMonthHolidaysAsync(period, cancellationToken);
+        if (holidays.Any(item => item.HolidayDate == request.Holiday))
         {
-            this.calendarRepository = calendarRepository;
-            this.mapper = mapper;
+            throw new InvalidOperationException($"Holiday {request.Holiday} already exist");
         }
 
-        public async Task<Calendar> Handle(AddOfficialHolidayCommand request, CancellationToken cancellationToken)
-        {
-            await IsHolidayAlreadyExist(request.Holiday);
+        DateOnly? transferDate = request.TransferDay == DateOnly.MinValue ? null : request.TransferDay;
+        var calendarException = new CalendarException(
+            Guid.NewGuid().ToString("N"),
+            request.Holiday,
+            transferDate);
 
-            var holidayDay = mapper.Map<Calendar>(request);
-
-            await calendarRepository.AddAsync(holidayDay);
-
-            return holidayDay;
-        }
-
-        private async Task IsHolidayAlreadyExist(DateOnly holiday)
-        {
-            var holidays = await calendarRepository.GetMonthHolidays(holiday.Year, holiday.Month);
-
-            if (holidays.Any(x => x.HolidayDate.Day == holiday.Day))
-            {
-                throw new InvalidOperationException($"Holiday {holiday} already exist");
-            }
-        }
+        await calendarRepository.AddAsync(calendarException, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return calendarException.ToDto();
     }
 }

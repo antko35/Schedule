@@ -1,62 +1,44 @@
-﻿using MediatR;
+namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule;
+
+using MediatR;
+using ScheduleService.DataAccess.Database;
 using ScheduleService.Application.Extensions;
 using ScheduleService.Application.UseCases.Commands.Schedule;
-using ScheduleService.DataAccess.Repository;
 using ScheduleService.Domain.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
+public sealed class DeleteUserMonthScheduleCommandHandler
+    : IRequestHandler<DeleteUserMonthScheduleCommand, string>
 {
-    public class DeleteUserMonthScheduleCommandHandler
-        : IRequestHandler<DeleteUserMonthScheduleCommand, string>
+    private readonly IScheduleRepository scheduleRepository;
+    private readonly ScheduleDbContext dbContext;
+
+    public DeleteUserMonthScheduleCommandHandler(
+        IScheduleRepository scheduleRepository,
+        ScheduleDbContext dbContext)
     {
-        private readonly IScheduleRepository scheduleRepository;
-        private readonly IUserRuleRepository userRuleRepository;
+        this.scheduleRepository = scheduleRepository;
+        this.dbContext = dbContext;
+    }
 
-        public DeleteUserMonthScheduleCommandHandler(
-            IScheduleRepository scheduleRepository,
-            IUserRuleRepository userRuleRepository)
+    public async Task<string> Handle(
+        DeleteUserMonthScheduleCommand request,
+        CancellationToken cancellationToken)
+    {
+        var period = new DateOnly(request.Year, request.Month, 1);
+        var schedule = await scheduleRepository.GetAsync(
+            request.UserId,
+            request.DepartmentId,
+            period,
+            cancellationToken);
+        schedule.EnsureExists("Invalid input");
+
+        if (schedule!.WorkShifts.Count == 0)
         {
-            this.scheduleRepository = scheduleRepository;
-            this.userRuleRepository = userRuleRepository;
+            return "Nothing to delete";
         }
 
-        public async Task<string> Handle(DeleteUserMonthScheduleCommand request, CancellationToken cancellationToken)
-        {
-            string response;
-
-            var scheduleId = await GetUsersScheduleId(request);
-
-            var result = await scheduleRepository.ClearMonthSchedule(scheduleId);
-
-            if (result.ModifiedCount > 0)
-            {
-                response = $" Schedule {scheduleId} was cleaned.";
-                return response;
-            }
-            else
-            {
-                response = "Nothing to delete";
-                return response;
-            }
-        }
-
-        private async Task<string> GetUsersScheduleId(DeleteUserMonthScheduleCommand request)
-        {
-            string monthName = new DateTime(request.Year, request.Month, 1)
-                .ToString("MMMM")
-                .ToLower();
-
-            var userRules = await userRuleRepository.GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.Year);
-
-            userRules.EnsureExists("Invalid input");
-            var scheduleId = userRules.ScheduleId;
-
-            return scheduleId;
-        }
+        schedule.ReplaceShifts(Array.Empty<Domain.Models.WorkShift>(), DateTime.UtcNow);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return $" Schedule {schedule.Id} was cleaned.";
     }
 }

@@ -1,64 +1,46 @@
-﻿namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
+namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule;
+
+using MediatR;
+using ScheduleService.DataAccess.Database;
+using ScheduleService.Application.Contracts;
+using ScheduleService.Application.Extensions;
+using ScheduleService.Application.Mapping;
+using ScheduleService.Application.UseCases.Commands.Schedule;
+using ScheduleService.Domain.Abstractions;
+
+public sealed class DeleteWorkDayCommandHandler
+    : IRequestHandler<DeleteWorkDayCommand, ScheduleDto>
 {
-    using System;
-    using System.Globalization;
-    using System.Threading.Tasks;
-    using MediatR;
-    using ScheduleService.Application.Extensions;
-    using ScheduleService.Application.UseCases.Commands.Schedule;
-    using ScheduleService.DataAccess.Repository;
-    using ScheduleService.Domain.Abstractions;
-    using ScheduleService.Domain.Models;
+    private readonly IScheduleRepository scheduleRepository;
+    private readonly ScheduleDbContext dbContext;
 
-    public class DeleteWorkDayCommandHandler
-        : IRequestHandler<DeleteWorkDayCommand, Schedule>
+    public DeleteWorkDayCommandHandler(
+        IScheduleRepository scheduleRepository,
+        ScheduleDbContext dbContext)
     {
-        private readonly IUserRuleRepository userRuleRepository;
-        private readonly IScheduleRepository scheduleRepository;
+        this.scheduleRepository = scheduleRepository;
+        this.dbContext = dbContext;
+    }
 
-        public DeleteWorkDayCommandHandler(
-            IUserRuleRepository userRuleRepository,
-            IScheduleRepository scheduleRepository)
+    public async Task<ScheduleDto> Handle(
+        DeleteWorkDayCommand request,
+        CancellationToken cancellationToken)
+    {
+        var workDate = DateOnly.FromDateTime(request.WorkDay);
+        var period = new DateOnly(workDate.Year, workDate.Month, 1);
+        var schedule = await scheduleRepository.GetAsync(
+            request.UserId,
+            request.DepartmentId,
+            period,
+            cancellationToken);
+        schedule.EnsureExists("Schedule for this user not found");
+
+        if (!schedule!.RemoveShift(workDate, DateTime.UtcNow))
         {
-            this.userRuleRepository = userRuleRepository;
-            this.scheduleRepository = scheduleRepository;
+            throw new KeyNotFoundException("No work during day");
         }
 
-        public async Task<Schedule> Handle(DeleteWorkDayCommand request, CancellationToken cancellationToken)
-        {
-            var scheduleId = await GetScheduleId(request);
-
-            var dayToDelete = request.WorkDay.Day;
-
-            var workDayToDelete = await GetDayToDelete(scheduleId, dayToDelete);
-
-            workDayToDelete.EnsureExists("No work during day");
-
-            await scheduleRepository.DeleteWorkDayAsync(scheduleId, dayToDelete);
-
-            return workDayToDelete;
-        }
-
-        private async Task<Schedule?> GetDayToDelete(string scheduleId, int day)
-        {
-            var scheduleForDay = await scheduleRepository
-                 .GetWorkDayAsync(scheduleId, day);
-
-            return scheduleForDay;
-        }
-
-        private async Task<string> GetScheduleId(DeleteWorkDayCommand request)
-        {
-            string monthName = new DateTime(request.WorkDay.Year, request.WorkDay.Month, request.WorkDay.Day)
-                .ToString("MMMM")
-                .ToLower();
-
-            var scheduleRules = await userRuleRepository
-                .GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.WorkDay.Year);
-
-            scheduleRules.EnsureExists("Schedule for this user not found");
-
-            return scheduleRules.ScheduleId;
-        }
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return schedule.ToDto();
     }
 }

@@ -1,74 +1,48 @@
-using AutoMapper;
-using FluentAssertions;
-using Moq;
-using ScheduleService.Application.UseCases.CommandHandlers.Calendar;
-using ScheduleService.Application.UseCases.Commands.Calendar;
-using ScheduleService.Domain.Abstractions;
-using Xunit;
-
 namespace Application.UseCases.CommandHandlers.Calendar;
 
-public class AddOfficialHolidayCommandTests
+using ScheduleService.Application.UseCases.CommandHandlers.Calendar;
+using ScheduleService.Application.UseCases.Commands.Calendar;
+
+public sealed class AddOfficialHolidayCommandTests
+{
+    [Fact]
+    public async Task Handle_AddsHolidayAndCommits_WhenDateIsAvailable()
     {
-        private readonly Mock<ICalendarRepository> calendarRepositoryMock;
-        private readonly Mock<IMapper> mapperMock;
-        private readonly AddOfficialHolidayCommandHandler handler;
+        var repository = new Mock<ICalendarRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var holiday = new DateOnly(2026, 10, 5);
+        repository.Setup(x => x.GetMonthHolidaysAsync(new DateOnly(2026, 10, 1), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<CalendarException>());
+        var handler = new AddOfficialHolidayCommandHandler(repository.Object, dbContext.Object);
 
-        public AddOfficialHolidayCommandTests()
-        {
-            this.calendarRepositoryMock = new Mock<ICalendarRepository>();
-            this.mapperMock = new Mock<IMapper>();
-            this.handler = new AddOfficialHolidayCommandHandler(calendarRepositoryMock.Object, mapperMock.Object);
-        }
+        var result = await handler.Handle(
+            new AddOfficialHolidayCommand(holiday, DateOnly.MinValue),
+            CancellationToken.None);
 
-        [Fact]
-        public async Task Handle_Should_AddHoliday_When_HolidayDoesNotExist()
-        {
-            // Arrange
-            var holidayDate = new DateOnly(2025, 1, 1);
-            var transerDate = new DateOnly();
-            var command = new AddOfficialHolidayCommand(holidayDate, transerDate);
-
-            var calendar = new ScheduleService.Domain.Models.Calendar
-            {
-                HolidayDate = holidayDate,
-                TransferDate = null,
-            };
-
-            mapperMock.Setup(m => m.Map<ScheduleService.Domain.Models.Calendar>(command)).Returns(calendar);
-            calendarRepositoryMock.Setup(r => r.GetMonthHolidays(holidayDate.Year, holidayDate.Month))
-                .ReturnsAsync(new List<ScheduleService.Domain.Models.Calendar>());
-
-            // Act
-            var result = await handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.HolidayDate.Should().Be(holidayDate);
-
-            calendarRepositoryMock.Verify(r => r.AddAsync(calendar), Times.Once);
-        }
-
-        [Fact]
-        public async Task Handle_Should_ThrowException_When_HolidayAlreadyExists()
-        {
-            // Arrange
-            var holidayDate = new DateOnly(2023, 12, 25);
-            var transerDate = new DateOnly();
-            var command = new AddOfficialHolidayCommand(holidayDate, transerDate);
-
-            var existingHoliday = new ScheduleService.Domain.Models.Calendar { HolidayDate = holidayDate };
-
-            calendarRepositoryMock.Setup(r => r.GetMonthHolidays(holidayDate.Year, holidayDate.Month))
-                .ReturnsAsync(new List<ScheduleService.Domain.Models.Calendar> { existingHoliday });
-
-            // Act
-            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            await act.Should().ThrowAsync<InvalidOperationException>()
-                .WithMessage($"Holiday {holidayDate} already exist");
-
-            calendarRepositoryMock.Verify(r => r.AddAsync(It.IsAny<ScheduleService.Domain.Models.Calendar>()), Times.Never);
-        }
+        result.HolidayDate.Should().Be(holiday);
+        result.TransferDate.Should().BeNull();
+        repository.Verify(x => x.AddAsync(
+            It.Is<CalendarException>(item => item.HolidayDate == holiday && item.TransferDate == null),
+            CancellationToken.None), Times.Once);
+        dbContext.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
     }
+
+    [Fact]
+    public async Task Handle_RejectsDuplicateHolidayWithoutCommit()
+    {
+        var repository = new Mock<ICalendarRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var holiday = new DateOnly(2026, 10, 5);
+        repository.Setup(x => x.GetMonthHolidaysAsync(It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new CalendarException("holiday-id", holiday)]);
+        var handler = new AddOfficialHolidayCommandHandler(repository.Object, dbContext.Object);
+
+        var action = () => handler.Handle(
+            new AddOfficialHolidayCommand(holiday, DateOnly.MinValue),
+            CancellationToken.None);
+
+        await action.Should().ThrowAsync<InvalidOperationException>();
+        repository.Verify(x => x.AddAsync(It.IsAny<CalendarException>(), It.IsAny<CancellationToken>()), Times.Never);
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+}

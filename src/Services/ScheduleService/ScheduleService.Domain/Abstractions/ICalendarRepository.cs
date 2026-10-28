@@ -1,15 +1,26 @@
-﻿using ScheduleService.Domain.Models;
+namespace ScheduleService.Domain.Abstractions;
 
-namespace ScheduleService.Domain.Abstractions
+using ScheduleService.Domain.Models;
+
+public interface ICalendarRepository
 {
-    public interface ICalendarRepository : IGenericRepository<Calendar>
-    {
-        Task<List<Calendar>> GetMonthHolidays(int year, int month);
+    Task<IReadOnlyList<CalendarException>> GetAllAsync(CancellationToken cancellationToken);
 
-        Task<List<Calendar>> GetMonthTransferDays(int year, int month);
+    Task<CalendarException?> GetByIdAsync(string id, CancellationToken cancellationToken);
 
-        Task<List<Calendar>> GetYearHolidays(int year);
+    Task<IReadOnlyList<CalendarException>> GetMonthHolidaysAsync(
+        DateOnly period,
+        CancellationToken cancellationToken);
 
-        Task<long> RemoveHolidays(IReadOnlyCollection<DateOnly> holidays);
-    }
+    Task<IReadOnlyList<CalendarException>> GetMonthTransferDaysAsync(
+        DateOnly period,
+        CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<CalendarException>> GetYearHolidaysAsync(
+        int year,
+        CancellationToken cancellationToken);
+
+    Task AddAsync(CalendarException calendarException, CancellationToken cancellationToken);
+
+    void Remove(CalendarException calendarException);
 }

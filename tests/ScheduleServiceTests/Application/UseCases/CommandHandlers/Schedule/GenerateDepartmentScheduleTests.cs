@@ -1,106 +1,65 @@
-﻿using MongoDB.Bson;
-using Moq;
+namespace Application.UseCases.CommandHandlers.Schedule;
+
+using Application;
 using ScheduleService.Application.UseCases.CommandHandlers.Schedule;
 using ScheduleService.Application.UseCases.Commands.Schedule;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Abstractions;
-using ScheduleService.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using ScheduleService.Application.Services;
-using Xunit;
 
-namespace Application.UseCases.CommandHandlers.Schedule
+public sealed class GenerateDepartmentScheduleTests
 {
-    public class GenerateDepartmentScheduleTests
+    [Fact]
+    public async Task Handle_RejectsManualRuleBeforeLoadingCalendarOrCommitting()
     {
-        private readonly Mock<IUserRuleRepository> userRuleRepositoryMock;
-        private readonly Mock<IScheduleRepository> scheduleRepositoryMock;
-        private readonly Mock<ICalendarRepository> calendarRepositoryMock;
-        private readonly Mock<ScheduleRulesGenerator> scheduleRulesGenerator;
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var schedules = new Mock<IScheduleRepository>();
+        var calendar = new Mock<ICalendarRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var manualRule = TestSupport.CreateRule(pattern: ShiftPattern.Manual);
+        rules.Setup(x => x.GetByDepartmentAsync("department-id", TestSupport.Period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([manualRule]);
+        var handler = new GenerateDepartmentScheduleCommandHandler(
+            rules.Object,
+            schedules.Object,
+            calendar.Object,
+            dbContext.Object);
 
-        private readonly GenerateDepartmentScheduleCommandHandler handler;
-        private readonly GenerateDepartmentScheduleCommand command;
+        var action = () => handler.Handle(
+            new GenerateDepartmentScheduleCommand("department-id", 2026, 10),
+            CancellationToken.None);
 
-        public GenerateDepartmentScheduleTests()
-        {
-            userRuleRepositoryMock = new Mock<IUserRuleRepository>();
-            scheduleRepositoryMock = new Mock<IScheduleRepository>();
-            calendarRepositoryMock = new Mock<ICalendarRepository>();
-            scheduleRulesGenerator = new Mock<ScheduleRulesGenerator>();
+        await action.Should().ThrowAsync<InvalidOperationException>();
+        calendar.Verify(x => x.GetMonthHolidaysAsync(It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()), Times.Never);
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
 
-            handler = new GenerateDepartmentScheduleCommandHandler(
-                userRuleRepositoryMock.Object,
-                scheduleRepositoryMock.Object,
-                calendarRepositoryMock.Object,
-                scheduleRulesGenerator.Object);
+    [Fact]
+    public async Task Handle_ReplacesScheduleShiftsAndCommitsOnce()
+    {
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var schedules = new Mock<IScheduleRepository>();
+        var calendar = new Mock<ICalendarRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var rule = TestSupport.CreateRule(targetMinutes: 480, maxShiftMinutes: 480);
+        var schedule = TestSupport.CreateSchedule();
+        rules.Setup(x => x.GetByDepartmentAsync("department-id", TestSupport.Period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([rule]);
+        schedules.Setup(x => x.GetAsync("user-id", "department-id", TestSupport.Period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(schedule);
+        calendar.Setup(x => x.GetMonthHolidaysAsync(TestSupport.Period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<CalendarException>());
+        calendar.Setup(x => x.GetMonthTransferDaysAsync(TestSupport.Period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<CalendarException>());
+        var handler = new GenerateDepartmentScheduleCommandHandler(
+            rules.Object,
+            schedules.Object,
+            calendar.Object,
+            dbContext.Object);
 
-            command = new GenerateDepartmentScheduleCommand("id", 2025, 2);
-        }
+        await handler.Handle(
+            new GenerateDepartmentScheduleCommand("department-id", 2026, 10),
+            CancellationToken.None);
 
-        [Fact]
-        public async Task GenerateSchedule_EvenDOW_FirstShift_WithoutHoliday()
-        {
-            // Arrange
-            var usersRules = new List<UserScheduleRules>
-            {
-                new UserScheduleRules
-                {
-                    UserId = ObjectId.GenerateNewId().ToString(),
-                    DepartmentId = "department1",
-                    ScheduleId = ObjectId.GenerateNewId().ToString(),
-                    EvenDOW = true,
-                },
-            };
-
-            var holidays = new List<ScheduleService.Domain.Models.Calendar>();
-            var transferDays = new List<ScheduleService.Domain.Models.Calendar>();
-
-            userRuleRepositoryMock
-                .Setup(x => x.GetUsersRulesByDepartment(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync(usersRules);
-
-            calendarRepositoryMock
-                .Setup(x => x.GetMonthHolidays(It.IsAny<int>(), It.IsAny<int>()))
-                .ReturnsAsync(holidays);
-
-            calendarRepositoryMock
-                .Setup(x => x.GetMonthTransferDays(It.IsAny<int>(), It.IsAny<int>()))
-                .ReturnsAsync(transferDays);
-
-            // Act
-            await handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            userRuleRepositoryMock.Verify(x =>
-                x.GetUsersRulesByDepartment(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<int>()), Times.Once);
-
-            scheduleRepositoryMock.Verify(
-                x => x.ClearMonthSchedule(It.IsAny<string>()), Times.Once);
-
-            scheduleRepositoryMock.Verify(
-                x => x.AddWorkDayAsync(usersRules[0].ScheduleId, It.IsAny<WorkDay>()), Times.Exactly(20));
-        }
-
-        [Fact]
-        public async Task GenerateSchedule_ShouldThrowException_WhenNoRulesFound()
-        {
-            // Arrange
-            userRuleRepositoryMock
-                .Setup(x => x.GetUsersRulesByDepartment(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
-                .ReturnsAsync((new List<UserScheduleRules>()));
-
-            // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                handler.Handle(command, CancellationToken.None));
-
-            // Assert
-            Assert.Equal("Schedule rules for this department not found", exception.Message);
-        }
+        schedule.WorkShifts.Should().ContainSingle();
+        schedule.WorkShifts.Single().MonthlyScheduleId.Should().Be(schedule.Id);
+        dbContext.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
     }
 }

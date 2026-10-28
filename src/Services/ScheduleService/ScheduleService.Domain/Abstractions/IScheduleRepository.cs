@@ -1,26 +1,27 @@
-﻿namespace ScheduleService.Domain.Abstractions
+namespace ScheduleService.Domain.Abstractions;
+
+using ScheduleService.Domain.Models;
+
+public interface IScheduleRepository
 {
-    using MongoDB.Driver;
-    using ScheduleService.Domain.Models;
+    Task<MonthlySchedule?> GetByIdAsync(string id, CancellationToken cancellationToken);
 
-    public interface IScheduleRepository : IGenericRepository<Schedule>
-    {
-        Task AddWorkDayAsync(string scheduleId, WorkDay newWorkDay);
+    Task<MonthlySchedule?> GetAsync(
+        string userId,
+        string departmentId,
+        DateOnly period,
+        CancellationToken cancellationToken);
 
-        Task<UpdateResult?> ClearMonthSchedule(string scheduleId);
+    Task<IReadOnlyList<MonthlySchedule>> GetDepartmentAsync(
+        string departmentId,
+        DateOnly period,
+        CancellationToken cancellationToken);
 
-        Task DeleteWorkDayAsync(string scheduleId, int day);
+    Task<IReadOnlyList<MonthlySchedule>> GetEmptyAsync(
+        DateOnly period,
+        CancellationToken cancellationToken);
 
-        Task<Schedule> GetMonthSchedule(string scheduleId);
+    Task AddAsync(MonthlySchedule schedule, CancellationToken cancellationToken);
 
-        Task<Schedule?> GetWorkDayAsync(string scheduleId, int day);
-
-        Task UpdateWorkDayAsync(string scheduleId, WorkDay newWorkDay);
-
-        Task UpdateWorkDaysAsync(string scheduleId, List<WorkDay> workDays);
-
-        Task<List<Schedule>?> GetEmptySchedules(int year, string month);
-
-        Task DeleteScheduleAsync(string scheduleId);
-    }
+    void Remove(MonthlySchedule schedule);
 }

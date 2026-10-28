@@ -13,7 +13,7 @@ public record SaveGenerationRulesCommand(
     bool EvenDOW,
     bool UnEvenDOW,
     bool EvenDOM,
-    bool UnEvenDOM) : IRequest<UserScheduleRules>
+    bool UnEvenDOM) : IRequest<ScheduleService.Application.Contracts.ScheduleRulesDto>
 {
     [JsonIgnore]
     public string UserId { get; init; } = string.Empty;

@@ -1,377 +1,136 @@
-using FluentAssertions;
-using Moq;
-using ScheduleService.Application.UseCases.CommandHandlers.Schedule;
-using ScheduleService.Application.UseCases.Commands.Schedule;
-using ScheduleService.Domain.Abstractions;
-using ScheduleService.Domain.Models;
-using Xunit;
-using Range = Moq.Range;
-
 namespace Application.UseCases.CommandHandlers.Schedule;
 
-public class AddWorkingSaturdayCommandTests
+using Application;
+using ScheduleService.Application.Contracts;
+using ScheduleService.Application.UseCases.CommandHandlers.Schedule;
+using ScheduleService.Application.UseCases.Commands.Schedule;
+
+public sealed class AddWorkingSaturdayCommandTests
 {
-    private readonly Mock<IScheduleRepository> scheduleRepositoryMock;
-    private readonly AddWorkingSaturdayCommandHandler handler;
-
-    public AddWorkingSaturdayCommandTests()
-    {
-        scheduleRepositoryMock = new Mock<IScheduleRepository>();
-        handler = new AddWorkingSaturdayCommandHandler(scheduleRepositoryMock.Object);
-    }
-
     [Fact]
-    public async Task Handle_ShouldAddSaturday_WhenScheduleExistsAndSaturdayIsValid()
+    public async Task Handle_RejectsSaturdayThatAlreadyExists()
     {
-        // Arrange
-        var scheduleId = "schedule-1";
-        var saturday = new WorkDay
-        {
-            Day = 6,
-            StartTime = new DateTime(2025, 3, 6,  9, 0, 0),
-            EndTime = new DateTime(2025, 3, 6,  14, 0, 0),
-        };
-        var newWorkingDays = new List<WorkDay>
-        {
-            new WorkDay
+        var repository = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var schedule = TestSupport.CreateSchedule();
+        schedule.SetShift(TestSupport.CreateShift(day: 10), TestSupport.Utc(2026, 9, 2));
+        repository.Setup(x => x.GetByIdAsync(schedule.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(schedule);
+        var handler = new AddWorkingSaturdayCommandHandler(repository.Object, dbContext.Object);
+
+        var action = () => handler.Handle(
+            new AddWorkingSaturdayCommand
             {
-                Day = 1,
-                StartTime = new DateTime(2025, 3, 1,  9, 0, 0),
-                EndTime = new DateTime(2025, 3, 1,  14, 30, 0),
+                ScheduleId = schedule.Id,
+                Saturday = Day(10, 8, 12),
+                WorkingDays = [],
             },
-            new WorkDay
-            {
-                Day = 2,
-                StartTime = new DateTime(2025, 3, 2,  9, 0, 0),
-                EndTime = new DateTime(2025, 3, 2,  14, 30, 0),
-            },
-            new WorkDay
-            {
-                Day = 3,
-                StartTime = new DateTime(2025, 3, 3,  9, 0, 0),
-                EndTime = new DateTime(2025, 3, 3,  14, 30, 0),
-            },
-            new WorkDay
-            {
-                Day = 4,
-                StartTime = new DateTime(2025, 3, 4,  10, 0, 0),
-                EndTime = new DateTime(2025, 3, 4,  15, 30, 0),
-            },
-            new WorkDay
-            {
-                Day = 5,
-                StartTime = new DateTime(2025, 3, 5,  10, 0, 0),
-                EndTime = new DateTime(2025, 3, 5,  15, 30, 0),
-            },
-        };
+            CancellationToken.None);
 
-        var workingDays = new List<ScheduleService.Domain.Models.Schedule>
-        {
-            new ScheduleService.Domain.Models.Schedule()
-            {
-                WorkDays = new List<WorkDay>()
-                {
-                    new WorkDay()
-                    {
-                        Day = 1,
-                        StartTime = new DateTime(2025, 3, 1,  9, 0, 0),
-                        EndTime = new DateTime(2025, 3, 1,  15, 30, 0),
-                    },
-                },
-            },
-            new ScheduleService.Domain.Models.Schedule()
-            {
-                WorkDays = new List<WorkDay>()
-                {
-                    new WorkDay()
-                    {
-                        Day = 2,
-                        StartTime = new DateTime(2025, 3, 2,  9, 0, 0),
-                        EndTime = new DateTime(2025, 3, 2,  15, 30, 0),
-                    },
-                },
-            },
-            new ScheduleService.Domain.Models.Schedule()
-            {
-                WorkDays = new List<WorkDay>()
-                {
-                    new WorkDay()
-                    {
-                        Day = 3,
-                        StartTime = new DateTime(2025, 3, 3,  9, 0, 0),
-                        EndTime = new DateTime(2025, 3, 3,  15, 30, 0),
-                    },
-                },
-            },
-            new ScheduleService.Domain.Models.Schedule()
-            {
-                WorkDays = new List<WorkDay>()
-                {
-                    new WorkDay()
-                    {
-                        Day = 4,
-                        StartTime = new DateTime(2025, 3, 4,  9, 0, 0),
-                        EndTime = new DateTime(2025, 3, 4,  15, 30, 0),
-                    },
-                },
-            },
-            new ScheduleService.Domain.Models.Schedule()
-            {
-                WorkDays = new List<WorkDay>()
-                {
-                    new WorkDay()
-                    {
-                        Day = 5,
-                        StartTime = new DateTime(2025, 3, 5,  9, 0, 0),
-                        EndTime = new DateTime(2025, 3, 5,  15, 30, 0),
-                    },
-                },
-            },
-        };
-
-        var command = new AddWorkingSaturdayCommand
-        {
-            ScheduleId = scheduleId,
-            Saturday = saturday,
-            WorkingDays = newWorkingDays,
-        };
-
-        scheduleRepositoryMock
-            .Setup(repo => repo.GetByIdAsync(scheduleId))
-            .ReturnsAsync(new ScheduleService.Domain.Models.Schedule());
-
-        scheduleRepositoryMock
-            .Setup(repo => repo.GetWorkDayAsync(scheduleId, 6))
-            .ReturnsAsync((ScheduleService.Domain.Models.Schedule)null);
-
-        foreach (var workDay in workingDays)
-        {
-            scheduleRepositoryMock
-                .Setup(repo => repo.GetWorkDayAsync(scheduleId, It.IsInRange(1, 5, Range.Inclusive)))
-                .ReturnsAsync(workDay);
-        }
-
-        // Act
-        Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().NotThrowAsync();
-        scheduleRepositoryMock.Verify(repo => repo.AddWorkDayAsync(scheduleId, saturday), Times.Once);
-        scheduleRepositoryMock.Verify(repo => repo.UpdateWorkDaysAsync(scheduleId, newWorkingDays), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldThrow_WhenScheduleDoesNotExist()
-    {
-        // Arrange
-        var scheduleId = "schedule-1";
-        var command = new AddWorkingSaturdayCommand { ScheduleId = scheduleId };
-
-        scheduleRepositoryMock
-            .Setup(repo => repo.GetByIdAsync(scheduleId))
-            .ReturnsAsync((ScheduleService.Domain.Models.Schedule)null);
-
-        // Act
-        Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("Schedule not found");
-    }
-
-    [Fact]
-    public async Task Handle_ShouldThrow_WhenSaturdayAlreadyExists()
-    {
-        // Arrange
-        var scheduleId = "schedule-1";
-        var saturday = new ScheduleService.Domain.Models.Schedule { };
-
-        var command = new AddWorkingSaturdayCommand
-        {
-            ScheduleId = scheduleId,
-            Saturday = new WorkDay()
-            {
-                Day = 1,
-            },
-        };
-
-        scheduleRepositoryMock
-            .Setup(repo => repo.GetByIdAsync(scheduleId))
-            .ReturnsAsync(new ScheduleService.Domain.Models.Schedule());
-
-        scheduleRepositoryMock
-            .Setup(repo => repo.GetWorkDayAsync(scheduleId, It.IsAny<int>()))
-            .ReturnsAsync(saturday);
-
-        // Act
-        Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
+        await action.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Saturday already exist");
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task Handle_ShouldThrow_WhenWorkingDaysCountIsNotFive()
+    public async Task Handle_RequiresExactlyFiveWeekdays()
     {
-        // Arrange
-        var scheduleId = "schedule-1";
-        var saturday = new WorkDay { Day = 1 };
-        var workingDays = new List<WorkDay> { new WorkDay() };
+        var repository = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var schedule = TestSupport.CreateSchedule();
+        repository.Setup(x => x.GetByIdAsync(schedule.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(schedule);
+        var handler = new AddWorkingSaturdayCommandHandler(repository.Object, dbContext.Object);
 
-        var command = new AddWorkingSaturdayCommand
-        {
-            ScheduleId = scheduleId,
-            Saturday = saturday,
-            WorkingDays = workingDays,
-        };
+        var action = () => handler.Handle(
+            new AddWorkingSaturdayCommand
+            {
+                ScheduleId = schedule.Id,
+                Saturday = Day(10, 8, 12),
+                WorkingDays = [Day(5, 8, 16)],
+            },
+            CancellationToken.None);
 
-        scheduleRepositoryMock
-            .Setup(repo => repo.GetByIdAsync(scheduleId))
-            .ReturnsAsync(new ScheduleService.Domain.Models.Schedule()); // Schedule exists
-
-        scheduleRepositoryMock
-            .Setup(repo => repo.GetWorkDayAsync(scheduleId, It.IsAny<int>()))
-            .ReturnsAsync((ScheduleService.Domain.Models.Schedule)null); // Saturday does not exist
-
-        // Act
-        Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
+        await action.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Should be 5 updated days");
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task Handle_ShouldThrow_WhenWorkDayLengthIsLessThan4Hours()
+    public async Task Handle_RejectsUnbalancedSaturdayHours()
     {
-        // Arrange
-        var scheduleId = "schedule-1";
-        var saturday = new WorkDay { Day = 6 };
-        var newWorkingDays = new List<WorkDay>
+        var repository = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var schedule = TestSupport.CreateSchedule();
+        foreach (var day in Enumerable.Range(5, 5))
         {
-            new WorkDay
-            {
-                Day = 1,
-                StartTime = new DateTime(2025, 3, 1,  9, 0, 0),
-                EndTime = new DateTime(2025, 3, 1,  10, 30, 0),
-            },
-            new WorkDay
-            {
-                Day = 2,
-                StartTime = new DateTime(2025, 3, 2,  9, 0, 0),
-                EndTime = new DateTime(2025, 3, 2,  14, 30, 0),
-            },
-            new WorkDay
-            {
-                Day = 3,
-                StartTime = new DateTime(2025, 3, 3,  9, 0, 0),
-                EndTime = new DateTime(2025, 3, 3,  14, 30, 0),
-            },
-            new WorkDay
-            {
-                Day = 4,
-                StartTime = new DateTime(2025, 3, 4,  10, 0, 0),
-                EndTime = new DateTime(2025, 3, 4,  15, 30, 0),
-            },
-            new WorkDay
-            {
-                Day = 5,
-                StartTime = new DateTime(2025, 3, 5,  10, 0, 0),
-                EndTime = new DateTime(2025, 3, 5,  15, 30, 0),
-            },
-        };
-        var workingDays = new List<ScheduleService.Domain.Models.Schedule>
-        {
-            new ScheduleService.Domain.Models.Schedule()
-            {
-                WorkDays = new List<WorkDay>()
-                {
-                    new WorkDay()
-                    {
-                        Day = 1,
-                        StartTime = new DateTime(2025, 3, 1,  9, 0, 0),
-                        EndTime = new DateTime(2025, 3, 1,  15, 30, 0),
-                    },
-                },
-            },
-            new ScheduleService.Domain.Models.Schedule()
-            {
-                WorkDays = new List<WorkDay>()
-                {
-                    new WorkDay()
-                    {
-                        Day = 2,
-                        StartTime = new DateTime(2025, 3, 2,  9, 0, 0),
-                        EndTime = new DateTime(2025, 3, 2,  15, 30, 0),
-                    },
-                },
-            },
-            new ScheduleService.Domain.Models.Schedule()
-            {
-                WorkDays = new List<WorkDay>()
-                {
-                    new WorkDay()
-                    {
-                        Day = 3,
-                        StartTime = new DateTime(2025, 3, 3,  9, 0, 0),
-                        EndTime = new DateTime(2025, 3, 3,  15, 30, 0),
-                    },
-                },
-            },
-            new ScheduleService.Domain.Models.Schedule()
-            {
-                WorkDays = new List<WorkDay>()
-                {
-                    new WorkDay()
-                    {
-                        Day = 4,
-                        StartTime = new DateTime(2025, 3, 4,  9, 0, 0),
-                        EndTime = new DateTime(2025, 3, 4,  15, 30, 0),
-                    },
-                },
-            },
-            new ScheduleService.Domain.Models.Schedule()
-            {
-                WorkDays = new List<WorkDay>()
-                {
-                    new WorkDay()
-                    {
-                        Day = 5,
-                        StartTime = new DateTime(2025, 3, 5,  9, 0, 0),
-                        EndTime = new DateTime(2025, 3, 5,  15, 30, 0),
-                    },
-                },
-            },
-        };
-
-        var command = new AddWorkingSaturdayCommand
-        {
-            ScheduleId = scheduleId,
-            Saturday = saturday,
-            WorkingDays = newWorkingDays,
-        };
-
-        scheduleRepositoryMock
-            .Setup(repo => repo.GetByIdAsync(scheduleId))
-            .ReturnsAsync(new ScheduleService.Domain.Models.Schedule()); // Schedule exists
-
-        scheduleRepositoryMock
-            .Setup(repo => repo.GetWorkDayAsync(scheduleId, 6))
-            .ReturnsAsync((ScheduleService.Domain.Models.Schedule)null); // Saturday does not exist
-
-        foreach (var workDay in workingDays)
-        {
-            scheduleRepositoryMock
-                .Setup(repo => repo.GetWorkDayAsync(scheduleId, It.IsInRange(1, 5, Range.Inclusive)))
-                .ReturnsAsync(workDay);
+            schedule.SetShift(TestSupport.CreateShift(day: day), TestSupport.Utc(2026, 9, 2));
         }
 
-        // Act
-        Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
+        repository.Setup(x => x.GetByIdAsync(schedule.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(schedule);
+        var handler = new AddWorkingSaturdayCommandHandler(repository.Object, dbContext.Object);
 
-        // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Minimum work day length is 4 hours");
+        var action = () => handler.Handle(
+            new AddWorkingSaturdayCommand
+            {
+                ScheduleId = schedule.Id,
+                Saturday = Day(10, 8, 13),
+                WorkingDays = Enumerable.Range(5, 5).Select(day => Day(day, 8, 15, 12)).ToList(),
+            },
+            CancellationToken.None);
+
+        await action.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Invalid time difference*");
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    [Fact]
+    public async Task Handle_RebalancesWeekAndAddsSaturday()
+    {
+        var repository = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var schedule = TestSupport.CreateSchedule();
+        foreach (var day in Enumerable.Range(5, 5))
+        {
+            schedule.SetShift(TestSupport.CreateShift(day: day), TestSupport.Utc(2026, 9, 2));
+        }
+
+        repository.Setup(x => x.GetByIdAsync(schedule.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(schedule);
+        var handler = new AddWorkingSaturdayCommandHandler(repository.Object, dbContext.Object);
+        var shortenedDays = Enumerable.Range(5, 5)
+            .Select(day => new WorkDayDto
+            {
+                Day = day,
+                StartTime = TestSupport.Utc(2026, 10, day, 8),
+                EndTime = TestSupport.Utc(2026, 10, day, 15, 12),
+            })
+            .ToList();
+        var command = new AddWorkingSaturdayCommand
+        {
+            ScheduleId = schedule.Id,
+            Saturday = new WorkDayDto
+            {
+                Day = 10,
+                StartTime = TestSupport.Utc(2026, 10, 10, 8),
+                EndTime = TestSupport.Utc(2026, 10, 10, 12),
+            },
+            WorkingDays = shortenedDays,
+        };
+
+        await handler.Handle(command, CancellationToken.None);
+
+        schedule.WorkShifts.Should().HaveCount(6);
+        schedule.WorkShifts.Should().Contain(shift => shift.WorkDate == new DateOnly(2026, 10, 10));
+        dbContext.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
+    }
+
+    private static WorkDayDto Day(int day, int startHour, int endHour, int endMinute = 0) =>
+        new()
+        {
+            Day = day,
+            StartTime = TestSupport.Utc(2026, 10, day, startHour),
+            EndTime = TestSupport.Utc(2026, 10, day, endHour, endMinute),
+        };
 }

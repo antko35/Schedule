@@ -15,7 +15,7 @@ namespace ScheduleService.Application.Validators.Queris.Schedule
         public GetDepartmentMonthScheduleQueryValidator()
         {
             RuleFor(x => x.DepartmentId)
-                .MustBeValidObjectId();
+                .MustBeValidEntityId();
 
             RuleFor(x => x.Year)
                 .InclusiveBetween(2000, 2100);

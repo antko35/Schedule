@@ -1,143 +1,80 @@
-using AutoMapper;
-using FluentAssertions;
-using Moq;
-using ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
-using ScheduleService.Application.UseCases.Commands.ScheduleRules;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Models;
-using Xunit;
-
 namespace Application.UseCases.CommandHandlers.ScheduleRules;
 
-public class SetGenerationRulesTests
+using Application;
+using ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
+using ScheduleService.Application.UseCases.Commands.ScheduleRules;
+
+public sealed class SetGenerationRulesTests
 {
-    private readonly Mock<IUserRuleRepository> mockUserRuleRepository;
-    private readonly IMapper mapper;
-    private readonly SetGenerationRulesCommandHandler handler;
-
-    public SetGenerationRulesTests()
+    [Fact]
+    public async Task Handle_PreservesOmittedValuesAndAllowsMidnight()
     {
-        this.mockUserRuleRepository = new Mock<IUserRuleRepository>();
-
-        this.handler = new SetGenerationRulesCommandHandler(mockUserRuleRepository.Object, mapper);
+        var repository = new Mock<IScheduleGenerationRuleRepository>();
+        var rule = TestSupport.CreateRule();
+        var schedules = new Mock<IScheduleRepository>();
+        schedules.Setup(x => x.GetAsync(rule.UserId, rule.DepartmentId, rule.Period, default)).ReturnsAsync(TestSupport.CreateSchedule());
+        repository.Setup(x => x.GetByIdAsync(rule.Id, default)).ReturnsAsync(rule);
+        var handler = new SetGenerationRulesCommandHandler(repository.Object, TestSupport.CreateDbContextMock().Object, schedules.Object);
+        var result = await handler.Handle(new SetGenerationRulesCommand { ScheduleRulesId = rule.Id, StartWorkDayTime = new TimeOnly(0, 0) }, default);
+        result.StartWorkDayTime.Should().Be(new TimeOnly(0, 0));
+        result.OnlyFirstShift.Should().BeTrue();
+        await handler.Handle(new SetGenerationRulesCommand { ScheduleRulesId = rule.Id, OnlyFirstShift = true }, default);
+        rule.Pattern.Should().Be(ShiftPattern.FirstShiftOnly);
+        result.ScheduleId.Should().Be("schedule-id");
+        await handler.Handle(new SetGenerationRulesCommand { ScheduleRulesId = rule.Id, OnlyFirstShift = false }, default);
+        rule.Pattern.Should().Be(ShiftPattern.Manual);
     }
 
     [Fact]
-    public async Task Handle_ShouldUpdateScheduleRules_WhenRulesExist()
+    public async Task Handle_SetsManualPattern_WhenEveryPatternFlagIsExplicitlyFalse()
     {
-        // Arrange
-        var command = new SetGenerationRulesCommand { ScheduleRulesId = "rule123", EvenDOW = true };
-        var existingRules = new UserScheduleRules { Id = command.ScheduleRulesId, OnlyFirstShift = true };
+        var repository = new Mock<IScheduleGenerationRuleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var rule = TestSupport.CreateRule(pattern: ShiftPattern.FirstShiftOnly);
+        repository.Setup(x => x.GetByIdAsync(rule.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rule);
+        var handler = new SetGenerationRulesCommandHandler(repository.Object, dbContext.Object, new Mock<IScheduleRepository>().Object);
 
-        mockUserRuleRepository.Setup(repo => repo.GetByIdAsync(command.ScheduleRulesId))
-            .ReturnsAsync(existingRules);
-        mockUserRuleRepository.Setup(repo => repo.UpdateAsync(existingRules))
-            .Returns(Task.CompletedTask);
+        await handler.Handle(
+            new SetGenerationRulesCommand
+            {
+                ScheduleRulesId = rule.Id,
+                OnlyFirstShift = false,
+                OnlySecondShift = false,
+                EvenDOW = false,
+                UnEvenDOW = false,
+                EvenDOM = false,
+                UnEvenDOM = false,
+            },
+            CancellationToken.None);
 
-        // Act
-        var result = await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Should().BeSameAs(existingRules);
-        existingRules.EvenDOW.Should().BeTrue();
-        existingRules.OnlyFirstShift.Should().BeFalse();
-
-        mockUserRuleRepository.Verify(repo => repo.UpdateAsync(existingRules), Times.Once);
+        rule.Pattern.Should().Be(ShiftPattern.Manual);
     }
 
     [Fact]
-    public async Task Handle_ShouldClearAllPeriodicityFlags_WhenAllFlagsAreExplicitlyFalse()
+    public async Task Handle_ReconfiguresRuleInMinutesAndCommits()
     {
-        // Arrange
+        var repository = new Mock<IScheduleGenerationRuleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var rule = TestSupport.CreateRule();
+        repository.Setup(x => x.GetByIdAsync(rule.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rule);
+        var handler = new SetGenerationRulesCommandHandler(repository.Object, dbContext.Object, new Mock<IScheduleRepository>().Object);
         var command = new SetGenerationRulesCommand
         {
-            ScheduleRulesId = "rule123",
-            OnlyFirstShift = false,
-            OnlySecondShift = false,
-            EvenDOW = false,
-            UnEvenDOW = false,
-            EvenDOM = false,
-            UnEvenDOM = false,
-        };
-        var existingRules = new UserScheduleRules
-        {
-            Id = command.ScheduleRulesId,
-            EvenDOM = true,
+            ScheduleRulesId = rule.Id,
+            HoursPerMonth = 10.5f,
+            MaxHoursPerDay = 7.25f,
+            StartWorkDayTime = new TimeOnly(9, 15),
+            OnlySecondShift = true,
         };
 
-        mockUserRuleRepository.Setup(repo => repo.GetByIdAsync(command.ScheduleRulesId))
-            .ReturnsAsync(existingRules);
-
-        // Act
         await handler.Handle(command, CancellationToken.None);
 
-        // Assert
-        existingRules.OnlyFirstShift.Should().BeFalse();
-        existingRules.OnlySecondShift.Should().BeFalse();
-        existingRules.EvenDOW.Should().BeFalse();
-        existingRules.UnEvenDOW.Should().BeFalse();
-        existingRules.EvenDOM.Should().BeFalse();
-        existingRules.UnEvenDOM.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldPreservePeriodicityFlags_WhenAllFlagsAreOmitted()
-    {
-        // Arrange
-        var command = new SetGenerationRulesCommand { ScheduleRulesId = "rule123" };
-        var existingRules = new UserScheduleRules
-        {
-            Id = command.ScheduleRulesId,
-            UnEvenDOW = true,
-        };
-
-        mockUserRuleRepository.Setup(repo => repo.GetByIdAsync(command.ScheduleRulesId))
-            .ReturnsAsync(existingRules);
-
-        // Act
-        await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        existingRules.UnEvenDOW.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldSetMidnightStartTime_WhenExplicitlyProvided()
-    {
-        // Arrange
-        var command = new SetGenerationRulesCommand
-        {
-            ScheduleRulesId = "rule123",
-            StartWorkDayTime = TimeOnly.MinValue,
-        };
-        var existingRules = new UserScheduleRules
-        {
-            Id = command.ScheduleRulesId,
-            StartWorkDayTime = new TimeOnly(8, 0),
-        };
-
-        mockUserRuleRepository.Setup(repo => repo.GetByIdAsync(command.ScheduleRulesId))
-            .ReturnsAsync(existingRules);
-
-        // Act
-        await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        existingRules.StartWorkDayTime.Should().Be(TimeOnly.MinValue);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldThrowException_WhenRulesNotFound()
-    {
-        // Arrange
-        var command = new SetGenerationRulesCommand { ScheduleRulesId = "invalidId" };
-        mockUserRuleRepository.Setup(repo => repo.GetByIdAsync(command.ScheduleRulesId))
-            .ReturnsAsync((UserScheduleRules)null);
-
-        // Act
-        Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<Exception>().WithMessage("Schedule rules not found");
+        rule.TargetMinutes.Should().Be(630);
+        rule.MaxShiftMinutes.Should().Be(435);
+        rule.FirstShiftStart.Should().Be(new TimeOnly(9, 15));
+        rule.Pattern.Should().Be(ShiftPattern.SecondShiftOnly);
+        dbContext.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
     }
 }

@@ -1,7 +1,7 @@
 using MediatR;
-using ScheduleService.Domain.Models;
+using ScheduleService.Application.Contracts;
 
 namespace ScheduleService.Application.UseCases.Queries.ScheduleRules;
 
 public record GetAllRulesQuery
-    : IRequest<IEnumerable<UserScheduleRules>>;
+    : IRequest<IEnumerable<ScheduleRulesDto>>;

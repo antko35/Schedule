@@ -1,68 +1,41 @@
-using FluentAssertions;
-using FluentAssertions.Primitives;
-using MongoDB.Bson;
-using Moq;
-using ScheduleService.Application.UseCases.CommandHandlers.Calendar;
-using ScheduleService.Application.UseCases.Commands.Calendar;
-using ScheduleService.Domain.Abstractions;
-using Xunit;
-
 namespace Application.UseCases.CommandHandlers.Calendar;
 
-public class DeleteHolidayCommandTests
+using ScheduleService.Application.UseCases.CommandHandlers.Calendar;
+using ScheduleService.Application.UseCases.Commands.Calendar;
+
+public sealed class DeleteHolidayCommandTests
 {
-    private readonly Mock<ICalendarRepository> calendarRepositoryMock;
-    private readonly DeleteHolidayCommandHandler handler;
-
-    public DeleteHolidayCommandTests()
+    [Fact]
+    public async Task Handle_RejectsMissingHolidayWithoutCommit()
     {
-        calendarRepositoryMock = new Mock<ICalendarRepository>();
-        handler = new DeleteHolidayCommandHandler(calendarRepositoryMock.Object);
+        var repository = new Mock<ICalendarRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        repository.Setup(x => x.GetMonthHolidaysAsync(It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<CalendarException>());
+        var handler = new DeleteHolidayCommandHandler(repository.Object, dbContext.Object);
+
+        var action = () => handler.Handle(
+            new DeleteHolidayCommand(new DateOnly(2026, 10, 5)),
+            CancellationToken.None);
+
+        await action.Should().ThrowAsync<KeyNotFoundException>();
+        repository.Verify(x => x.Remove(It.IsAny<CalendarException>()), Times.Never);
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task Handle_Should_DeleteHoliday_When_HolidayExists()
+    public async Task Handle_RemovesHolidayAndCommits()
     {
-        // Arrange
-        var holidayDate = new DateOnly(2025, 1, 1);
-        var command = new DeleteHolidayCommand(holidayDate);
+        var repository = new Mock<ICalendarRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var holiday = new CalendarException("holiday-id", new DateOnly(2026, 10, 5));
+        repository.Setup(x => x.GetMonthHolidaysAsync(new DateOnly(2026, 10, 1), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([holiday]);
+        var handler = new DeleteHolidayCommandHandler(repository.Object, dbContext.Object);
 
-        var holidays = new List<ScheduleService.Domain.Models.Calendar>
-        {
-            new ScheduleService.Domain.Models.Calendar
-            {
-                Id = ObjectId.GenerateNewId().ToString(),
-                HolidayDate = holidayDate,
-            },
-        };
+        await handler.Handle(new DeleteHolidayCommand(holiday.HolidayDate), CancellationToken.None);
 
-        calendarRepositoryMock.Setup(r => r.GetMonthHolidays(holidayDate.Year, holidayDate.Month))
-            .ReturnsAsync(holidays);
-
-        // Act
-        await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        calendarRepositoryMock.Verify(r => r.RemoveAsync(holidays[0].Id), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_Should_ThrowKeyNotFoundException_When_HolidayDoesNotExist()
-    {
-        // Arrange
-        var holidayDate = new DateOnly(2023, 12, 25);
-        var command = new DeleteHolidayCommand(holidayDate);
-
-        calendarRepositoryMock.Setup(r => r.GetMonthHolidays(holidayDate.Year, holidayDate.Month))
-            .ReturnsAsync(new List<ScheduleService.Domain.Models.Calendar>());
-
-        // Act
-        Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("Day not found");
-
-        calendarRepositoryMock.Verify(r => r.RemoveAsync(It.IsAny<string>()), Times.Never);
+        repository.Verify(x => x.Remove(holiday), Times.Once);
+        dbContext.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
     }
 }

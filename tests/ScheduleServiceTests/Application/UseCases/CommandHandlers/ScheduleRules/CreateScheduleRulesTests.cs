@@ -1,59 +1,72 @@
-using FluentAssertions;
-using Moq;
-using ScheduleService.Application.UseCases.Commands.ScheduleRules;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Abstractions;
-using ScheduleService.Domain.Models;
-using Xunit;
-
 namespace Application.UseCases.CommandHandlers.ScheduleRules;
 
-public class CreateScheduleRulesTests
-{
-    private readonly Mock<IUserRuleRepository> mockUserRuleRepository;
-    private readonly Mock<IScheduleRepository> mockScheduleRepository;
-    private readonly CreateScheduleRulesCommandHandler handler;
+using ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
+using ScheduleService.Application.UseCases.Commands.ScheduleRules;
 
-    public CreateScheduleRulesTests()
+public sealed class CreateScheduleRulesTests
+{
+    [Fact]
+    public async Task Handle_ReusesExistingAggregateWithoutCommit()
     {
-        this.mockUserRuleRepository = new Mock<IUserRuleRepository>();
-        this.mockScheduleRepository = new Mock<IScheduleRepository>();
-        this.handler = new CreateScheduleRulesCommandHandler(mockUserRuleRepository.Object, mockScheduleRepository.Object);
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var schedules = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var now = DateTime.UtcNow;
+        var period = new DateOnly(now.Year, now.Month, 1);
+        var schedule = new MonthlySchedule(
+            "schedule-id",
+            "user-id",
+            "department-id",
+            period,
+            DateTime.SpecifyKind(now, DateTimeKind.Utc));
+        var rule = new ScheduleGenerationRule(
+            "rule-id",
+            "user-id",
+            "department-id",
+            period,
+            480,
+            480,
+            new TimeOnly(8, 0),
+            new TimeOnly(14, 30),
+            ShiftPattern.FirstShiftOnly);
+        schedules.Setup(x => x.GetAsync("user-id", "department-id", period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(schedule);
+        rules.Setup(x => x.GetAsync("user-id", "department-id", period, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rule);
+        var handler = new CreateScheduleRulesCommandHandler(rules.Object, schedules.Object, dbContext.Object);
+
+        var result = await handler.Handle(
+            new CreateScheduleRulesCommand("user-id", "department-id"),
+            CancellationToken.None);
+
+        result.Schedule.Id.Should().Be(schedule.Id);
+        result.ScheduleRules.Id.Should().Be(rule.Id);
+        schedules.Verify(x => x.AddAsync(It.IsAny<MonthlySchedule>(), It.IsAny<CancellationToken>()), Times.Never);
+        rules.Verify(x => x.AddAsync(It.IsAny<ScheduleGenerationRule>(), It.IsAny<CancellationToken>()), Times.Never);
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task Handle_ShouldCreateScheduleAndUserRule()
+    public async Task Handle_CreatesScheduleAndDefaultRuleInOneCommit()
     {
-        // Arrange
-        var date = DateTime.Now;
-        var monthName = date.ToString("MMMM").ToLower();
-        var command = new CreateScheduleRulesCommand("user123", "dept456");
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var schedules = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var handler = new CreateScheduleRulesCommandHandler(rules.Object, schedules.Object, dbContext.Object);
 
-        mockScheduleRepository.Setup(repo => repo.AddAsync(It.IsAny<ScheduleService.Domain.Models.Schedule>())).Returns(Task.CompletedTask);
-        mockUserRuleRepository.Setup(repo => repo.AddAsync(It.IsAny<UserScheduleRules>())).Returns(Task.CompletedTask);
+        var result = await handler.Handle(
+            new CreateScheduleRulesCommand("user-id", "department-id"),
+            CancellationToken.None);
 
-        // Act
-        var result = await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        var scheduleIdFromRules = result.ScheduleRules.ScheduleId;
-
-        result.Schedule.MonthName.Should().Be(monthName);
-        result.Schedule.Id.Should().Be(scheduleIdFromRules);
-        result.Schedule.WorkDays.Should().BeEmpty();
-
-        result.ScheduleRules.UserId.Should().Be("user123");
-        result.ScheduleRules.DepartmentId.Should().Be("dept456");
-        result.ScheduleRules.Year.Should().Be(date.Year);
-        result.ScheduleRules.MonthName.Should().Be(monthName);
-        result.ScheduleRules.StartWorkDayTime.Should().Be(new TimeOnly(8, 0, 0));
-
-        mockScheduleRepository.Verify(repo => repo.AddAsync(It.Is<ScheduleService.Domain.Models.Schedule>(s =>
-            s.MonthName == monthName)), Times.Once);
-
-        mockUserRuleRepository.Verify(repo => repo.AddAsync(It.Is<UserScheduleRules>(r =>
-            r.UserId == command.UserId &&
-            r.DepartmentId == command.DepartmentId &&
-            r.MonthName == monthName)), Times.Once);
+        result.Schedule.Id.Should().NotBeNullOrWhiteSpace();
+        result.ScheduleRules.ScheduleId.Should().Be(result.Schedule.Id);
+        result.ScheduleRules.HoursPerMonth.Should().Be(132);
+        schedules.Verify(x => x.AddAsync(
+            It.Is<MonthlySchedule>(item => item.UserId == "user-id" && item.DepartmentId == "department-id"),
+            CancellationToken.None), Times.Once);
+        rules.Verify(x => x.AddAsync(
+            It.Is<ScheduleGenerationRule>(item => item.TargetMinutes == 132 * 60),
+            CancellationToken.None), Times.Once);
+        dbContext.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
     }
 }

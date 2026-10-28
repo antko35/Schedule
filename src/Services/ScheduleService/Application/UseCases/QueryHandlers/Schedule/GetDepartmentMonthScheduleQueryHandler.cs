@@ -1,60 +1,36 @@
-﻿namespace ScheduleService.Application.UseCases.QueryHandlers.Schedule
+namespace ScheduleService.Application.UseCases.QueryHandlers.Schedule;
+
+using MediatR;
+using ScheduleService.Application.Contracts;
+using ScheduleService.Application.Mapping;
+using ScheduleService.Application.UseCases.Queries.Schedule;
+using ScheduleService.Domain.Abstractions;
+
+public sealed class GetDepartmentMonthScheduleQueryHandler
+    : IRequestHandler<GetDepartmentMonthScheduleQuery, List<ScheduleDto>>
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using MediatR;
-    using ScheduleService.Application.UseCases.Queries.Schedule;
-    using ScheduleService.DataAccess.Repository;
-    using ScheduleService.Domain.Abstractions;
-    using ScheduleService.Domain.Models;
+    private readonly IScheduleRepository scheduleRepository;
 
-    public class GetDepartmentMonthScheduleQueryHandler
-        : IRequestHandler<GetDepartmentMonthScheduleQuery, List<Schedule>>
+    public GetDepartmentMonthScheduleQueryHandler(IScheduleRepository scheduleRepository)
     {
-        private readonly IScheduleRepository scheduleRepository;
-        private readonly IUserRuleRepository userRuleRepository;
+        this.scheduleRepository = scheduleRepository;
+    }
 
-        public GetDepartmentMonthScheduleQueryHandler(
-            IScheduleRepository scheduleRepository,
-            IUserRuleRepository userRuleRepository)
+    public async Task<List<ScheduleDto>> Handle(
+        GetDepartmentMonthScheduleQuery request,
+        CancellationToken cancellationToken)
+    {
+        var period = new DateOnly(request.Year, request.Month, 1);
+        var schedules = await scheduleRepository.GetDepartmentAsync(
+            request.DepartmentId,
+            period,
+            cancellationToken);
+
+        if (schedules.Count == 0)
         {
-            this.scheduleRepository = scheduleRepository;
-            this.userRuleRepository = userRuleRepository;
+            throw new InvalidOperationException("Schedule rules not found");
         }
 
-        public async Task<List<Schedule>> Handle(GetDepartmentMonthScheduleQuery request, CancellationToken cancellationToken)
-        {
-            var response = new List<Schedule>();
-
-            var usersRules = await GetUsersRules(request);
-
-            foreach (var userRule in usersRules)
-            {
-                var schedule = await scheduleRepository.GetMonthSchedule(userRule.ScheduleId);
-
-                response.Add(schedule);
-            }
-
-            return response;
-        }
-
-        private async Task<IEnumerable<UserScheduleRules>> GetUsersRules(GetDepartmentMonthScheduleQuery request)
-        {
-            var monthName = new DateOnly(request.Year, request.Month, 1)
-                .ToString("MMMM")
-                .ToLower();
-
-            var usersRules = await userRuleRepository.GetUsersRulesByDepartment(request.DepartmentId, monthName, request.Year);
-
-            if (!usersRules.Any())
-            {
-                throw new InvalidOperationException("Schedule rules not found");
-            }
-
-            return usersRules;
-        }
+        return schedules.Select(schedule => schedule.ToDto()).ToList();
     }
 }

@@ -2,10 +2,10 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var rabbit = builder.AddRabbitMQ("rabbitmq");
 
-var scheduleMongo = builder.AddMongoDB("schedule-service-mongo")
+var scheduleDb = builder.AddPostgres("application-postgres")
+    .WithImageTag("17.6-alpine")
     .WithDataVolume()
-    .WithMongoExpress();
-var scheduleDb = scheduleMongo.AddDatabase("scheduleDb");
+    .AddDatabase("applicationDb", "application_db");
 
 var managementMongo = builder.AddMongoDB("management-mongo")
     .WithDataVolume()
@@ -20,6 +20,7 @@ var keycloakPublicUrl = keycloak.GetEndpoint("http");
 
 var scheduleService = builder.AddProject<Projects.ScheduleService_API>("schedule-service")
     .WithReference(scheduleDb)
+    .WithEnvironment("Database__ApplyMigrationsOnStartup", "true")
     .WithReference(keycloak)
     .WithReference(rabbit)
     .WithEnvironment("Keycloak__PublicUrl", keycloakPublicUrl)

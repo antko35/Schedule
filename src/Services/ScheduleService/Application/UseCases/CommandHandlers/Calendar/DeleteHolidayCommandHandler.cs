@@ -1,38 +1,31 @@
-﻿using MediatR;
+namespace ScheduleService.Application.UseCases.CommandHandlers.Calendar;
+
+using MediatR;
+using ScheduleService.DataAccess.Database;
 using ScheduleService.Application.UseCases.Commands.Calendar;
 using ScheduleService.Domain.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ScheduleService.Application.UseCases.CommandHandlers.Calendar
+public sealed class DeleteHolidayCommandHandler : IRequestHandler<DeleteHolidayCommand>
 {
-    public class DeleteHolidayCommandHandler
-        : IRequestHandler<DeleteHolidayCommand>
+    private readonly ICalendarRepository calendarRepository;
+    private readonly ScheduleDbContext dbContext;
+
+    public DeleteHolidayCommandHandler(
+        ICalendarRepository calendarRepository,
+        ScheduleDbContext dbContext)
     {
-        private readonly ICalendarRepository calendarRepository;
+        this.calendarRepository = calendarRepository;
+        this.dbContext = dbContext;
+    }
 
-        public DeleteHolidayCommandHandler(ICalendarRepository calendarRepository)
-        {
-            this.calendarRepository = calendarRepository;
-        }
+    public async Task Handle(DeleteHolidayCommand request, CancellationToken cancellationToken)
+    {
+        var period = new DateOnly(request.Holiday.Year, request.Holiday.Month, 1);
+        var holidays = await calendarRepository.GetMonthHolidaysAsync(period, cancellationToken);
+        var holiday = holidays.FirstOrDefault(item => item.HolidayDate == request.Holiday)
+            ?? throw new KeyNotFoundException("Day not found");
 
-        public async Task Handle(DeleteHolidayCommand request, CancellationToken cancellationToken)
-        {
-            var holidays = await calendarRepository.GetMonthHolidays(request.Holiday.Year, request.Holiday.Month);
-
-            var holidayToDelete = holidays.FirstOrDefault(day => day.HolidayDate == request.Holiday);
-
-            if (holidayToDelete != null)
-            {
-                await calendarRepository.RemoveAsync(holidayToDelete.Id);
-            }
-            else
-            {
-                throw new KeyNotFoundException("Day not found");
-            }
-        }
+        calendarRepository.Remove(holiday);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

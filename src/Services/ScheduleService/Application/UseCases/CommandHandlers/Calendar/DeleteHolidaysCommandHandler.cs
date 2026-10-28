@@ -1,39 +1,20 @@
-namespace ScheduleService.Application.UseCases.CommandHandlers.Calendar
+namespace ScheduleService.Application.UseCases.CommandHandlers.Calendar;
+using MediatR;
+using ScheduleService.DataAccess.Database;
+using ScheduleService.Application.UseCases.Commands.Calendar;
+using ScheduleService.Domain.Abstractions;
+public sealed class DeleteHolidaysCommandHandler(ICalendarRepository calendarRepository, ScheduleDbContext dbContext)
+    : IRequestHandler<DeleteHolidaysCommand>
 {
-    using MediatR;
-    using ScheduleService.Application.UseCases.Commands.Calendar;
-    using ScheduleService.Domain.Abstractions;
-
-    public class DeleteHolidaysCommandHandler
-        : IRequestHandler<DeleteHolidaysCommand>
+    public async Task Handle(DeleteHolidaysCommand request, CancellationToken cancellationToken)
     {
-        private readonly ICalendarRepository calendarRepository;
-
-        public DeleteHolidaysCommandHandler(ICalendarRepository calendarRepository)
-        {
-            this.calendarRepository = calendarRepository;
-        }
-
-        public async Task Handle(DeleteHolidaysCommand request, CancellationToken cancellationToken)
-        {
-            var requestedHolidays = request.Holidays.Distinct().ToArray();
-
-            var existingHolidays = await calendarRepository.GetAllAsync();
-
-            var existingDates = existingHolidays
-                .Select(x => x.HolidayDate)
-                .ToHashSet();
-            var missingDates = requestedHolidays
-                .Where(x => !existingDates.Contains(x))
-                .ToArray();
-
-            if (missingDates.Length > 0)
-            {
-                throw new KeyNotFoundException(
-                    $"Holidays not found: {string.Join(", ", missingDates)}");
-            }
-
-            await calendarRepository.RemoveHolidays(requestedHolidays);
-        }
+        var dates = request.Holidays.Distinct().ToHashSet();
+        var holidays = await calendarRepository.GetAllAsync(cancellationToken);
+        var missing = dates.Except(holidays.Select(item => item.HolidayDate)).ToArray();
+        if (missing.Length > 0)
+            throw new KeyNotFoundException($"Holidays not found: {string.Join(", ", missing)}");
+        foreach (var holiday in holidays.Where(item => dates.Contains(item.HolidayDate)))
+            calendarRepository.Remove(holiday);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

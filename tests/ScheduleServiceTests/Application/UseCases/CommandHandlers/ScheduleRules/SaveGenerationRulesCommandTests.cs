@@ -1,130 +1,46 @@
-using MongoDB.Bson;
-using Moq;
+namespace Application.UseCases.CommandHandlers.ScheduleRules;
 using ScheduleService.Application.Services;
 using ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
 using ScheduleService.Application.UseCases.Commands.ScheduleRules;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Abstractions;
-using ScheduleService.Domain.Models;
-using Xunit;
-
-namespace Application.UseCases.CommandHandlers.ScheduleRules;
-
-public class SaveGenerationRulesCommandTests
+public sealed class SaveGenerationRulesCommandTests
 {
-    private readonly Mock<IUserRuleRepository> userRuleRepository = new Mock<IUserRuleRepository>();
-    private readonly Mock<IScheduleRepository> scheduleRepository = new Mock<IScheduleRepository>();
-
-    [Fact]
-    public async Task Handle_CreatesMonthlyContextAndPersistsEnteredValues()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SavesNewOrExistingMonthAndReturnsCompatibleDto(bool existing)
     {
-        var command = CreateCommand();
-        var handler = CreateHandler();
-
-        var result = await handler.Handle(command, CancellationToken.None);
-
-        scheduleRepository.Verify(
-            repository => repository.AddAsync(It.Is<ScheduleService.Domain.Models.Schedule>(schedule =>
-                schedule.Id == result.ScheduleId
-                && schedule.MonthName == "october"
-                && schedule.WorkDays.Count == 0)),
-            Times.Once);
-        userRuleRepository.Verify(
-            repository => repository.AddAsync(It.Is<UserScheduleRules>(rules =>
-                rules.ScheduleId == result.ScheduleId
-                && rules.HoursPerMonth == 160
-                && rules.MaxHoursPerDay == 8
-                && rules.StartWorkDayTime == new TimeOnly(8, 0)
-                && rules.OnlyFirstShift)),
-            Times.Once);
-        userRuleRepository.Verify(
-            repository => repository.UpdateAsync(It.IsAny<UserScheduleRules>()),
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task Handle_UpdatesExistingRulesWithoutCreatingAnotherSchedule()
-    {
-        var command = CreateCommand();
-        var existingRules = new UserScheduleRules
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var schedules = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var rule = TestSupport.CreateRule();
+        var schedule = TestSupport.CreateSchedule();
+        if (existing)
         {
-            Id = ObjectId.GenerateNewId().ToString(),
-            UserId = command.UserId,
-            DepartmentId = command.DepartmentId,
-            Year = command.Year,
-            MonthName = "october",
-            ScheduleId = ObjectId.GenerateNewId().ToString(),
-        };
-        userRuleRepository
-            .Setup(repository => repository.GetMonthScheduleRules(
-                command.UserId,
-                command.DepartmentId,
-                "october",
-                command.Year))
-            .ReturnsAsync(existingRules);
-        scheduleRepository
-            .Setup(repository => repository.GetByIdAsync(existingRules.ScheduleId))
-            .ReturnsAsync(new ScheduleService.Domain.Models.Schedule { Id = existingRules.ScheduleId });
-
-        var result = await CreateHandler().Handle(command, CancellationToken.None);
-
-        Assert.Same(existingRules, result);
-        scheduleRepository.Verify(
-            repository => repository.AddAsync(It.IsAny<ScheduleService.Domain.Models.Schedule>()),
-            Times.Never);
-        userRuleRepository.Verify(
-            repository => repository.AddAsync(It.IsAny<UserScheduleRules>()),
-            Times.Never);
-        userRuleRepository.Verify(repository => repository.UpdateAsync(existingRules), Times.Once);
+            rules.Setup(x => x.GetAsync("user-id", "department-id", TestSupport.Period, default)).ReturnsAsync(rule);
+            schedules.Setup(x => x.GetAsync("user-id", "department-id", TestSupport.Period, default)).ReturnsAsync(schedule);
+        }
+        var handler = new SaveGenerationRulesCommandHandler(new ScheduleMonthContextService(rules.Object, schedules.Object), dbContext.Object);
+        var result = await handler.Handle(new SaveGenerationRulesCommand(160, 8, new TimeOnly(0, 0), true, false, false, false, false, false)
+            { UserId = "user-id", DepartmentId = "department-id", Year = 2026, Month = 10 }, default);
+        result.HoursPerMonth.Should().Be(160);
+        result.StartWorkDayTime.Should().Be(new TimeOnly(0, 0));
+        result.OnlyFirstShift.Should().BeTrue();
+        result.ScheduleId.Should().NotBeNullOrEmpty();
+        dbContext.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        schedules.Verify(x => x.AddAsync(It.IsAny<MonthlySchedule>(), default), existing ? Times.Never() : Times.Once());
+        rules.Verify(x => x.AddAsync(It.IsAny<ScheduleGenerationRule>(), default), existing ? Times.Never() : Times.Once());
     }
 
     [Fact]
-    public async Task Handle_RemovesNewSchedule_WhenRulesCannotBeCreated()
+    public async Task FailedRuleCreationNeverCommitsPartialSchedule()
     {
-        var command = CreateCommand();
-        scheduleRepository
-            .Setup(repository => repository.AddAsync(It.IsAny<ScheduleService.Domain.Models.Schedule>()))
-            .Returns(Task.CompletedTask);
-        userRuleRepository
-            .Setup(repository => repository.AddAsync(It.IsAny<UserScheduleRules>()))
-            .ThrowsAsync(new InvalidOperationException("write failed"));
-
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            CreateHandler().Handle(command, CancellationToken.None));
-
-        scheduleRepository.Verify(
-            repository => repository.RemoveAsync(It.IsAny<string>()),
-            Times.Once);
-        userRuleRepository.Verify(
-            repository => repository.UpdateAsync(It.IsAny<UserScheduleRules>()),
-            Times.Never);
-    }
-
-    private SaveGenerationRulesCommandHandler CreateHandler()
-    {
-        var monthContextService = new ScheduleMonthContextService(
-            userRuleRepository.Object,
-            scheduleRepository.Object);
-        return new SaveGenerationRulesCommandHandler(monthContextService, userRuleRepository.Object);
-    }
-
-    private static SaveGenerationRulesCommand CreateCommand()
-    {
-        return new SaveGenerationRulesCommand(
-            160,
-            8,
-            new TimeOnly(8, 0),
-            true,
-            false,
-            false,
-            false,
-            false,
-            false)
-        {
-            UserId = ObjectId.GenerateNewId().ToString(),
-            DepartmentId = ObjectId.GenerateNewId().ToString(),
-            Year = 2026,
-            Month = 10,
-        };
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        rules.Setup(x => x.AddAsync(It.IsAny<ScheduleGenerationRule>(), default)).ThrowsAsync(new InvalidOperationException("write failed"));
+        var handler = new SaveGenerationRulesCommandHandler(new ScheduleMonthContextService(rules.Object, new Mock<IScheduleRepository>().Object), dbContext.Object);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(
+            new SaveGenerationRulesCommand(160, 8, new TimeOnly(8, 0), true, false, false, false, false, false)
+            { UserId = "u", DepartmentId = "d", Year = 2026, Month = 10 }, default));
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 }
