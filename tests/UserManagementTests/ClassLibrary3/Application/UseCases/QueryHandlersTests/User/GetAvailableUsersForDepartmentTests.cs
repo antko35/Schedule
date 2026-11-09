@@ -2,7 +2,7 @@ namespace UserManagementService.Application.UseCases.QueryHandlersTests.User;
 
 using AutoMapper;
 using FluentAssertions;
-using MongoDB.Bson;
+
 using Moq;
 using UserManagementService.Application.DTOs;
 using UserManagementService.Application.UseCases.Queries.User;
@@ -21,7 +21,7 @@ public class GetAvailableUsersForDepartmentTests
     [Fact]
     public async Task Handle_ShouldReturnAllUsers_WhenDepartmentHasNoMembers()
     {
-        var departmentId = ObjectId.GenerateNewId().ToString();
+        var departmentId = UserManagementService.Domain.Models.EntityId.New();
         var availableUsers = CreateAvailableUsers();
         var response = CreateResponse(availableUsers);
         var cancellationToken = new CancellationTokenSource().Token;
@@ -51,9 +51,9 @@ public class GetAvailableUsersForDepartmentTests
     [Fact]
     public async Task Handle_ShouldExcludeExistingDepartmentMembers()
     {
-        var departmentId = ObjectId.GenerateNewId().ToString();
-        var firstExistingUserId = ObjectId.GenerateNewId().ToString();
-        var secondExistingUserId = ObjectId.GenerateNewId().ToString();
+        var departmentId = UserManagementService.Domain.Models.EntityId.New();
+        var firstExistingUserId = UserManagementService.Domain.Models.EntityId.New();
+        var secondExistingUserId = UserManagementService.Domain.Models.EntityId.New();
         string[] membershipUserIds =
         {
             firstExistingUserId,
@@ -92,8 +92,8 @@ public class GetAvailableUsersForDepartmentTests
     [Fact]
     public async Task Handle_ShouldReturnEmptyList_WhenEveryUserIsAlreadyInDepartment()
     {
-        var departmentId = ObjectId.GenerateNewId().ToString();
-        var existingUserId = ObjectId.GenerateNewId().ToString();
+        var departmentId = UserManagementService.Domain.Models.EntityId.New();
+        var existingUserId = UserManagementService.Domain.Models.EntityId.New();
         var availableUsers = new List<ShortUserInfo>();
         var response = Array.Empty<ShortUserInfoDto>();
 
@@ -122,7 +122,7 @@ public class GetAvailableUsersForDepartmentTests
     [Fact]
     public async Task Handle_ShouldThrowKeyNotFoundException_WhenDepartmentDoesNotExist()
     {
-        var departmentId = ObjectId.GenerateNewId().ToString();
+        var departmentId = UserManagementService.Domain.Models.EntityId.New();
 
         departmentRepositoryMock
             .Setup(repository => repository.GetByIdAsync(departmentId))
@@ -150,7 +150,7 @@ public class GetAvailableUsersForDepartmentTests
         [
             new ShortUserInfo
             {
-                Id = ObjectId.GenerateNewId().ToString(),
+                Id = UserManagementService.Domain.Models.EntityId.New(),
                 FirstName = "Anna",
                 LastName = "Ivanova",
                 Patronymic = "Ivanovna",

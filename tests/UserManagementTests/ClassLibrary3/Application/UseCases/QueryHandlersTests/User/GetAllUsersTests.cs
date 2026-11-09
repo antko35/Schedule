@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Application.UseCases.QueryHandlersTests.User
+namespace UserManagementService.Application.UseCases.QueryHandlersTests.User
 {
     using System;
     using System.Collections.Generic;
@@ -11,7 +11,7 @@
     using UserManagementService.Domain.Abstractions.IRepository;
     using Xunit;
     using Domain.Models;
-    using MongoDB.Bson;
+
     using FluentAssertions;
 
     public class GetAllUsersTests
@@ -33,7 +33,7 @@
             {
                 new User
                 {
-                    Id = ObjectId.GenerateNewId().ToString(),
+                    Id = UserManagementService.Domain.Models.EntityId.New(),
                     FirstName = "John",
                     LastName = "Doe",
                     Patronymic = "MiddleName",
@@ -42,7 +42,7 @@
                 },
                 new User
                 {
-                    Id = ObjectId.GenerateNewId().ToString(),
+                    Id = UserManagementService.Domain.Models.EntityId.New(),
                     FirstName = "Jane",
                     LastName = "Smith",
                     Patronymic = "MiddleName",

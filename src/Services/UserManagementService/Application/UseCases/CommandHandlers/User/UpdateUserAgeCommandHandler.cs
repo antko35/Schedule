@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlers.User
+namespace UserManagementService.Application.UseCases.CommandHandlers.User
 {
     using System;
     using System.Collections.Generic;
@@ -13,9 +13,12 @@
         : IRequestHandler<UpdateUserAgeCommand>
     {
         private readonly IUserRepository userRepository;
+        private readonly IDataChanges changes;
 
-        public UpdateUserAgeCommandHandler(IUserRepository userRepository)
+
+        public UpdateUserAgeCommandHandler(IUserRepository userRepository, IDataChanges changes)
         {
+            this.changes = changes;
             this.userRepository = userRepository;
         }
 
@@ -29,6 +32,8 @@
 
                 await userRepository.UpdateAsync(user);
             }
+
+            await changes.SaveChangesAsync(cancellationToken);
         }
     }
 }

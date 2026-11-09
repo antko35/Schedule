@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlers.Department
+namespace UserManagementService.Application.UseCases.CommandHandlers.Department
 {
     using System.Reflection.Metadata;
     using MediatR;
@@ -14,12 +14,15 @@
         private readonly IUserJobsRepository userJobsRepository;
         private readonly IUserRepository userRepository;
         private readonly IDepartmentRepository departmentRepository;
+        private readonly IDataChanges changes;
+
 
         public EditUserInDepartmentCommandHandler(
             IUserRepository userRepository,
             IDepartmentRepository departmentRepository,
-            IUserJobsRepository userJobsRepository)
+            IUserJobsRepository userJobsRepository, IDataChanges changes)
         {
+            this.changes = changes;
             this.userRepository = userRepository;
             this.departmentRepository = departmentRepository;
             this.userJobsRepository = userJobsRepository;
@@ -39,20 +42,13 @@
 
             userJob.EnsureExists("User not found in this department");
 
-            var newUserJob = new UserJob()
-            {
-                Id = userJob.Id,
-                UserId = userJob.UserId,
-                DepartmentId = department.Id,
-                Role = request.Role,
-                Status = request.Status,
-                PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber,
-                Email = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email,
-            };
-
-            await userJobsRepository.UpdateAsync(newUserJob);
-
-            return newUserJob;
+            userJob.Role = request.Role;
+            userJob.Status = request.Status;
+            userJob.PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber;
+            userJob.Email = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email;
+            await userJobsRepository.UpdateAsync(userJob);
+            await changes.SaveChangesAsync(cancellationToken);
+            return userJob;
         }
     }
 }

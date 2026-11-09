@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using UserManagementService.DataAccess.Database;
 using System.Reflection;
 using Infrastructure.Extensions;
 using Microsoft.OpenApi.Models;
@@ -13,7 +15,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.AddMongoDBClient("userManagementDb");
 
 builder.AddRabbitMQClient("rabbitmq");
 
@@ -37,7 +38,7 @@ builder.Services
 // DataAccess Layer
 builder.Services
     .ConfigureDb(builder.Configuration)
-    .ConfigureHangfire()
+    .ConfigureHangfire(builder.Configuration)
     .AddDataLayerDependencis();
 
 builder.Services
@@ -127,6 +128,12 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
+if (builder.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    await scope.ServiceProvider.GetRequiredService<UserManagementDbContext>().Database.MigrateAsync();
+}
+
 app.UseMiddleware<ExeptionHadlingMiddleware>();
 
 app.ConfigureSwagger();
@@ -144,3 +151,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program
+{
+}

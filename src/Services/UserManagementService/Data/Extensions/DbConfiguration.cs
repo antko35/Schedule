@@ -1,25 +1,34 @@
-﻿namespace UserManagementService.DataAccess.Extensions
+namespace UserManagementService.DataAccess.Extensions;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using UserManagementService.DataAccess.Database;
+
+public static class DbConfiguration
 {
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Options;
-    using UserManagementService.DataAccess.Database;
+    public const string ConnectionStringName = "applicationDb";
 
-    public static class DbConfiguration
+    public static IServiceCollection ConfigureDb(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        public static IServiceCollection ConfigureDb(
-            this IServiceCollection services,
-            IConfiguration configuration)
+        var connectionString = configuration.GetConnectionString(ConnectionStringName);
+        if (string.IsNullOrWhiteSpace(connectionString))
         {
-            services.Configure<DbOptions>(
-                configuration.GetSection("DatabaseSettings"));
-
-            services.AddSingleton<BaseDbOptions>(sp =>
-                sp.GetRequiredService<IOptions<DbOptions>>().Value);
-
-            services.AddScoped<DbContext>();
-
-            return services;
+            throw new InvalidOperationException(
+                $"Connection string '{ConnectionStringName}' is not configured.");
         }
+
+        services.AddDbContext<UserManagementDbContext>(options =>
+            options.UseNpgsql(
+                connectionString,
+                npgsqlOptions => npgsqlOptions.MigrationsHistoryTable(
+                    "__EFMigrationsHistory",
+                    UserManagementDbContext.SchemaName)));
+
+        services.AddScoped<UserManagementService.Domain.Abstractions.IRepository.IDataChanges>(
+            provider => provider.GetRequiredService<UserManagementDbContext>());
+        return services;
     }
 }

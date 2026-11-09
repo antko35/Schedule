@@ -1,54 +1,36 @@
-﻿namespace UserManagementService.DataAccess.Repository;
+namespace UserManagementService.DataAccess.Repository;
 
-using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using UserManagementService.DataAccess.Database;
 using UserManagementService.Domain.Abstractions.IRepository;
 using UserManagementService.Domain.Models;
 
-public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : Entity
+public class GenericRepository<TEntity>(UserManagementDbContext context) : IGenericRepository<TEntity>
+    where TEntity : Entity
 {
-    private readonly DbContext context;
-    protected IMongoCollection<TEntity> dbSet;
+    protected readonly DbSet<TEntity> dbSet = context.Set<TEntity>();
 
-    public GenericRepository(DbContext context, string collectionName)
-    {
-        this.context = context;
-        dbSet = context.Database.GetCollection<TEntity>(collectionName);
-    }
+    public async Task AddAsync(TEntity obj) => await dbSet.AddAsync(obj);
 
-    public async Task AddAsync(TEntity obj)
-    {
-        await dbSet.InsertOneAsync(obj);
-    }
+    public async Task<IEnumerable<TEntity>> GetAllAsync() => await dbSet.ToListAsync();
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync()
-    {
-        return await dbSet.Find(_ => true).ToListAsync();
-    }
+    public async Task<TEntity> GetByIdAsync(string id) => (await dbSet.FindAsync(EntityId.Normalize(id)))!;
 
-    public async Task<TEntity> GetByIdAsync(string id)
+    public Task<List<TEntity>> GetByIdsAsync(IEnumerable<string> ids)
     {
-        return await dbSet.Find(obj => obj.Id == id).FirstOrDefaultAsync();
-    }
-
-    public async Task<List<TEntity>> GetByIdsAsync(IEnumerable<string> ids)
-    {
-        var filter = Builders<TEntity>.Filter.In(x => x.Id, ids);
-        return await dbSet.Find(filter).ToListAsync();
+        var normalized = ids.Select(EntityId.Normalize).ToList();
+        return dbSet.Where(entity => normalized.Contains(entity.Id)).ToListAsync();
     }
 
     public async Task RemoveAsync(string id)
     {
-        await dbSet.DeleteOneAsync(obj => obj.Id == id);
+        var entity = await dbSet.FindAsync(EntityId.Normalize(id));
+        if (entity is not null) dbSet.Remove(entity);
     }
 
-    public async Task UpdateAsync(TEntity updObj)
+    public Task UpdateAsync(TEntity obj)
     {
-        await dbSet.ReplaceOneAsync(obj => obj.Id == updObj.Id, updObj);
+        dbSet.Update(obj);
+        return Task.CompletedTask;
     }
 }

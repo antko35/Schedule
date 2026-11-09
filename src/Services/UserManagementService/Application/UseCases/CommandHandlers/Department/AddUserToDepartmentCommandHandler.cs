@@ -1,4 +1,4 @@
-﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+using UserManagementService.Domain.Abstractions.IRabbitMq;
 
 namespace UserManagementService.Application.UseCases.CommandHandlers.Department;
 using MediatR;
@@ -15,13 +15,16 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
     private readonly IDepartmentRepository departmentRepository;
     private readonly IUserJobsRepository userJobsRepository;
     private readonly IUserEventPublisher userEventPublisher;
+    private readonly IDataChanges changes;
+
 
 
     public AddUserToDepartmentCommandHandler(IUserRepository userRepository,
                                              IDepartmentRepository departmentRepository,
                                              IUserJobsRepository userJobsRepository,
-                                             IUserEventPublisher userEventPublisher)
+                                             IUserEventPublisher userEventPublisher, IDataChanges changes)
     {
+        this.changes = changes;
         this.userRepository = userRepository;
         this.departmentRepository = departmentRepository;
         this.userJobsRepository = userJobsRepository;
@@ -47,8 +50,8 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
 
         var newUserJob = new UserJob()
         {
-           UserId = request.UserId,
-           DepartmentId = request.DepartmentId,
+           UserId = user.Id,
+           DepartmentId = department.Id,
            Role = request.Role,
            Status = request.Status,
            Email = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email,
@@ -56,6 +59,7 @@ public class AddUserToDepartmentCommandHandler : IRequestHandler<AddUserToDepart
         };
 
         await userJobsRepository.AddAsync(newUserJob);
+        await changes.SaveChangesAsync(cancellationToken);
 
         await userEventPublisher.PublishUserCreated(newUserJob.UserId, newUserJob.DepartmentId);
 

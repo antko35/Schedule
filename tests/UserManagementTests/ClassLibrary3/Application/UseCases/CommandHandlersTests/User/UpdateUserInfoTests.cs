@@ -1,11 +1,11 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
+namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
 {
     using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using MongoDB.Bson;
+
     using Moq;
     using UserManagementService.Application.UseCases.CommandHandlers.User;
     using UserManagementService.Application.UseCases.Commands.User;
@@ -21,14 +21,14 @@
         public UpdateUserInfoTests()
         {
             userRepositoryMock = new Mock<IUserRepository>();
-            handler = new UpdateUserInfoCommandHandler(userRepositoryMock.Object);
+            handler = new UpdateUserInfoCommandHandler(userRepositoryMock.Object, Mock.Of<IDataChanges>());
         }
 
         [Fact]
         public async Task Handle_ShouldUpdateUserInfo()
         {
             // Arrange
-            var userId = ObjectId.GenerateNewId().ToString();
+            var userId = UserManagementService.Domain.Models.EntityId.New();
             var existingUser = CreateTestUser(userId, "John", "Doe", "OldMiddle", "Male", new DateOnly(1990, 1, 1));
 
             var firstName = "UpdatedFirstName";
@@ -68,7 +68,7 @@
         public async Task Handle_ShouldThrowKeyNotFoundException_WhenUserDoesNotExist()
         {
             // Arrange
-            var userId = ObjectId.GenerateNewId().ToString();
+            var userId = UserManagementService.Domain.Models.EntityId.New();
             var command = new UpdateUserInfoCommand
                 (userId, "NewFirstName", "NewLastName", "NewMiddle", "Male", new DateOnly(2000, 6, 30));
 

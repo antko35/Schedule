@@ -1,7 +1,7 @@
 namespace UserManagementService.Application.UseCases.ValidatorsTests.Departments;
 
 using FluentAssertions;
-using MongoDB.Bson;
+
 using UserManagementService.Application.UseCases.Commands.Department;
 using UserManagementService.Application.UseCases.Validators.Commands.Departments;
 using Xunit;
@@ -58,8 +58,8 @@ public class EditUserInDepartmentCommandValidatorTests
     private static EditUserInDepartmentCommand CreateValidCommand()
     {
         return new EditUserInDepartmentCommand(
-            ObjectId.GenerateNewId().ToString(),
-            ObjectId.GenerateNewId().ToString(),
+            UserManagementService.Domain.Models.EntityId.New(),
+            UserManagementService.Domain.Models.EntityId.New(),
             "doctor",
             "Работа",
             "doctor@example.com",

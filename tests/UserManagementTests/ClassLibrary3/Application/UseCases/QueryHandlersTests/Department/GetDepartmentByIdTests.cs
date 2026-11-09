@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Application.UseCases.QueryHandlersTests.Department
+namespace UserManagementService.Application.UseCases.QueryHandlersTests.Department
 {
     using System;
     using System.Collections.Generic;
@@ -11,7 +11,7 @@
     using UserManagementService.Domain.Abstractions.IRepository;
     using Xunit;
     using Domain.Models;
-    using MongoDB.Bson;
+
     using FluentAssertions;
 
     public class GetDepartmentByIdTests
@@ -29,7 +29,7 @@
         public async Task Handle_ShouldReturnDepartment_WhenDepartmentExists()
         {
             // Arrange
-            var departmentId = ObjectId.GenerateNewId().ToString();
+            var departmentId = UserManagementService.Domain.Models.EntityId.New();
             var department = new Department
             {
                 Id = departmentId,
@@ -56,7 +56,7 @@
         public async Task Handle_ShouldThrowKeyNotFoundException_WhenDepartmentDoesNotExist()
         {
             // Arrange
-            var departmentId = ObjectId.GenerateNewId().ToString();
+            var departmentId = UserManagementService.Domain.Models.EntityId.New();
 
             departmentRepositoryMock
                 .Setup(repo => repo.GetByIdAsync(departmentId))

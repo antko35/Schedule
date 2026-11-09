@@ -1,3 +1,5 @@
+> Historical ScheduleService migration record. Current storage for both services is PostgreSQL; see [UserManagementService transition](docs/usermanagement-postgresql.md). Older importer references below describe previous work and are not current run instructions.
+
 # ScheduleService PostgreSQL migration progress
 
 Last updated: 2026-10-28

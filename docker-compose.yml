@@ -8,23 +8,6 @@ services:
     ports:
       - 15672:15672
 
-  user-service-pg-db:
-    image: postgres:latest
-    ports:
-      - "5434:5432" # Локальный порт → Порт внутри контейнера
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=users_db
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres" ]
-      interval: 10s
-      retries: 5
-      start_period: 20s
-
-
   pdAdmin:
     image: dpage/pgadmin4
     ports:
@@ -33,7 +16,7 @@ services:
       - PGADMIN_DEFAULT_EMAIL=admin@gmail.com
       - PGADMIN_DEFAULT_PASSWORD=admin
     depends_on:
-      user-service-pg-db:
+      application-db:
         condition: service_healthy
 
   schedule-service:
@@ -77,44 +60,29 @@ services:
 
   user-management-service:
     build:
-      context: ./src/Services/UserManagementService
-      dockerfile: UserManagementService.API/Dockerfile
+      context: .
+      dockerfile: src/Services/UserManagementService/UserManagementService.API/Dockerfile
     ports:
       - "5003:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__applicationDb=Host=application-db;Port=5432;Database=application_db;Username=postgres;Password=${POSTGRES_PASSWORD:-postgres}
+      - ConnectionStrings__rabbitmq=amqp://guest:guest@rabbitmq:5672
+      - Database__ApplyMigrationsOnStartup=true
       - Keycloak__PublicUrl=http://localhost:8080
       - services__keycloak__http__0=http://keycloak:8080
     depends_on:
-      - management-mongo
-      - keycloak
-    volumes:
-      - ./certs/server-cert.crt:/usr/local/share/ca-certificates/server-cert.crt:ro
+      application-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      keycloak:
+        condition: service_started
 
-  management-mongo:
-    image: mongo:latest
-    container_name: management-mongo
-    ports:
-      - "27017:27017" 
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=usermanagement_db
-    volumes:
-      - management-mongo-data:/data/db
-
-  management-mongo-express:
-    image: mongo-express:latest
-    ports:
-      - "8081:8081"
-    environment:
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
-      - ME_CONFIG_MONGODB_SERVER=management-mongo
-        
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
+    command: ["start-dev", "--import-realm"]
     ports:
       - "8080:8080"
     environment:
@@ -122,9 +90,8 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
     volumes:
       - ./containers/keycloak:/opt/keycloak/data
+      - ./src/AppHost/keycloak:/opt/keycloak/data/import:ro
     user: root # development only
 
 volumes:
   application-db-data:
-  db-data:
-  management-mongo-data:

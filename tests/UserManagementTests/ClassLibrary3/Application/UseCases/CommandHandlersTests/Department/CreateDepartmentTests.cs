@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.Department
+namespace UserManagementService.Application.UseCases.CommandHandlersTests.Department
 {
     using Moq;
     using System;
@@ -21,7 +21,7 @@
         public CreateDepartmentTests()
         {
             departmentRepositoryMock = new Mock<IDepartmentRepository>();
-            handler = new CreateDepartmentCommandHandler(departmentRepositoryMock.Object);
+            handler = new CreateDepartmentCommandHandler(departmentRepositoryMock.Object, Mock.Of<IDataChanges>());
 
             command = new CreateDepartmentCommand("newDep", "123");
         }

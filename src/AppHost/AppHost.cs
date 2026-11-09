@@ -7,11 +7,6 @@ var scheduleDb = builder.AddPostgres("application-postgres")
     .WithDataVolume()
     .AddDatabase("applicationDb", "application_db");
 
-var managementMongo = builder.AddMongoDB("management-mongo")
-    .WithDataVolume()
-    .WithMongoExpress();
-var managementDb = managementMongo.AddDatabase("userManagementDb");
-
 var keycloak = builder.AddKeycloak("keycloak", port: 8080)
     .WithDataVolume()
     .WithRealmImport("keycloak")
@@ -29,15 +24,16 @@ var scheduleService = builder.AddProject<Projects.ScheduleService_API>("schedule
     .WaitFor(keycloak);
 
 var userService = builder.AddProject<Projects.UserManagementService_API>("user-management-service")
-    .WithReference(managementDb)
+    .WithReference(scheduleDb)
+    .WithEnvironment("Database__ApplyMigrationsOnStartup", "true")
     .WithReference(keycloak)
     .WithReference(rabbit)
     .WithEnvironment("Keycloak__PublicUrl", keycloakPublicUrl)
     .WaitFor(rabbit)
-    .WaitFor(managementDb)
+    .WaitFor(scheduleDb)
     .WaitFor(keycloak);
 
-builder.AddViteApp("angular-frontend", "../../apps/web")
+builder.AddViteApp("scheduleFe", "../../../scheduleFe")
     .WithReference(userService)
     .WithReference(scheduleService)
     .WithReference(keycloak)

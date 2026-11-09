@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Domain.Models;
+namespace UserManagementService.Domain.Models;
 
 public class Clinic : Entity
 {

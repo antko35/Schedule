@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using UserManagementService.Application.Extensions;
 using UserManagementService.Application.UseCases.Commands.User;
 using UserManagementService.Domain.Abstractions.IRabbitMq;
@@ -12,12 +12,15 @@ public class DeleteUserCommandHandler
     private readonly IUserRepository userRepository;
     private readonly IUserJobsRepository userJobsRepository;
     private readonly IUserEventPublisher userEventPublisher;
+    private readonly IDataChanges changes;
+
 
     public DeleteUserCommandHandler(
         IUserRepository userRepository,
         IUserJobsRepository userJobsRepository,
-        IUserEventPublisher userEventPublisher)
+        IUserEventPublisher userEventPublisher, IDataChanges changes)
     {
+        this.changes = changes;
         this.userRepository = userRepository;
         this.userJobsRepository = userJobsRepository;
         this.userEventPublisher = userEventPublisher;
@@ -29,22 +32,14 @@ public class DeleteUserCommandHandler
 
         user.EnsureExists("User not found");
 
-        await userRepository.RemoveAsync(request.UserId);
-
-        await DeleteUserSchedule(request.UserId);
-
+        var memberships = (await userJobsRepository.GetUserJobsByUserIdAsync(request.UserId)).ToList();
         await userJobsRepository.DeleteByUserId(request.UserId);
-    }
+        await userRepository.RemoveAsync(request.UserId);
+        await changes.SaveChangesAsync(cancellationToken);
 
-    private async Task DeleteUserSchedule(string userId)
-    {
-        var userJobs = await userJobsRepository.GetUserJobsByUserIdAsync(userId);
-
-        var departments = userJobs.Select(userJob => userJob.DepartmentId).ToList();
-
-        foreach (var id in departments)
+        foreach (var membership in memberships)
         {
-            await userEventPublisher.PublishUserDeleted(userId, id);
+            await userEventPublisher.PublishUserDeleted(user.Id, membership.DepartmentId!);
         }
     }
 }

@@ -1,11 +1,11 @@
-﻿namespace UserManagementService.Application.UseCases.QueryHandlersTests.Department
+namespace UserManagementService.Application.UseCases.QueryHandlersTests.Department
 {
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using MongoDB.Bson;
+
     using Moq;
     using UserManagementService.Application.UseCases.Queries.Department;
     using UserManagementService.Application.UseCases.QueryHandlers.Department;
@@ -73,7 +73,7 @@
             {
                 departments.Add(new Department
                 {
-                    Id = ObjectId.GenerateNewId().ToString(),
+                    Id = UserManagementService.Domain.Models.EntityId.New(),
                     DepartmentName = $"Department {i}"
                 });
             }

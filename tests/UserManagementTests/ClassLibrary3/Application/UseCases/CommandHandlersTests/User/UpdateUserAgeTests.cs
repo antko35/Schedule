@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
+namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
 {
     using System;
     using System.Collections.Generic;
@@ -11,7 +11,7 @@
     using UserManagementService.Domain.Abstractions.IRepository;
     using Xunit;
     using Domain.Models;
-    using MongoDB.Bson;
+
     using FluentAssertions;
 
     public class UpdateUserAgeTests
@@ -22,7 +22,7 @@
         public UpdateUserAgeTests()
         {
             userRepositoryMock = new Mock<IUserRepository>();
-            handler = new UpdateUserAgeCommandHandler(userRepositoryMock.Object);
+            handler = new UpdateUserAgeCommandHandler(userRepositoryMock.Object, Mock.Of<IDataChanges>());
         }
 
         [Fact]
@@ -33,14 +33,14 @@
             {
                 new User
                 {
-                    Id = ObjectId.GenerateNewId().ToString(),
+                    Id = UserManagementService.Domain.Models.EntityId.New(),
                     FirstName = "John",
                     LastName = "Doe",
                     DateOfBirth = new DateOnly(1990, 1, 1),
                 },
                 new User
                 {
-                    Id = ObjectId.GenerateNewId().ToString(),
+                    Id = UserManagementService.Domain.Models.EntityId.New(),
                     FirstName = "Jane",
                     LastName = "Smith",
                     DateOfBirth = new DateOnly(1985, 5, 15),

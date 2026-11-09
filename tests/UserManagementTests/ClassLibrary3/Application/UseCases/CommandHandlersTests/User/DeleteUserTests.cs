@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.User;
+namespace UserManagementService.Application.UseCases.CommandHandlersTests.User;
 
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ public class DeleteUserTests
         userJobsRepositoryMock = new Mock<IUserJobsRepository>();
         userEventPublisherMock = new Mock<IUserEventPublisher>();
 
-        this.handler = new DeleteUserCommandHandler(userRepositoryMock.Object, userJobsRepositoryMock.Object, userEventPublisherMock.Object);
+        this.handler = new DeleteUserCommandHandler(userRepositoryMock.Object, userJobsRepositoryMock.Object, userEventPublisherMock.Object, Mock.Of<IDataChanges>());
 
         command = new DeleteUserCommand("userId");
     }
@@ -35,6 +35,8 @@ public class DeleteUserTests
     public async Task DeleteDepartment_Success()
     {
         // Arrange
+        userJobsRepositoryMock.Setup(repo => repo.GetUserJobsByUserIdAsync(command.UserId))
+            .ReturnsAsync(new List<UserJob>());
         var user = new User { Id = command.UserId, FirstName = "John" };
 
         userRepositoryMock.Setup(repo => repo.GetByIdAsync(command.UserId))

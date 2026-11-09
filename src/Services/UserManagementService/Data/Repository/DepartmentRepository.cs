@@ -1,21 +1,16 @@
-﻿namespace UserManagementService.DataAccess.Repository;
+namespace UserManagementService.DataAccess.Repository;
 
-using MongoDB.Driver;
+using Microsoft.EntityFrameworkCore;
 using UserManagementService.DataAccess.Database;
 using UserManagementService.Domain.Abstractions.IRepository;
 using UserManagementService.Domain.Models;
 
-public class DepartmentRepository : GenericRepository<Department>, IDepartmentRepository
+public class DepartmentRepository(UserManagementDbContext context)
+    : GenericRepository<Department>(context), IDepartmentRepository
 {
-    public DepartmentRepository(DbContext context, BaseDbOptions options)
-        : base(context, options.DepartmentsCollectionName)
-    {
-    }
-
     public async Task<IEnumerable<Department>> GetByClinicId(string clinicId)
     {
-        var filter = Builders<Department>.Filter.Eq(x => x.ClinicId, clinicId);
-        var departments = await dbSet.Find(filter).ToListAsync();
-        return departments;
+        clinicId = EntityId.Normalize(clinicId);
+        return await dbSet.Where(entity => entity.ClinicId == clinicId).ToListAsync();
     }
 }

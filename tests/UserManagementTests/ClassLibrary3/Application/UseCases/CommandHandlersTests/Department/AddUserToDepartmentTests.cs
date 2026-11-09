@@ -1,4 +1,4 @@
-﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+using UserManagementService.Domain.Abstractions.IRabbitMq;
 
 namespace UserManagementService.Application.UseCases.CommandHandlersTests.Department
 {
@@ -36,7 +36,7 @@ namespace UserManagementService.Application.UseCases.CommandHandlersTests.Depart
                 userRepositoryMock.Object,
                 departmentRepositoryMock.Object,
                 userJobsRepositoryMock.Object,
-                userEventPublisher.Object);
+                userEventPublisher.Object, Mock.Of<IDataChanges>());
 
             command = new AddUserToDepartmentCommand
                 ("user", "dept123", "Doctor", "Active", "doctor@example.com", "123-456-7890");
