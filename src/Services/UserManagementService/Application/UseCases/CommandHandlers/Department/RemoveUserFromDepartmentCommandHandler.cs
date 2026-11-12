@@ -1,4 +1,4 @@
-﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+using UserManagementService.Domain.Abstractions.IRabbitMq;
 
 namespace UserManagementService.Application.UseCases.CommandHandlers.Department
 {
@@ -12,9 +12,12 @@ namespace UserManagementService.Application.UseCases.CommandHandlers.Department
     {
         private readonly IUserJobsRepository userJobsRepository;
         private readonly IUserEventPublisher userEventPublisher;
+        private readonly IDataChanges changes;
 
-        public RemoveUserFromDepartmentCommandHandler(IUserJobsRepository userJobsRepository, IUserEventPublisher userEventPublisher)
+
+        public RemoveUserFromDepartmentCommandHandler(IUserJobsRepository userJobsRepository, IUserEventPublisher userEventPublisher, IDataChanges changes)
         {
+            this.changes = changes;
             this.userJobsRepository = userJobsRepository;
             this.userEventPublisher = userEventPublisher;
         }
@@ -26,8 +29,9 @@ namespace UserManagementService.Application.UseCases.CommandHandlers.Department
             userJob.EnsureExists("User not found in this department");
 
             await userJobsRepository.RemoveAsync(userJob.Id);
+            await changes.SaveChangesAsync(cancellationToken);
 
-            await userEventPublisher.PublishUserDeleted(request.UserId, request.DepartmentId);
+            await userEventPublisher.PublishUserDeleted(userJob.UserId, userJob.DepartmentId!);
 
             return userJob;
         }

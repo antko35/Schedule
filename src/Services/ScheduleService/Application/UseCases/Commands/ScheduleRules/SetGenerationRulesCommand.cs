@@ -1,12 +1,16 @@
-﻿using MediatR;
-using ScheduleService.Domain.Models;
+using MediatR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
 {
     public class SetGenerationRulesCommand
-        : IRequest<UserScheduleRules>
+        : IRequest<ScheduleService.Application.Contracts.ScheduleRulesDto>
     {
-        public string ScheduleRulesId { get; set; }
+        public string ScheduleRulesId { get; set; } = string.Empty;
 
         public float? HoursPerMonth { get; set; }
 

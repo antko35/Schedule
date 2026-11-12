@@ -1,9 +1,13 @@
 ﻿namespace ScheduleService.Application.UseCases.Queries.Calendar
 {
+    using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
     using MediatR;
-    using Domain.Models;
+    using ScheduleService.Application.Contracts;
 
     public record GetYearHolidaysQuery(int Year)
-        : IRequest<List<Calendar>>;
+        : IRequest<List<CalendarDto>>;
 }

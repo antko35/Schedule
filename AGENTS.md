@@ -13,8 +13,8 @@ The repo contains two separate frontend folders. Do not copy code, patterns, or 
 
 | Folder | Status | Stack | Notes |
 |---|---|---|---|
-| `apps/web/` | **NEW — active** | Angular | The current frontend. Has its own `AGENTS.md` (and its own `.git`). Use this for new frontend work. |
-| `legacy/electron-vue/` | **OLD — legacy** | (previous frontend) | Kept for reference only. Do not change unless explicitly asked. |
+| `../scheduleFe/` | **NEW — active** | Angular | The current frontend. Has its own `AGENTS.md` (and its own `.git`). Use this for new frontend work. |
+| `../front/electron-vue/` | **OLD — legacy** | (previous frontend) | Kept for reference only. Do not change unless explicitly asked. |
 
 When working on frontend files, follow the `AGENTS.md` inside that frontend's folder. The backend lives in `src/` (see below) and is the API contract for both.
 
@@ -24,7 +24,7 @@ When working on frontend files, follow the `AGENTS.md` inside that frontend's fo
 ```bash
 dotnet run --project src/AppHost
 ```
-This starts both services, Keycloak, RabbitMQ, and MongoDB with service discovery wired automatically.
+This starts both services, Keycloak, RabbitMQ, and PostgreSQL with service discovery wired automatically.
 
 **Alternative: via Docker Compose**
 ```bash
@@ -59,26 +59,26 @@ Two microservices, each following the same Clean Architecture layering:
 ### Services
 
 **ScheduleService** (`src/Services/ScheduleService/`) — port 5002
-- Stores schedules and `UserScheduleRule` records in **MongoDB**
+- Stores monthly schedules, shifts, generation rules and calendar exceptions in **PostgreSQL**, schema `schedule`
 - Authenticates via **Keycloak JWT** (realm: `schedule-service`, audience: `schedule-service`)
 - Uses **Hangfire** for background schedule generation jobs
 - Consumes RabbitMQ events from UserManagementService
 
 **UserManagementService** (`src/Services/UserManagementService/`) — port 5003
-- Stores users, departments, and user-department memberships in **MongoDB**
+- Stores users, departments, clinics and user-department memberships in **PostgreSQL**, schema `user_management`
 - Manages authentication users and permissions through the **Keycloak Admin API**
 - Publishes events to **RabbitMQ** when users are added to departments
-- A new `UserScheduleRule` record in ScheduleService's DB is created automatically when a user is added to a department
+- A monthly schedule and generation rule in ScheduleService's DB is created automatically when a user is added to a department
 
 ### Shared infrastructure
 
 - **`Schedule.ServiceDefaults`** — shared Aspire defaults: OpenTelemetry (traces, metrics, logs), health checks, service discovery. Every service calls `builder.AddServiceDefaults()`.
-- **`Schedule.AppHost`** — Aspire orchestration entry point; references both active service projects and provisions Keycloak, RabbitMQ, and MongoDB.
+- **`Schedule.AppHost`** — Aspire orchestration entry point; references both active service projects and provisions Keycloak, RabbitMQ, and PostgreSQL.
 
 ### Key patterns
 
 - **MediatR** for all command/query handling in Application layer
-- **Hangfire** for recurring schedule-generation jobs (configured in Infrastructure)
+- **Hangfire** on PostgreSQL: isolated `schedule_hangfire` and `user_management_hangfire` schemas
 - **StyleCop** analyzers enforced in all projects
 - **`ExceptionHandlingMiddleware`** registered in every API pipeline (note: typo `ExeptionHadlingMiddleware` in code)
 - Tests use **xUnit + Moq + FluentAssertions**
@@ -90,15 +90,21 @@ Two microservices, each following the same Clean Architecture layering:
 | ScheduleService API | 5002 |
 | UserManagementService API | 5003 |
 | RabbitMQ Management UI | 15672 |
-| MongoDB (schedule) | 27018 |
-| MongoDB (management) | 27017 |
-| Mongo Express (schedule) | 8082 |
-| Mongo Express (management) | 8081 |
+| PostgreSQL (application_db) | 5433 |
+| pgAdmin | 5050 |
 
 ## Workflow: Creating a Schedule
 
 1. POST `/User` on UserManagementService (port 5003) — creates a user
 2. POST `/Department` on UserManagementService — creates a department
-3. POST `/Department/addUserToDepartment` — links user to department; this auto-creates a `UserScheduleRule` in ScheduleService's MongoDB
+3. POST `/Department/addUserToDepartment` — links user to department; this creates a monthly schedule and generation rule in ScheduleService's PostgreSQL schema
 4. Fill schedule rules via ScheduleService (port 5002)
 5. Schedules can be created manually via POST `/Schedule` or generated automatically by Hangfire jobs
+
+## PostgreSQL storage and transition
+
+Both APIs use `ConnectionStrings__applicationDb`, with independent EF contexts and migration histories in their own schemas. Application handlers stage UserManagementService repository changes and commit through `IDataChanges` once per command before publishing RabbitMQ events. Do not commit inside individual repositories.
+
+Aspire and Compose opt in to startup migrations through `Database__ApplyMigrationsOnStartup=true`. Outside local orchestration apply migrations explicitly. See [docs/usermanagement-postgresql.md](docs/usermanagement-postgresql.md) for commands.
+
+UserManagementService starts with empty PostgreSQL tables; no Mongo business data, Hangfire history or pending jobs are imported. Existing Mongo volumes, ScheduleService records and Keycloak data must not be deleted automatically. Existing schedules may retain references to old users/departments. Keep string IDs compatible with the 24-character hex API format.

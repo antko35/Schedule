@@ -12,16 +12,21 @@ public class UserEmailRpcService
         this.userEmailsRpcClient = userEmailsRpcClient;
     }
 
-    public async Task<List<string>> InvokeAsync(List<string> ids)
+    public async Task<List<string>> InvokeAsync(
+        List<string> ids,
+        CancellationToken cancellationToken = default)
     {
-        await userEmailsRpcClient.StartAsync();
+        try
+        {
+            await userEmailsRpcClient.StartAsync();
 
-        var response = await userEmailsRpcClient.GetDepartmentHeadsEmailsAsync(ids);
+            var response = await userEmailsRpcClient.GetDepartmentHeadsEmailsAsync(ids, cancellationToken);
 
-        var emails = JsonSerializer.Deserialize<List<string>>(response);
-
-        await userEmailsRpcClient.DisposeAsync();
-
-        return emails;
+            return JsonSerializer.Deserialize<List<string>>(response) ?? new List<string>();
+        }
+        finally
+        {
+            await userEmailsRpcClient.DisposeAsync();
+        }
     }
 }

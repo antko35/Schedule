@@ -1,145 +1,112 @@
-using FluentAssertions;
-using MongoDB.Bson;
-using Moq;
-using ScheduleService.Application.Services;
-using ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
-using ScheduleService.Application.UseCases.Commands.ScheduleRules;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Abstractions;
-using ScheduleService.Domain.Models;
-using Xunit;
-
 namespace Application.UseCases.CommandHandlers.ScheduleRules;
 
-public class AddingScheduleRulesForNextMonthCommandTests
+using ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
+using ScheduleService.Application.UseCases.Commands.ScheduleRules;
+
+public sealed class AddingScheduleRulesForNextMonthCommandTests
 {
-    private readonly Mock<IScheduleRepository> scheduleRepositoryMock;
-    private readonly Mock<IUserRuleRepository> scheduleRuleRepositoryMock;
-    private readonly AddingScheduleRulesForNextMonthCommandHandler handler;
-
-    public AddingScheduleRulesForNextMonthCommandTests()
+    [Fact]
+    public async Task Handle_RejectsMissingCurrentRulesWithoutCommit()
     {
-        scheduleRepositoryMock = new Mock<IScheduleRepository>();
-        scheduleRuleRepositoryMock = new Mock<IUserRuleRepository>();
-        var scheduleRulesGenerator = new ScheduleRulesGenerator(
-            scheduleRuleRepositoryMock.Object,
-            scheduleRepositoryMock.Object);
-        handler = new AddingScheduleRulesForNextMonthCommandHandler(
-            scheduleRuleRepositoryMock.Object,
-            scheduleRepositoryMock.Object,
-            scheduleRulesGenerator
-        );
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var schedules = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        rules.Setup(x => x.GetAllByMonthAsync(It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<ScheduleGenerationRule>());
+        var handler = new AddingScheduleRulesForNextMonthCommandHandler(
+            rules.Object,
+            schedules.Object,
+            dbContext.Object);
+
+        var action = () => handler.Handle(
+            new AddingScheduleRulesForNextMonthCommand(),
+            CancellationToken.None);
+
+        await action.Should().ThrowAsync<InvalidOperationException>();
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task Handle_ShouldAddRulesAndSchedules_WhenRulesExist()
+    public async Task Handle_ReusesExistingNextMonthEntitiesWithoutCommit()
     {
-        // Arrange
-        var currentDate = DateTime.Now;
-        var nextMonthDate = currentDate.AddMonths(1);
-        var currentMonth = currentDate.ToString("MMMM").ToLower();
-        var nextMonth = nextMonthDate.ToString("MMMM").ToLower();
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var schedules = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var now = DateTime.UtcNow;
+        var currentPeriod = new DateOnly(now.Year, now.Month, 1);
+        var nextPeriod = currentPeriod.AddMonths(1);
+        var currentRule = Rule("current-rule", currentPeriod);
+        var nextRule = Rule("next-rule", nextPeriod);
+        var schedule = new MonthlySchedule(
+            "schedule-id",
+            "user-id",
+            "department-id",
+            nextPeriod,
+            DateTime.SpecifyKind(now, DateTimeKind.Utc));
+        rules.Setup(x => x.GetAllByMonthAsync(currentPeriod, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([currentRule]);
+        rules.Setup(x => x.GetAsync("user-id", "department-id", nextPeriod, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(nextRule);
+        schedules.Setup(x => x.GetAsync("user-id", "department-id", nextPeriod, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(schedule);
+        var handler = new AddingScheduleRulesForNextMonthCommandHandler(
+            rules.Object,
+            schedules.Object,
+            dbContext.Object);
 
-        var allScheduleRules = new List<UserScheduleRules>
-        {
-            new UserScheduleRules
-            {
-                UserId = "user1",
-                DepartmentId = "dept1",
-                Year = currentDate.Year,
-                MonthName = currentMonth,
-                ScheduleId = ObjectId.GenerateNewId().ToString(),
-            },
-        };
-
-        scheduleRuleRepositoryMock
-            .Setup(repo => repo.GetAllRulesByMonth(currentMonth))
-            .ReturnsAsync(allScheduleRules);
-
-        // Act
         await handler.Handle(new AddingScheduleRulesForNextMonthCommand(), CancellationToken.None);
 
-        // Assert
-        scheduleRuleRepositoryMock.Verify(
-            repo => repo.AddAsync(It.IsAny<UserScheduleRules>()),
-            Times.Once);
-
-        scheduleRepositoryMock.Verify(
-            repo => repo.AddAsync(It.IsAny<ScheduleService.Domain.Models.Schedule>()),
-            Times.Once);
+        schedules.Verify(x => x.AddAsync(It.IsAny<MonthlySchedule>(), It.IsAny<CancellationToken>()), Times.Never);
+        rules.Verify(x => x.AddAsync(It.IsAny<ScheduleGenerationRule>(), It.IsAny<CancellationToken>()), Times.Never);
+        dbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task Handle_ShouldThrowException_WhenRulesAreEmpty()
+    public async Task Handle_ClonesCurrentRulesAndCreatesEmptySchedules()
     {
-        // Arrange
-        var currentDate = DateTime.Now;
-        var currentMonth = currentDate.ToString("MMMM").ToLower();
+        var rules = new Mock<IScheduleGenerationRuleRepository>();
+        var schedules = new Mock<IScheduleRepository>();
+        var dbContext = TestSupport.CreateDbContextMock();
+        var now = DateTime.UtcNow;
+        var currentPeriod = new DateOnly(now.Year, now.Month, 1);
+        var currentRule = new ScheduleGenerationRule(
+            "rule-id",
+            "user-id",
+            "department-id",
+            currentPeriod,
+            480,
+            240,
+            new TimeOnly(8, 0),
+            new TimeOnly(14, 30),
+            ShiftPattern.AlternateByWeekdayA);
+        rules.Setup(x => x.GetAllByMonthAsync(currentPeriod, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([currentRule]);
+        var handler = new AddingScheduleRulesForNextMonthCommandHandler(
+            rules.Object,
+            schedules.Object,
+            dbContext.Object);
 
-        scheduleRuleRepositoryMock
-            .Setup(repo => repo.GetAllRulesByMonth(currentMonth))
-            .ReturnsAsync((List<UserScheduleRules>)null);
-
-        // Act
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            handler.Handle(new AddingScheduleRulesForNextMonthCommand(), CancellationToken.None));
-
-        // Assert
-        scheduleRuleRepositoryMock.Verify(
-            repo => repo.AddAsync(It.IsAny<UserScheduleRules>()),
-            Times.Never);
-
-        scheduleRepositoryMock.Verify(
-            repo => repo.AddAsync(It.IsAny<ScheduleService.Domain.Models.Schedule>()),
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldAddCorrectData_WhenRulesExist()
-    {
-        // Arrange
-        var currentDate = DateTime.Now;
-        var nextMonthDate = currentDate.AddMonths(1);
-        var currentMonth = currentDate.ToString("MMMM").ToLower();
-        var nextMonth = nextMonthDate.ToString("MMMM").ToLower();
-
-        var allScheduleRules = new List<UserScheduleRules>
-        {
-            new UserScheduleRules
-            {
-                UserId = "user1",
-                DepartmentId = "dept1",
-                Year = currentDate.Year,
-                MonthName = currentMonth,
-                ScheduleId = ObjectId.GenerateNewId().ToString(),
-            },
-        };
-
-        scheduleRuleRepositoryMock
-            .Setup(repo => repo.GetAllRulesByMonth(currentMonth))
-            .ReturnsAsync(allScheduleRules);
-
-        List<UserScheduleRules> addedRules = null;
-        scheduleRuleRepositoryMock
-            .Setup(repo => repo.AddRangeAsync(It.IsAny<IEnumerable<UserScheduleRules>>()))
-            .Callback<IEnumerable<UserScheduleRules>>(rules => addedRules = rules.ToList());
-
-        List<ScheduleService.Domain.Models.Schedule> addedSchedules = null;
-        scheduleRepositoryMock
-            .Setup(repo => repo.AddRangeAsync(It.IsAny<IEnumerable<ScheduleService.Domain.Models.Schedule>>()))
-            .Callback<IEnumerable<ScheduleService.Domain.Models.Schedule>>(schedules => addedSchedules = schedules.ToList());
-
-        // Act
         await handler.Handle(new AddingScheduleRulesForNextMonthCommand(), CancellationToken.None);
 
-        // Assert
-        addedRules.Should().HaveCount(1);
-        addedRules[0].UserId.Should().Be("user1");
-        addedRules[0].DepartmentId.Should().Be("dept1");
-        addedRules[0].Year.Should().Be(nextMonthDate.Year);
-        addedRules[0].MonthName.Should().Be(nextMonth);
-
-        addedSchedules.Should().HaveCount(1);
-        addedSchedules[0].MonthName.Should().Be(nextMonth);
+        var nextPeriod = currentPeriod.AddMonths(1);
+        schedules.Verify(x => x.AddAsync(
+            It.Is<MonthlySchedule>(item => item.Period == nextPeriod && item.UserId == "user-id"),
+            CancellationToken.None), Times.Once);
+        rules.Verify(x => x.AddAsync(
+            It.Is<ScheduleGenerationRule>(item => item.Period == nextPeriod && item.Pattern == currentRule.Pattern),
+            CancellationToken.None), Times.Once);
+        dbContext.Verify(x => x.SaveChangesAsync(CancellationToken.None), Times.Once);
     }
+
+    private static ScheduleGenerationRule Rule(string id, DateOnly period) =>
+        new(
+            id,
+            "user-id",
+            "department-id",
+            period,
+            480,
+            240,
+            new TimeOnly(8, 0),
+            new TimeOnly(14, 30),
+            ShiftPattern.AlternateByWeekdayA);
 }

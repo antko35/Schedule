@@ -15,10 +15,10 @@ namespace ScheduleService.Application.Validators.Commands.Schedule
         public DeleteUserMonthScheduleCommandValidator()
         {
             RuleFor(x => x.DepartmentId)
-                .MustBeValidObjectId();
+                .MustBeValidEntityId();
 
             RuleFor(x => x.UserId)
-                .MustBeValidObjectId();
+                .MustBeValidEntityId();
 
             RuleFor(x => x.Year)
                 .InclusiveBetween(2000, 2100);

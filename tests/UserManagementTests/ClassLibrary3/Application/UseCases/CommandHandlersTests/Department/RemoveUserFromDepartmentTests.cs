@@ -1,4 +1,4 @@
-﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+using UserManagementService.Domain.Abstractions.IRabbitMq;
 
 namespace UserManagementService.Application.UseCases.CommandHandlersTests.Department
 {
@@ -26,7 +26,7 @@ namespace UserManagementService.Application.UseCases.CommandHandlersTests.Depart
         {
             userJobsRepositoryMock = new Mock<IUserJobsRepository>();
             userEventPublisher = new Mock<IUserEventPublisher>();
-            handler = new RemoveUserFromDepartmentCommandHandler(userJobsRepositoryMock.Object, userEventPublisher.Object);
+            handler = new RemoveUserFromDepartmentCommandHandler(userJobsRepositoryMock.Object, userEventPublisher.Object, Mock.Of<IDataChanges>());
 
             command = new RemoveUserFromDepartmentCommand("user123", "department456");
         }

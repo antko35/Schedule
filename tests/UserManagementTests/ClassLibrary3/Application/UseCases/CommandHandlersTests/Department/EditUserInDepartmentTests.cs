@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlersTests.Department
+namespace UserManagementService.Application.UseCases.CommandHandlersTests.Department
 {
     using Moq;
     using System;
@@ -26,7 +26,7 @@
             userJobsRepositoryMock = new Mock<IUserJobsRepository>();
             userRepositoryMock = new Mock<IUserRepository>();
 
-            handler = new EditUserInDepartmentCommandHandler(userRepositoryMock.Object, departmentRepositoryMock.Object, userJobsRepositoryMock.Object);
+            handler = new EditUserInDepartmentCommandHandler(userRepositoryMock.Object, departmentRepositoryMock.Object, userJobsRepositoryMock.Object, Mock.Of<IDataChanges>());
 
             command = new EditUserInDepartmentCommand
                 ("DepId", "userId", "newRole", "newStatus", "new@gmail.com", "1234567890");

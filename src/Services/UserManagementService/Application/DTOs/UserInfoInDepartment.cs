@@ -1,6 +1,5 @@
-﻿namespace UserManagementService.Application.DTOs;
+namespace UserManagementService.Application.DTOs;
 
-using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;

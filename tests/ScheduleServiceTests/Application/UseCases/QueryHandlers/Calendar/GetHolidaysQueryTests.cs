@@ -1,36 +1,17 @@
-using FluentAssertions;
-using Moq;
+namespace Application.UseCases.QueryHandlers.Calendar;
 using ScheduleService.Application.UseCases.Queries.Calendar;
 using ScheduleService.Application.UseCases.QueryHandlers.Calendar;
-using ScheduleService.Domain.Abstractions;
-using Xunit;
-
-namespace Application.UseCases.QueryHandlers.Calendar;
-
-public class GetHolidaysQueryTests
+public sealed class GetHolidaysQueryTests
 {
     [Fact]
-    public async Task Handle_ShouldReturnAllHolidaysOrderedByDate()
+    public async Task ReturnsCompatibleHolidayDtosOrderedByDate()
     {
-        // Arrange
-        var laterHoliday = new ScheduleService.Domain.Models.Calendar
-        {
-            HolidayDate = new DateOnly(2026, 5, 9),
-        };
-        var earlierHoliday = new ScheduleService.Domain.Models.Calendar
-        {
-            HolidayDate = new DateOnly(2026, 1, 1),
-        };
+        var later = new CalendarException("later", new DateOnly(2026, 5, 9), null);
+        var earlier = new CalendarException("earlier", new DateOnly(2026, 1, 1), null);
         var repository = new Mock<ICalendarRepository>();
-        repository
-            .Setup(x => x.GetAllAsync())
-            .ReturnsAsync(new[] { laterHoliday, earlierHoliday });
-        var handler = new GetHolidaysQueryHandler(repository.Object);
-
-        // Act
-        var result = await handler.Handle(new GetHolidaysQuery(), CancellationToken.None);
-
-        // Assert
-        result.Should().ContainInOrder(earlierHoliday, laterHoliday);
+        repository.Setup(x => x.GetAllAsync(default)).ReturnsAsync(new[] { later, earlier });
+        var result = await new GetHolidaysQueryHandler(repository.Object).Handle(new GetHolidaysQuery(), default);
+        result.Select(x => x.Id).Should().Equal("earlier", "later");
+        result[0].Year.Should().Be(2026);
     }
 }

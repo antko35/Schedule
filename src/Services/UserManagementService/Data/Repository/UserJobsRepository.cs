@@ -1,61 +1,42 @@
-﻿namespace UserManagementService.DataAccess.Repository;
+namespace UserManagementService.DataAccess.Repository;
 
-using MongoDB.Driver;
+using Microsoft.EntityFrameworkCore;
 using UserManagementService.DataAccess.Database;
 using UserManagementService.Domain.Abstractions.IRepository;
 using UserManagementService.Domain.Models;
 
-public class UserJobsRepository : GenericRepository<UserJob>, IUserJobsRepository
+public class UserJobsRepository(UserManagementDbContext context)
+    : GenericRepository<UserJob>(context), IUserJobsRepository
 {
-    public UserJobsRepository(DbContext dbContext, BaseDbOptions options)
-        : base(dbContext, options.UserJobsCollectionName)
-    {
-    }
-
     public async Task<UserJob> GetUserJobAsync(string userId, string departmentId)
     {
-        var filter = Builders<UserJob>.Filter.And(
-       Builders<UserJob>.Filter.Eq(x => x.UserId, userId),
-       Builders<UserJob>.Filter.Eq(x => x.DepartmentId, departmentId));
-
-        return await dbSet.Find(filter).FirstOrDefaultAsync();
+        userId = EntityId.Normalize(userId);
+        departmentId = EntityId.Normalize(departmentId);
+        return (await dbSet.FirstOrDefaultAsync(job => job.UserId == userId && job.DepartmentId == departmentId))!;
     }
 
     public async Task<IEnumerable<UserJob>> GetUserJobsByDepartmentIdAsync(string departmentId)
     {
-        var filter = Builders<UserJob>.Filter.Eq(x => x.DepartmentId, departmentId);
-
-        var userJobs = await dbSet.Find(filter).ToListAsync();
-
-        return userJobs;
+        departmentId = EntityId.Normalize(departmentId);
+        return await dbSet.Where(job => job.DepartmentId == departmentId).ToListAsync();
     }
 
     public async Task<IEnumerable<UserJob>> GetUserJobsByUserIdAsync(string userId)
     {
-        var filter = Builders<UserJob>.Filter.Eq(x => x.UserId, userId);
-
-        var userJobs = await dbSet.Find(filter).ToListAsync();
-
-        return userJobs;
+        userId = EntityId.Normalize(userId);
+        return await dbSet.Where(job => job.UserId == userId).ToListAsync();
     }
 
-    public async Task<List<string>> GetHeadEmails(IEnumerable<string> departmentIds)
+    public Task<List<string>> GetHeadEmails(IEnumerable<string> departmentIds)
     {
-        var filter = Builders<UserJob>.Filter.And(
-            Builders<UserJob>.Filter.In(u => u.DepartmentId, departmentIds),
-            Builders<UserJob>.Filter.Eq(u => u.Role, UserJobRole.DepartmentHead));
-
-        var emails = await dbSet
-            .Find(filter)
-            .ToListAsync();
-
-        return emails.Select(u => u.Email).ToList();
+        var normalized = departmentIds.Select(EntityId.Normalize).ToList();
+        return dbSet.Where(job => normalized.Contains(job.DepartmentId!) && job.Role == UserJobRole.DepartmentHead)
+            .Select(job => job.Email!).ToListAsync();
     }
 
     public async Task DeleteByUserId(string userId)
     {
-        var filter = Builders<UserJob>.Filter.Eq(x => x.UserId, userId);
-
-        await dbSet.DeleteManyAsync(filter);
+        userId = EntityId.Normalize(userId);
+        dbSet.RemoveRange(await dbSet.Where(job => job.UserId == userId).ToListAsync());
     }
 }

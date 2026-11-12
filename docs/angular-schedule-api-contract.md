@@ -9,7 +9,7 @@ models, validators, and the legacy UI call flow.
 - All listed endpoints require a bearer token because their controllers use
   `[Authorize]`.
 - ASP.NET Core's default JSON naming is camel case.
-- `ObjectId` means a 24-character MongoDB object-id string.
+- `ObjectId` denotes the existing API format: a 24-character hex string, stored as a string in PostgreSQL. It does not imply a MongoDB dependency.
 - Dates and date-times are JSON strings. Send date-times as ISO 8601 values with
   an explicit offset, preferably UTC (`2026-09-18T08:00:00Z`).
 - `year` is valid from 2000 through 2100 and `month` is one-based (`1` through
@@ -29,9 +29,9 @@ Response: `200 application/json`, `Department[]`.
 
 | Field | JSON type | Required | Notes |
 |---|---|---:|---|
-| `id` | `string` | yes | Department MongoDB `ObjectId`. |
+| `id` | `string` | yes | Department 24-character hex ID. |
 | `departmentName` | `string \| null` | yes | Nullable in the backend domain model. |
-| `clinicId` | `string \| null` | yes | MongoDB `ObjectId` when present. Not needed by the Schedule UI. |
+| `clinicId` | `string \| null` | yes | 24-character hex ID when present. Not needed by the Schedule UI. |
 
 Legacy use: loads the department accordion when the page opens.
 
@@ -47,13 +47,13 @@ Path parameters:
 
 | Field | Type | Required | Notes |
 |---|---|---:|---|
-| `departmentId` | `string` | yes | Department MongoDB `ObjectId`. The endpoint has no explicit validator. |
+| `departmentId` | `string` | yes | Department 24-character hex ID. The endpoint has no explicit validator. |
 
 Response: `200 application/json`, `ShortUserInfo[]`.
 
 | Field | JSON type | Required | Notes |
 |---|---|---:|---|
-| `id` | `string` | yes | User MongoDB `ObjectId`. |
+| `id` | `string` | yes | User 24-character hex ID. |
 | `firstName` | `string` | yes | Declared non-null by the response DTO. |
 | `lastName` | `string` | yes | Declared non-null by the response DTO. |
 | `patronymic` | `string` | yes | Declared non-null by the response DTO. |
@@ -73,8 +73,8 @@ Path parameters:
 
 | Field | Type | Required | Constraints |
 |---|---|---:|---|
-| `userId` | `string` | yes | Valid MongoDB `ObjectId`. |
-| `departmentId` | `string` | yes | Valid MongoDB `ObjectId`. |
+| `userId` | `string` | yes | Valid 24-character hex ID. |
+| `departmentId` | `string` | yes | Valid 24-character hex ID. |
 | `year` | `number` (`int`) | yes | 2000-2100. |
 | `month` | `number` (`int`) | yes | 1-12. |
 
@@ -84,7 +84,7 @@ Response: `200 application/json`, `Schedule`.
 
 | Field | JSON type | Required | Notes |
 |---|---|---:|---|
-| `id` | `string \| null` | yes | Schedule MongoDB `ObjectId`; nullable in the domain model. |
+| `id` | `string \| null` | yes | Schedule 24-character hex ID; nullable in the domain model. |
 | `monthName` | `string` | yes | Lowercase English month name, for example `september`. |
 | `workDays` | `WorkDay[]` | yes | Empty array means no planned workdays. |
 
@@ -122,9 +122,9 @@ Response: `200 application/json`, `UserScheduleRules`.
 
 | Field | JSON type | Required | Notes |
 |---|---|---:|---|
-| `id` | `string \| null` | yes | Rules MongoDB `ObjectId`. |
-| `userId` | `string` | yes | User MongoDB `ObjectId`. |
-| `departmentId` | `string` | yes | Department MongoDB `ObjectId`. |
+| `id` | `string \| null` | yes | Rules 24-character hex ID. |
+| `userId` | `string` | yes | User 24-character hex ID. |
+| `departmentId` | `string` | yes | Department 24-character hex ID. |
 | `monthName` | `string` | yes | Lowercase English month name. |
 | `year` | `number` | yes | Calendar year. |
 | `hoursPerMonth` | `number` | yes | Monthly target used by the hours summary. |
@@ -136,7 +136,7 @@ Response: `200 application/json`, `UserScheduleRules`.
 | `unEvenDOW` | `boolean` | yes | First shift on Mon/Wed/Fri; second shift on Tue/Thu. |
 | `evenDOM` | `boolean` | yes | First shift on even days of month. |
 | `unEvenDOM` | `boolean` | yes | First shift on odd days of month. |
-| `scheduleId` | `string` | yes | Related Schedule MongoDB `ObjectId`. |
+| `scheduleId` | `string` | yes | Related Schedule 24-character hex ID. |
 
 Legacy use: the old hours panel calls `GET /ScheduleRules/getAll`, downloads all
 users' rules, and filters them in the UI. The new Angular page should use this
@@ -168,8 +168,8 @@ Request body: `CreateWorkDayRequest`.
 
 | Field | JSON type | Required | Constraints |
 |---|---|---:|---|
-| `userId` | `string` | yes | Valid MongoDB `ObjectId`. |
-| `departmentId` | `string` | yes | Valid MongoDB `ObjectId`. |
+| `userId` | `string` | yes | Valid 24-character hex ID. |
+| `departmentId` | `string` | yes | Valid 24-character hex ID. |
 | `startTime` | `string` | yes | ISO 8601 date-time. |
 | `endTime` | `string` | yes | Same date as `startTime`; must be greater than or equal to it. |
 
@@ -183,8 +183,8 @@ Request body: `DeleteWorkDayRequest`.
 
 | Field | JSON type | Required | Constraints |
 |---|---|---:|---|
-| `userId` | `string` | yes | Valid MongoDB `ObjectId`. |
-| `departmentId` | `string` | yes | Valid MongoDB `ObjectId`. |
+| `userId` | `string` | yes | Valid 24-character hex ID. |
+| `departmentId` | `string` | yes | Valid 24-character hex ID. |
 | `workDay` | `string` | yes | ISO 8601 date-time; its date identifies the day to remove. |
 
 Response: `200 application/json`, `Schedule` as currently declared by the
@@ -198,7 +198,7 @@ Request body: `AddWorkingSaturdayRequest`.
 
 | Field | JSON type | Required | Constraints |
 |---|---|---:|---|
-| `scheduleId` | `string` | yes | Existing Schedule MongoDB `ObjectId`; no format validator currently. |
+| `scheduleId` | `string` | yes | Existing Schedule 24-character hex ID; no format validator currently. |
 | `saturday` | `WorkDay` | yes | `startTime` must fall on a Saturday. |
 | `workingDays` | `WorkDay[]` | yes | Exactly five existing days; each adjusted day must be at least four hours. Their removed time must equal the Saturday duration. |
 

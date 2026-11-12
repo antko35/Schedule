@@ -1,4 +1,4 @@
-﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+using UserManagementService.Domain.Abstractions.IRabbitMq;
 
 namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
 {
@@ -21,7 +21,7 @@ namespace UserManagementService.Application.UseCases.CommandHandlersTests.User
         public CreateUserTests()
         {
             userRepositoryMock = new Mock<IUserRepository>();
-            handler = new CreateUserCommandHandler(userRepositoryMock.Object);
+            handler = new CreateUserCommandHandler(userRepositoryMock.Object, Mock.Of<IDataChanges>());
         }
 
         [Fact]

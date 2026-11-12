@@ -16,14 +16,14 @@ namespace ScheduleService.Application.Validators.Commands.Schedule
         public CreateWorkDayManuallyCommandValidator()
         {
             RuleFor(x => x.UserId)
-                .MustBeValidObjectId();
+                .MustBeValidEntityId();
 
             RuleFor(x => x.DepartmentId)
-                .MustBeValidObjectId();
+                .MustBeValidEntityId();
 
             RuleFor(workDay => workDay.EndTime)
-                .GreaterThanOrEqualTo(workDay => workDay.StartTime)
-                .WithMessage("EndTime must be greater than or equal to StartTime.")
+                .GreaterThan(workDay => workDay.StartTime)
+                .WithMessage("EndTime must be greater than StartTime.")
                 .Must((workDay, endTime) => endTime.Date == workDay.StartTime.Date)
                 .WithMessage("StartTime and EndTime must be on the same day.");
         }

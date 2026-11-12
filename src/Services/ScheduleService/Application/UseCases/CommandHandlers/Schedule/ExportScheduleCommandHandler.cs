@@ -3,7 +3,6 @@ using System.Reflection;
 using MediatR;
 using OfficeOpenXml;
 using ScheduleService.Application.UseCases.Commands.Schedule;
-using ScheduleService.DataAccess.Repository;
 using ScheduleService.Domain.Abstractions;
 using DomainModels = ScheduleService.Domain.Models;
 
@@ -29,11 +28,11 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
     ];
 
     private readonly IScheduleRepository scheduleRepository;
-    private readonly IUserRuleRepository userRuleRepository;
+    private readonly IScheduleGenerationRuleRepository userRuleRepository;
 
     public ExportScheduleCommandHandler(
         IScheduleRepository scheduleRepository,
-        IUserRuleRepository userRuleRepository)
+        IScheduleGenerationRuleRepository userRuleRepository)
     {
         this.scheduleRepository = scheduleRepository;
         this.userRuleRepository = userRuleRepository;
@@ -41,7 +40,7 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
 
     public async Task<byte[]> Handle(ExportScheduleCommand request, CancellationToken cancellationToken)
     {
-        var (scheduleMap, validUserIds) = await this.BuildScheduleMap(request);
+        var (scheduleMap, validUserIds) = await this.BuildScheduleMap(request, cancellationToken);
 
         var users = request.Users
             .Where(u => validUserIds.Contains(u.UserId))
@@ -76,29 +75,25 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
         return await package.GetAsByteArrayAsync(cancellationToken);
     }
 
-    private async Task<(Dictionary<string, DomainModels.Schedule> Map, HashSet<string> ValidUserIds)> BuildScheduleMap(ExportScheduleCommand request)
+    private async Task<(Dictionary<string, DomainModels.MonthlySchedule> Map, HashSet<string> ValidUserIds)> BuildScheduleMap(ExportScheduleCommand request, CancellationToken cancellationToken)
     {
-        var monthName = new DateOnly(request.Year, request.Month, 1)
-            .ToString("MMMM", CultureInfo.InvariantCulture)
-            .ToLower();
-
-        IEnumerable<DomainModels.UserScheduleRules> usersRules;
+        IEnumerable<DomainModels.ScheduleGenerationRule> usersRules;
         try
         {
-            usersRules = await this.userRuleRepository.GetUsersRulesByDepartment(
-                request.DepartmentId, monthName, request.Year);
+            usersRules = await this.userRuleRepository.GetByDepartmentAsync(
+                request.DepartmentId, new DateOnly(request.Year, request.Month, 1), cancellationToken);
         }
         catch (InvalidOperationException)
         {
-            return (new Dictionary<string, DomainModels.Schedule>(), new HashSet<string>());
+            return (new Dictionary<string, DomainModels.MonthlySchedule>(), new HashSet<string>());
         }
 
-        var map = new Dictionary<string, DomainModels.Schedule>();
+        var map = new Dictionary<string, DomainModels.MonthlySchedule>();
         var validUserIds = new HashSet<string>();
         foreach (var rule in usersRules)
         {
             validUserIds.Add(rule.UserId);
-            var schedule = await this.scheduleRepository.GetMonthSchedule(rule.ScheduleId);
+            var schedule = await this.scheduleRepository.GetAsync(rule.UserId, rule.DepartmentId, rule.Period, cancellationToken);
             if (schedule is not null)
                 map[rule.UserId] = schedule;
         }
@@ -166,7 +161,7 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
         int startRow,
         int endRow,
         string fullName,
-        DomainModels.Schedule? schedule)
+        DomainModels.MonthlySchedule? schedule)
     {
         ws.Cells[nameRow, 1].Value = fullName;
         ws.Cells[startRow, 1].Value = string.Empty;
@@ -188,14 +183,14 @@ public class ExportScheduleCommandHandler : IRequestHandler<ExportScheduleComman
         double totalDays = 0;
         double totalHours = 0;
 
-        foreach (var workDay in schedule.WorkDays)
+        foreach (var workDay in schedule.WorkShifts)
         {
-            int col = workDay.Day + 1;
+            int col = workDay.WorkDate.Day + 1;
             if (col < FirstDayColumn || col > LastDayColumn)
                 continue;
 
-            double startFraction = workDay.StartTime.UtcDateTime.TimeOfDay.TotalDays;
-            double endFraction = workDay.EndTime.UtcDateTime.TimeOfDay.TotalDays;
+            double startFraction = workDay.StartsAtUtc.TimeOfDay.TotalDays;
+            double endFraction = workDay.EndsAtUtc.TimeOfDay.TotalDays;
             double hoursFraction = endFraction - startFraction;
 
             ws.Cells[nameRow, col].Value = startFraction;

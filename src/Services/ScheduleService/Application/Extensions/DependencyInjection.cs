@@ -1,4 +1,4 @@
-﻿namespace ScheduleService.Application.Extensions;
+namespace ScheduleService.Application.Extensions;
 
 using System.Reflection;
 using FluentValidation;
@@ -17,14 +17,9 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-        services.AddAutoMapper(cfg =>
-        {
-            cfg.AddMaps(Assembly.GetExecutingAssembly());
-        });
 
         services.AddScoped<UserEmailRpcService>();
 
-        services.AddScoped<ScheduleRulesGenerator>();
         services.AddScoped<ScheduleMonthContextService>();
 
         return services;

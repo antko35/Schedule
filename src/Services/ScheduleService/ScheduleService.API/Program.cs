@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using ScheduleService.DataAccess.Database;
 using ScheduleService.API.Extensions;
 using ScheduleService.API.Extensions.AppExtensions.Hangfire;
 using ScheduleService.Application.Extensions;
@@ -7,8 +9,6 @@ using ScheduleService.Infrastructure.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-
-builder.AddMongoDBClient("schedule-db");
 
 builder.AddRabbitMQClient("rabbitmq");
 
@@ -20,7 +20,7 @@ builder.Services.AddApplicatiobLayerDependencis();
 
 builder.Services
     .ConfigureDb(builder.Configuration)
-    .HangfireConfigure()
+    .HangfireConfigure(builder.Configuration)
     .AddDataAccessDependencis();
 
 builder.Services
@@ -54,6 +54,12 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
+if (builder.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    await scope.ServiceProvider.GetRequiredService<ScheduleDbContext>().Database.MigrateAsync();
+}
+
 app.UseMiddleware<ExeptionHadlingMiddleware>();
 
 app.ConfigureHangfire();
@@ -79,3 +85,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program
+{
+}

@@ -6,10 +6,10 @@
     using System.Text;
     using System.Threading.Tasks;
     using MediatR;
-    using ScheduleService.Domain.Models;
+    using ScheduleService.Application.Contracts;
 
     public record GetMonthHolidaysQuery(int Year, int Month)
-        : IRequest<List<Calendar>>
+        : IRequest<List<CalendarDto>>
     {
     }
 }

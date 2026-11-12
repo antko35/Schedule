@@ -1,18 +1,19 @@
-﻿namespace UserManagementService.API.Extensions
+namespace UserManagementService.API.Extensions
 {
     using System.ComponentModel;
     using System.Net;
     using System.Text.Json;
-    using MongoDB.Bson;
     using UserManagementService.Application.Extensions.Validation;
 
     public class ExeptionHadlingMiddleware
     {
         private readonly RequestDelegate next;
+        private readonly ILogger<ExeptionHadlingMiddleware> logger;
 
-        public ExeptionHadlingMiddleware(RequestDelegate next)
+        public ExeptionHadlingMiddleware(RequestDelegate next, ILogger<ExeptionHadlingMiddleware> logger)
         {
             this.next = next;
+            this.logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -23,6 +24,7 @@
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Request failed; committed database changes are not automatically rolled back after external publication failures.");
                 await HandleExceptionAsync(context, ex);
             }
         }
@@ -59,10 +61,6 @@
                     errors = (Dictionary<string, string[]>)validationException.Errors;
                     break;
 
-                case BsonSerializationException bsonEx:
-                    status = HttpStatusCode.BadRequest;
-                    message = bsonEx.Message;
-                    break;
 
                 default:
                     status = HttpStatusCode.InternalServerError;

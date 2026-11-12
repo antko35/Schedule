@@ -1,56 +1,34 @@
-﻿namespace ScheduleService.Application.UseCases.QueryHandlers.Schedule
+namespace ScheduleService.Application.UseCases.QueryHandlers.Schedule;
+
+using MediatR;
+using ScheduleService.Application.Contracts;
+using ScheduleService.Application.Extensions;
+using ScheduleService.Application.Mapping;
+using ScheduleService.Application.UseCases.Queries.Schedule;
+using ScheduleService.Domain.Abstractions;
+
+public sealed class GetUserMonthScheduleQueryHandler
+    : IRequestHandler<GetUserMonthScheduleQuery, ScheduleDto>
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using MediatR;
-    using ScheduleService.Application.Extensions;
-    using ScheduleService.Application.UseCases.Queries.Schedule;
-    using ScheduleService.DataAccess.Repository;
-    using ScheduleService.Domain.Abstractions;
-    using ScheduleService.Domain.Models;
+    private readonly IScheduleRepository scheduleRepository;
 
-    public class GetUserMonthScheduleQueryHandler
-        : IRequestHandler<GetUserMonthScheduleQuery, Schedule>
+    public GetUserMonthScheduleQueryHandler(IScheduleRepository scheduleRepository)
     {
-        private readonly IScheduleRepository scheduleRepository;
-        private readonly IUserRuleRepository userRuleRepository;
+        this.scheduleRepository = scheduleRepository;
+    }
 
-        public GetUserMonthScheduleQueryHandler(
-            IScheduleRepository scheduleRepository,
-            IUserRuleRepository userRuleRepository)
-        {
-            this.scheduleRepository = scheduleRepository;
-            this.userRuleRepository = userRuleRepository;
-        }
+    public async Task<ScheduleDto> Handle(
+        GetUserMonthScheduleQuery request,
+        CancellationToken cancellationToken)
+    {
+        var period = new DateOnly(request.Year, request.Month, 1);
+        var schedule = await scheduleRepository.GetAsync(
+            request.UserId,
+            request.DepartmentId,
+            period,
+            cancellationToken);
 
-        public async Task<Schedule> Handle(GetUserMonthScheduleQuery request, CancellationToken cancellationToken)
-        {
-            var userRules = await GetUsersRules(request);
-
-            var schedule = await scheduleRepository.GetByIdAsync(userRules.ScheduleId);
-
-            schedule.EnsureExists("Error while getting schedule");
-
-            return schedule;
-        }
-
-        private async Task<UserScheduleRules> GetUsersRules(GetUserMonthScheduleQuery request)
-        {
-            var monthName = new DateOnly(request.Year, request.Month, 1)
-                 .ToString("MMMM")
-                 .ToLower();
-
-            var userRules = await userRuleRepository
-                .GetMonthScheduleRules(request.UserId, request.DepartmentId, monthName, request.Year);
-
-            userRules.EnsureExists("Invalid input");
-
-            return userRules;
-        }
+        schedule.EnsureExists("Invalid input");
+        return schedule!.ToDto();
     }
 }

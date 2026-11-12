@@ -1,0 +1,9 @@
+**
+!src/
+!src/ServiceDefaults/
+!src/ServiceDefaults/**
+!src/Services/
+!src/Services/ScheduleService/
+!src/Services/ScheduleService/**
+**/bin/
+**/obj/

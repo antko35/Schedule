@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlers.User
+namespace UserManagementService.Application.UseCases.CommandHandlers.User
 {
     using System;
     using System.Collections.Generic;
@@ -15,9 +15,12 @@
         : IRequestHandler<UpdateUserInfoCommand, User>
     {
         private readonly IUserRepository userRepository;
+        private readonly IDataChanges changes;
 
-        public UpdateUserInfoCommandHandler(IUserRepository userRepository)
+
+        public UpdateUserInfoCommandHandler(IUserRepository userRepository, IDataChanges changes)
         {
+            this.changes = changes;
             this.userRepository = userRepository;
         }
 
@@ -27,19 +30,14 @@
 
             user.EnsureExists("User not found");
 
-            var newUser = new User
-            {
-                Id = request.UserId,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                Patronymic = request.Patronymic,
-                Gender = request.Gender,
-                DateOfBirth = request.DateOfBirth,
-            };
-
-            await userRepository.UpdateAsync(newUser);
-
-            return newUser;
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.Patronymic = request.Patronymic;
+            user.Gender = request.Gender;
+            user.DateOfBirth = request.DateOfBirth;
+            await userRepository.UpdateAsync(user);
+            await changes.SaveChangesAsync(cancellationToken);
+            return user;
         }
     }
 }

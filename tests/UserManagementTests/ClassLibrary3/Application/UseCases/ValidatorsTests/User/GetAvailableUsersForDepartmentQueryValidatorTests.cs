@@ -1,7 +1,7 @@
 namespace UserManagementService.Application.UseCases.ValidatorsTests.User;
 
 using FluentAssertions;
-using MongoDB.Bson;
+
 using UserManagementService.Application.UseCases.Queries.User;
 using UserManagementService.Application.UseCases.Validators.Queries.User;
 using Xunit;
@@ -23,7 +23,7 @@ public class GetAvailableUsersForDepartmentQueryValidatorTests
     [Fact]
     public void Validate_ShouldAcceptValidDepartmentId()
     {
-        var query = new GetAvailableUsersForDepartmentQuery(ObjectId.GenerateNewId().ToString());
+        var query = new GetAvailableUsersForDepartmentQuery(UserManagementService.Domain.Models.EntityId.New());
 
         var result = new GetAvailableUsersForDepartmentQueryValidator().Validate(query);
 

@@ -1,7 +1,6 @@
-﻿namespace UserManagementService.Application.UseCases.CommandHandlers.Department;
+namespace UserManagementService.Application.UseCases.CommandHandlers.Department;
 
 using MediatR;
-using MongoDB.Bson;
 using System.Threading;
 using System.Threading.Tasks;
 using UserManagementService.Application.UseCases.Commands.Department;
@@ -11,9 +10,12 @@ public class CreateDepartmentCommandHandler
     : IRequestHandler<CreateDepartmentCommand, Department>
 {
     private readonly IDepartmentRepository departmentRepository;
+    private readonly IDataChanges changes;
 
-    public CreateDepartmentCommandHandler(IDepartmentRepository departmentRepository)
+
+    public CreateDepartmentCommandHandler(IDepartmentRepository departmentRepository, IDataChanges changes)
     {
+        this.changes = changes;
         this.departmentRepository = departmentRepository;
     }
 
@@ -22,14 +24,14 @@ public class CreateDepartmentCommandHandler
         var clinicId = request.ClinicId;
         if (String.IsNullOrEmpty(clinicId))
         {
-            clinicId = ObjectId.GenerateNewId().ToString();
+            clinicId = EntityId.New();
         }
 
-        var departmentsInClinic = await departmentRepository.GetByClinicId(clinicId);
+        var departmentsInClinic = await departmentRepository.GetByClinicId(EntityId.Normalize(clinicId));
 
         var departmentToCreate = new Department()
         {
-            ClinicId = clinicId,
+            ClinicId = EntityId.Normalize(clinicId),
             DepartmentName = request.DeartmentName,
         };
 
@@ -39,6 +41,7 @@ public class CreateDepartmentCommandHandler
         }
 
         await departmentRepository.AddAsync(departmentToCreate);
+        await changes.SaveChangesAsync(cancellationToken);
 
         return departmentToCreate;
     }

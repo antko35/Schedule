@@ -1,5 +1,5 @@
-﻿using Hangfire;
-using MediatR;
+using Hangfire;
+using UserManagementService.Application.Jobs;
 using UserManagementService.Application.UseCases.Commands.User;
 
 namespace UserManagementService.API.Extensions.AppExtensions.Hangfire
@@ -17,12 +17,11 @@ namespace UserManagementService.API.Extensions.AppExtensions.Hangfire
             // Создаем задачу в области видимости
             using var scope = app.Services.CreateScope();
             var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
-            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
             // Создаем повторяющуюся задачу
-            recurringJobManager.AddOrUpdate(
+            recurringJobManager.AddOrUpdate<UpdateUserAgesJob>(
                 "update-ages-daily",
-                () => mediator.Send(new UpdateUserAgeCommand(), CancellationToken.None),
+                job => job.ExecuteAsync(CancellationToken.None),
                 Cron.Daily);
         }
     }

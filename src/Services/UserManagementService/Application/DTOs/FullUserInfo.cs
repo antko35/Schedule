@@ -1,4 +1,4 @@
-﻿namespace UserManagementService.Application.DTOs
+namespace UserManagementService.Application.DTOs
 {
     using System;
     using System.Collections.Generic;

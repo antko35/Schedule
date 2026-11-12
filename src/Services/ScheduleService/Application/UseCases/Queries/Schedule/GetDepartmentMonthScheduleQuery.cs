@@ -6,11 +6,11 @@
     using System.Text;
     using System.Threading.Tasks;
     using MediatR;
-    using ScheduleService.Domain.Models;
+    using ScheduleService.Application.Contracts;
 
     public record GetDepartmentMonthScheduleQuery(
         string DepartmentId,
         int Year,
         int Month)
-        : IRequest<List<Schedule>>;
+        : IRequest<List<ScheduleDto>>;
 }

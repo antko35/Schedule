@@ -1,61 +1,61 @@
-﻿namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule
+﻿namespace ScheduleService.Application.UseCases.CommandHandlers.Schedule;
+
+using MediatR;
+using ScheduleService.DataAccess.Database;
+using ScheduleService.Application.Contracts;
+using ScheduleService.Application.Extensions;
+using ScheduleService.Application.Mapping;
+using ScheduleService.Application.UseCases.Commands.Schedule;
+using ScheduleService.Domain.Abstractions;
+using ScheduleService.Domain.Models;
+
+public sealed class CreateWorkDayManuallyCommandHandler
+    : IRequestHandler<CreateWorkDayManuallyCommand, WorkDayDto>
 {
-    using System;
-    using System.Threading.Tasks;
-    using MediatR;
-    using ScheduleService.Application.Services;
-    using ScheduleService.Application.UseCases.Commands.Schedule;
-    using ScheduleService.Domain.Abstractions;
-    using ScheduleService.Domain.Models;
+    private readonly ScheduleService.Application.Services.ScheduleMonthContextService monthContextService;
+    private readonly ScheduleDbContext dbContext;
 
-    public class CreateWorkDayManuallyCommandHandler
-        : IRequestHandler<CreateWorkDayManuallyCommand, WorkDay>
+    public CreateWorkDayManuallyCommandHandler(
+        ScheduleService.Application.Services.ScheduleMonthContextService monthContextService,
+        ScheduleDbContext dbContext)
     {
-        private readonly IScheduleRepository scheduleRepository;
-        private readonly ScheduleMonthContextService monthContextService;
-
-        public CreateWorkDayManuallyCommandHandler(
-            IScheduleRepository scheduleRepository,
-            ScheduleMonthContextService monthContextService)
-        {
-            this.scheduleRepository = scheduleRepository;
-            this.monthContextService = monthContextService;
-        }
-
-        public async Task<WorkDay> Handle(CreateWorkDayManuallyCommand request, CancellationToken cancellationToken)
-        {
-            var context = await this.monthContextService.GetOrCreateAsync(
-                request.UserId,
-                request.DepartmentId,
-                request.StartTime.Year,
-                request.StartTime.Month);
-            var scheduleId = context.Rules.ScheduleId;
-
-            var newWorkDay = new WorkDay
-            {
-                Day = request.StartTime.Day,
-                StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),
-                EndTime = DateTime.SpecifyKind(request.EndTime, DateTimeKind.Utc),
-            };
-
-            var isAlreadyExist = await IsExist(scheduleId, request.StartTime.Day);
-
-            if (isAlreadyExist)
-            {
-                await scheduleRepository.UpdateWorkDayAsync(scheduleId, newWorkDay);
-            }
-            else
-            {
-                await scheduleRepository.AddWorkDayAsync(scheduleId, newWorkDay);
-            }
-
-            return newWorkDay;
-        }
-
-        private async Task<bool> IsExist(string scheduleId, int day)
-        {
-            var dailySchedule = await scheduleRepository.GetWorkDayAsync(scheduleId, day);
-            return dailySchedule is not null;
-        }
+        this.monthContextService = monthContextService;
+        this.dbContext = dbContext;
     }
+
+    public async Task<WorkDayDto> Handle(
+        CreateWorkDayManuallyCommand request,
+        CancellationToken cancellationToken)
+    {
+        var startsAtUtc = AsUtc(request.StartTime);
+        var endsAtUtc = AsUtc(request.EndTime);
+        var period = new DateOnly(startsAtUtc.Year, startsAtUtc.Month, 1);
+
+        var context = await monthContextService.GetOrCreateAsync(
+            request.UserId,
+            request.DepartmentId,
+            period.Year,
+            period.Month,
+            cancellationToken);
+
+        var schedule = context.Schedule;
+
+        var shift = new WorkShift(
+            Guid.NewGuid(),
+            schedule!.Id,
+            DateOnly.FromDateTime(startsAtUtc),
+            startsAtUtc,
+            endsAtUtc);
+
+        schedule.SetShift(shift, DateTime.UtcNow);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return shift.ToDto();
+    }
+
+    private static DateTime AsUtc(DateTime value) => value.Kind switch
+    {
+        DateTimeKind.Utc => value,
+        DateTimeKind.Local => value.ToUniversalTime(),
+        _ => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+    };
 }

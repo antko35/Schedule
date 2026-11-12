@@ -1,4 +1,4 @@
-﻿using UserManagementService.Domain.Abstractions.IRabbitMq;
+using UserManagementService.Domain.Abstractions.IRabbitMq;
 
 namespace UserManagementService.Application.UseCases.CommandHandlers.User
 {
@@ -16,9 +16,12 @@ namespace UserManagementService.Application.UseCases.CommandHandlers.User
     public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, User>
     {
         private readonly IUserRepository userRepository;
+        private readonly IDataChanges changes;
 
-        public CreateUserCommandHandler(IUserRepository userRepository)
+
+        public CreateUserCommandHandler(IUserRepository userRepository, IDataChanges changes)
         {
+            this.changes = changes;
             this.userRepository = userRepository;
         }
 
@@ -34,6 +37,7 @@ namespace UserManagementService.Application.UseCases.CommandHandlers.User
             };
 
             await userRepository.AddAsync(user);
+            await changes.SaveChangesAsync(cancellationToken);
 
             return user;
         }

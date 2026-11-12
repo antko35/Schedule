@@ -1,8 +1,8 @@
 namespace ScheduleService.Application.UseCases.Queries.Calendar
 {
     using MediatR;
-    using ScheduleService.Domain.Models;
+    using ScheduleService.Application.Contracts;
 
     public record GetHolidaysQuery
-        : IRequest<List<Calendar>>;
+        : IRequest<List<CalendarDto>>;
 }

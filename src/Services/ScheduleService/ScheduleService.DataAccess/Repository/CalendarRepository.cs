@@ -1,63 +1,78 @@
-﻿namespace ScheduleService.DataAccess.Repository
+namespace ScheduleService.DataAccess.Repository;
+
+using Microsoft.EntityFrameworkCore;
+using ScheduleService.DataAccess.Database;
+using ScheduleService.Domain.Abstractions;
+using ScheduleService.Domain.Models;
+
+public sealed class CalendarRepository : ICalendarRepository
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.Metrics;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using MongoDB.Driver;
-    using ScheduleService.DataAccess.Database;
-    using ScheduleService.Domain.Abstractions;
-    using ScheduleService.Domain.Models;
+    private readonly ScheduleDbContext context;
 
-    public class CalendarRepository : GenericRepository<Calendar>, ICalendarRepository
+    public CalendarRepository(ScheduleDbContext context)
     {
-        public CalendarRepository(DbContext context, DbOptions options)
-            : base(context, options.CalendarCollection)
-        {
-        }
+        this.context = context;
+    }
 
-        public async Task<List<Calendar>> GetMonthHolidays(int year, int month)
-        {
-            var filter = Builders<Calendar>.Filter
-                .And(
-                Builders<Calendar>.Filter.Eq(x => x.MonthOfHoliday, month),
-                Builders<Calendar>.Filter.Eq(x => x.Year, year));
+    public async Task<IReadOnlyList<CalendarException>> GetAllAsync(CancellationToken cancellationToken) =>
+        await context.CalendarExceptions.OrderBy(item => item.HolidayDate).ToListAsync(cancellationToken);
 
-            var result = await dbSet.FindAsync(filter);
+    public Task<CalendarException?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    {
+        return context.CalendarExceptions
+            .SingleOrDefaultAsync(calendarException => calendarException.Id == id, cancellationToken);
+    }
 
-            return await result.ToListAsync();
-        }
+    public async Task<IReadOnlyList<CalendarException>> GetMonthHolidaysAsync(
+        DateOnly period,
+        CancellationToken cancellationToken)
+    {
+        var nextPeriod = period.AddMonths(1);
+        return await context.CalendarExceptions
+            .AsNoTracking()
+            .Where(calendarException =>
+                calendarException.HolidayDate >= period
+                && calendarException.HolidayDate < nextPeriod)
+            .OrderBy(calendarException => calendarException.HolidayDate)
+            .ToListAsync(cancellationToken);
+    }
 
-        public async Task<List<Calendar>> GetMonthTransferDays(int year, int month)
-        {
-            var filter = Builders<Calendar>.Filter
-                .And(
-                Builders<Calendar>.Filter.Eq(x => x.Year, year),
-                Builders<Calendar>.Filter.Eq(x => x.MonthOfTransferDay, month),
-                Builders<Calendar>.Filter.Ne(x => x.MonthOfTransferDay, 0));
+    public async Task<IReadOnlyList<CalendarException>> GetMonthTransferDaysAsync(
+        DateOnly period,
+        CancellationToken cancellationToken)
+    {
+        var nextPeriod = period.AddMonths(1);
+        return await context.CalendarExceptions
+            .AsNoTracking()
+            .Where(calendarException =>
+                calendarException.TransferDate >= period
+                && calendarException.TransferDate < nextPeriod)
+            .OrderBy(calendarException => calendarException.TransferDate)
+            .ToListAsync(cancellationToken);
+    }
 
-            var result = await dbSet.Find(filter).ToListAsync();
+    public async Task<IReadOnlyList<CalendarException>> GetYearHolidaysAsync(
+        int year,
+        CancellationToken cancellationToken)
+    {
+        var firstDay = new DateOnly(year, 1, 1);
+        var nextYear = firstDay.AddYears(1);
+        return await context.CalendarExceptions
+            .AsNoTracking()
+            .Where(calendarException =>
+                calendarException.HolidayDate >= firstDay
+                && calendarException.HolidayDate < nextYear)
+            .OrderBy(calendarException => calendarException.HolidayDate)
+            .ToListAsync(cancellationToken);
+    }
 
-            return result;
-        }
+    public Task AddAsync(CalendarException calendarException, CancellationToken cancellationToken)
+    {
+        return context.CalendarExceptions.AddAsync(calendarException, cancellationToken).AsTask();
+    }
 
-        public async Task<List<Calendar>> GetYearHolidays(int year)
-        {
-            var filter = Builders<Calendar>.Filter.Eq(x => x.Year, year);
-
-            var result = await dbSet.Find(filter).ToListAsync();
-
-            return result;
-        }
-
-        public async Task<long> RemoveHolidays(IReadOnlyCollection<DateOnly> holidays)
-        {
-            var filter = Builders<Calendar>.Filter.In(x => x.HolidayDate, holidays);
-            var result = await dbSet.DeleteManyAsync(filter);
-
-            return result.DeletedCount;
-        }
+    public void Remove(CalendarException calendarException)
+    {
+        context.CalendarExceptions.Remove(calendarException);
     }
 }

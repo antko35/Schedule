@@ -15,10 +15,10 @@ namespace ScheduleService.Application.Validators.Commands.Schedule
         public DeleteWorkDayCommandValidator()
         {
             RuleFor(x => x.UserId)
-                .MustBeValidObjectId();
+                .MustBeValidEntityId();
 
             RuleFor(x => x.DepartmentId)
-                .MustBeValidObjectId();
+                .MustBeValidEntityId();
         }
     }
 }

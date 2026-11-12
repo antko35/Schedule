@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using ScheduleService.Domain.Models;
+using ScheduleService.Application.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace ScheduleService.Application.UseCases.Queries.ScheduleRules
         string DepartmentId,
         int Month,
         int Year)
-        : IRequest<UserScheduleRules>
+        : IRequest<ScheduleRulesDto>
     {
     }
 }

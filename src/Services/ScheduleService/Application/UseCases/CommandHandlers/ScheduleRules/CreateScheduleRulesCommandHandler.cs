@@ -1,53 +1,89 @@
-﻿namespace ScheduleService.Application.UseCases.Commands.ScheduleRules
+namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
+
+using MediatR;
+using ScheduleService.DataAccess.Database;
+using ScheduleService.Application.Contracts;
+using ScheduleService.Application.Mapping;
+using ScheduleService.Application.UseCases.Commands.ScheduleRules;
+using ScheduleService.Domain.Abstractions;
+using ScheduleService.Domain.Models;
+
+public sealed class CreateScheduleRulesCommandHandler
+    : IRequestHandler<CreateScheduleRulesCommand, (ScheduleDto Schedule, ScheduleRulesDto ScheduleRules)>
 {
-    using System;
-    using System.Threading.Tasks;
-    using DataAccess.Repository;
-    using Domain.Abstractions;
-    using Domain.Models;
-    using MediatR;
-    using MongoDB.Bson;
+    private const int DefaultTargetMinutes = 132 * 60;
+    private const int DefaultShiftMinutes = 6 * 60 + 30;
+    private readonly IScheduleGenerationRuleRepository ruleRepository;
+    private readonly IScheduleRepository scheduleRepository;
+    private readonly ScheduleDbContext dbContext;
 
-    public record CreateScheduleRulesCommandHandler : IRequestHandler<CreateScheduleRulesCommand, (Schedule Schedule, UserScheduleRules ScheduleRules)>
+    public CreateScheduleRulesCommandHandler(
+        IScheduleGenerationRuleRepository ruleRepository,
+        IScheduleRepository scheduleRepository,
+        ScheduleDbContext dbContext)
     {
-        private readonly IUserRuleRepository userRuleRepository;
-        private readonly IScheduleRepository scheduleRepository;
-        public CreateScheduleRulesCommandHandler(IUserRuleRepository userRuleRepository, IScheduleRepository scheduleRepository)
-        {
-            this.userRuleRepository = userRuleRepository;
-            this.scheduleRepository = scheduleRepository;
-        }
-
-        // auto generation after adding to user management service
-        public async Task<(Schedule Schedule, UserScheduleRules ScheduleRules)> Handle(CreateScheduleRulesCommand request, CancellationToken cancellationToken)
-        {
-            var year = DateTime.Now.Year;
-            var monthName = DateTime.Now
-                .ToString("MMMM")
-                .ToLower();
-
-            var scheduleId = ObjectId.GenerateNewId().ToString();
-            var scheduleRules = new UserScheduleRules
-            {
-                UserId = request.UserId,
-                DepartmentId = request.DepartmentId,
-                Year = year,
-                MonthName = monthName,
-                ScheduleId = scheduleId,
-            };
-
-            var schedule = new Schedule
-            {
-                Id = scheduleId,
-                MonthName = monthName,
-            };
-
-            var addScheduleTask = scheduleRepository.AddAsync(schedule);
-            var addScheduleRulesTask = userRuleRepository.AddAsync(scheduleRules);
-
-            await Task.WhenAll(addScheduleTask, addScheduleRulesTask);
-
-            return (schedule, scheduleRules);
-        }
+        this.ruleRepository = ruleRepository;
+        this.scheduleRepository = scheduleRepository;
+        this.dbContext = dbContext;
     }
+
+    public async Task<(ScheduleDto Schedule, ScheduleRulesDto ScheduleRules)> Handle(
+        CreateScheduleRulesCommand request,
+        CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+        var period = new DateOnly(now.Year, now.Month, 1);
+        var schedule = await scheduleRepository.GetAsync(
+            request.UserId,
+            request.DepartmentId,
+            period,
+            cancellationToken);
+        var rule = await ruleRepository.GetAsync(
+            request.UserId,
+            request.DepartmentId,
+            period,
+            cancellationToken);
+        var hasChanges = false;
+
+        if (schedule is null)
+        {
+            schedule = new MonthlySchedule(
+                Guid.NewGuid().ToString("N"),
+                request.UserId,
+                request.DepartmentId,
+                period,
+                now);
+            await scheduleRepository.AddAsync(schedule, cancellationToken);
+            hasChanges = true;
+        }
+
+        if (rule is null)
+        {
+            rule = CreateDefaultRule(request.UserId, request.DepartmentId, period);
+            await ruleRepository.AddAsync(rule, cancellationToken);
+            hasChanges = true;
+        }
+
+        if (hasChanges)
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return (schedule.ToDto(), rule.ToDto(schedule.Id));
+    }
+
+    private static ScheduleGenerationRule CreateDefaultRule(
+        string userId,
+        string departmentId,
+        DateOnly period) =>
+        new(
+            Guid.NewGuid().ToString("N"),
+            userId,
+            departmentId,
+            period,
+            DefaultTargetMinutes,
+            DefaultShiftMinutes,
+            new TimeOnly(8, 0),
+            new TimeOnly(14, 30),
+            ShiftPattern.Manual);
 }

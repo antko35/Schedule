@@ -1,81 +1,31 @@
-using MongoDB.Bson;
-using ScheduleService.DataAccess.Repository;
+namespace ScheduleService.Application.Services;
+
 using ScheduleService.Domain.Abstractions;
 using ScheduleService.Domain.Models;
 
-namespace ScheduleService.Application.Services;
-
-public class ScheduleMonthContextService
+public sealed class ScheduleMonthContextService(
+    IScheduleGenerationRuleRepository ruleRepository,
+    IScheduleRepository scheduleRepository)
 {
-    private readonly IUserRuleRepository userRuleRepository;
-    private readonly IScheduleRepository scheduleRepository;
-
-    public ScheduleMonthContextService(
-        IUserRuleRepository userRuleRepository,
-        IScheduleRepository scheduleRepository)
+    public async Task<(MonthlySchedule Schedule, ScheduleGenerationRule Rules, bool Created)> GetOrCreateAsync(
+        string userId, string departmentId, int year, int month,
+        CancellationToken cancellationToken = default)
     {
-        this.userRuleRepository = userRuleRepository;
-        this.scheduleRepository = scheduleRepository;
-    }
-
-    public async Task<(Schedule Schedule, UserScheduleRules Rules, bool Created)> GetOrCreateAsync(
-        string userId,
-        string departmentId,
-        int year,
-        int month,
-        Action<UserScheduleRules>? initializeRules = null)
-    {
-        var monthName = new DateTime(year, month, 1).ToString("MMMM").ToLower();
-        var existingRules = await userRuleRepository.GetMonthScheduleRules(
-            userId,
-            departmentId,
-            monthName,
-            year);
-
-        if (existingRules is not null)
+        var period = new DateOnly(year, month, 1);
+        var rule = await ruleRepository.GetAsync(userId, departmentId, period, cancellationToken);
+        var schedule = await scheduleRepository.GetAsync(userId, departmentId, period, cancellationToken);
+        var created = rule is null;
+        if (schedule is null)
         {
-            var existingSchedule = await scheduleRepository.GetByIdAsync(existingRules.ScheduleId);
-            if (existingSchedule is not null)
-            {
-                return (existingSchedule, existingRules, false);
-            }
-
-            var repairedSchedule = new Schedule
-            {
-                Id = existingRules.ScheduleId,
-                MonthName = monthName,
-            };
-            await scheduleRepository.AddAsync(repairedSchedule);
-            return (repairedSchedule, existingRules, false);
+            schedule = new MonthlySchedule(Guid.NewGuid().ToString("N"), userId, departmentId, period, DateTime.UtcNow);
+            await scheduleRepository.AddAsync(schedule, cancellationToken);
         }
-
-        var scheduleId = ObjectId.GenerateNewId().ToString();
-        var schedule = new Schedule
+        if (rule is null)
         {
-            Id = scheduleId,
-            MonthName = monthName,
-        };
-        var rules = new UserScheduleRules
-        {
-            UserId = userId,
-            DepartmentId = departmentId,
-            Year = year,
-            MonthName = monthName,
-            ScheduleId = scheduleId,
-        };
-        initializeRules?.Invoke(rules);
-
-        await scheduleRepository.AddAsync(schedule);
-        try
-        {
-            await userRuleRepository.AddAsync(rules);
+            rule = new ScheduleGenerationRule(Guid.NewGuid().ToString("N"), userId, departmentId, period,
+                132 * 60, 390, new TimeOnly(8, 0), new TimeOnly(14, 30), ShiftPattern.Manual);
+            await ruleRepository.AddAsync(rule, cancellationToken);
         }
-        catch
-        {
-            await scheduleRepository.RemoveAsync(scheduleId);
-            throw;
-        }
-
-        return (schedule, rules, true);
+        return (schedule, rule, created);
     }
 }

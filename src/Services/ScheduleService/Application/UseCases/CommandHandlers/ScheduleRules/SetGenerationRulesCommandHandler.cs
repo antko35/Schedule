@@ -1,76 +1,68 @@
-﻿using System.Globalization;
-using AutoMapper;
+namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules;
+
 using MediatR;
+using ScheduleService.DataAccess.Database;
+using ScheduleService.Application.Contracts;
+using ScheduleService.Application.Mapping;
 using ScheduleService.Application.Extensions;
 using ScheduleService.Application.UseCases.Commands.ScheduleRules;
-using ScheduleService.DataAccess.Repository;
+using ScheduleService.Domain.Abstractions;
 using ScheduleService.Domain.Models;
 
-namespace ScheduleService.Application.UseCases.CommandHandlers.ScheduleRules
+public sealed class SetGenerationRulesCommandHandler : IRequestHandler<SetGenerationRulesCommand, ScheduleRulesDto>
 {
-    public class SetGenerationRulesCommandHandler : IRequestHandler<SetGenerationRulesCommand, UserScheduleRules>
+    private readonly IScheduleGenerationRuleRepository ruleRepository;
+    private readonly ScheduleDbContext dbContext;
+    private readonly IScheduleRepository scheduleRepository;
+
+    public SetGenerationRulesCommandHandler(
+        IScheduleGenerationRuleRepository ruleRepository,
+        ScheduleDbContext dbContext,
+        IScheduleRepository scheduleRepository)
     {
-        private readonly IUserRuleRepository userRuleRepository;
-        private readonly IMapper mapper;
+        this.ruleRepository = ruleRepository;
+        this.dbContext = dbContext;
+        this.scheduleRepository = scheduleRepository;
+    }
 
-        public SetGenerationRulesCommandHandler(
-            IUserRuleRepository userRuleRepository,
-            IMapper mapper)
+    public async Task<ScheduleRulesDto> Handle(
+        SetGenerationRulesCommand request,
+        CancellationToken cancellationToken)
+    {
+        var rule = await ruleRepository.GetByIdAsync(request.ScheduleRulesId, cancellationToken);
+        rule.EnsureExists("Schedule rules not found");
+
+        rule!.Reconfigure(
+            request.HoursPerMonth.HasValue ? ToMinutes(request.HoursPerMonth.Value) : rule.TargetMinutes,
+            request.MaxHoursPerDay.HasValue ? ToMinutes(request.MaxHoursPerDay.Value) : rule.MaxShiftMinutes,
+            request.StartWorkDayTime ?? rule.FirstShiftStart,
+            rule.SecondShiftStart,
+            GetPattern(request, rule.Pattern));
+        await dbContext.SaveChangesAsync(cancellationToken);
+        var schedule = await scheduleRepository.GetAsync(rule.UserId, rule.DepartmentId, rule.Period, cancellationToken);
+        return rule.ToDto(schedule?.Id ?? string.Empty);
+    }
+
+    private static int ToMinutes(float hours) =>
+        checked((int)Math.Round(hours * 60, MidpointRounding.AwayFromZero));
+
+    private static ShiftPattern GetPattern(SetGenerationRulesCommand request, ShiftPattern current)
+    {
+        var hasPatternUpdate = new[]
         {
-            this.userRuleRepository = userRuleRepository;
-            this.mapper = mapper;
-        }
+            request.OnlyFirstShift, request.OnlySecondShift, request.EvenDOW,
+            request.UnEvenDOW, request.EvenDOM, request.UnEvenDOM,
+        }.Any(flag => flag.HasValue);
 
-        public async Task<UserScheduleRules> Handle(
-            SetGenerationRulesCommand request,
-            CancellationToken cancellationToken)
+        return request switch
         {
-            var rules = await userRuleRepository.GetByIdAsync(request.ScheduleRulesId);
-
-            rules.EnsureExists("Schedule rules not found");
-
-            ApplyRules(request, rules);
-
-            await userRuleRepository.UpdateAsync(rules);
-
-            return rules;
-        }
-
-        private void ApplyRules(SetGenerationRulesCommand src, UserScheduleRules dest)
-        {
-            if (src.HoursPerMonth.HasValue) dest.HoursPerMonth = src.HoursPerMonth.Value;
-            if (src.MaxHoursPerDay.HasValue) dest.MaxHoursPerDay = src.MaxHoursPerDay.Value;
-            if (src.StartWorkDayTime.HasValue) dest.StartWorkDayTime = src.StartWorkDayTime.Value;
-
-            if (HasShiftPeriodicity(src))
-            {
-                ResetFlags(dest);
-            }
-
-            if (src.OnlyFirstShift == true) dest.OnlyFirstShift = true;
-            if (src.OnlySecondShift == true) dest.OnlySecondShift = true;
-            if (src.EvenDOW == true) dest.EvenDOW = true;
-            if (src.UnEvenDOW == true) dest.UnEvenDOW = true;
-            if (src.EvenDOM == true) dest.EvenDOM = true;
-            if (src.UnEvenDOM == true) dest.UnEvenDOM = true;
-        }
-
-        private bool HasShiftPeriodicity(SetGenerationRulesCommand rules) =>
-            rules.OnlyFirstShift.HasValue ||
-            rules.OnlySecondShift.HasValue ||
-            rules.EvenDOW.HasValue ||
-            rules.UnEvenDOW.HasValue ||
-            rules.EvenDOM.HasValue ||
-            rules.UnEvenDOM.HasValue;
-
-        private void ResetFlags(UserScheduleRules rules)
-        {
-            rules.OnlyFirstShift = false;
-            rules.OnlySecondShift = false;
-            rules.EvenDOW = false;
-            rules.UnEvenDOW = false;
-            rules.EvenDOM = false;
-            rules.UnEvenDOM = false;
-        }
+            { OnlyFirstShift: true } => ShiftPattern.FirstShiftOnly,
+            { OnlySecondShift: true } => ShiftPattern.SecondShiftOnly,
+            { EvenDOW: true } => ShiftPattern.AlternateByWeekdayA,
+            { UnEvenDOW: true } => ShiftPattern.AlternateByWeekdayB,
+            { EvenDOM: true } => ShiftPattern.AlternateByMonthDayA,
+            { UnEvenDOM: true } => ShiftPattern.AlternateByMonthDayB,
+            _ => hasPatternUpdate ? ShiftPattern.Manual : current,
+        };
     }
 }

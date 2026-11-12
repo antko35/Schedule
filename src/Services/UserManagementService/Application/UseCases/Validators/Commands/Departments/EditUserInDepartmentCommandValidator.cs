@@ -1,7 +1,6 @@
-﻿namespace UserManagementService.Application.UseCases.Validators.Commands.Departments;
+namespace UserManagementService.Application.UseCases.Validators.Commands.Departments;
 
 using FluentValidation;
-using MongoDB.Bson.Serialization.Serializers;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,46 +1,36 @@
-﻿namespace UserManagementService.Domain.Models.User
+namespace UserManagementService.Tests.Domain;
+
+using UserManagementService.Domain.Models;
+using Xunit;
+
+public class CalculateAgeTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Domain.Models;
-    using FluentAssertions;
-    using Xunit;
-
-    public class CalculateAgeTests
+    [Fact]
+    public void BirthdayTodayIncrementsAge()
     {
-        [Theory]
-        [InlineData("2000-01-01", 25)]
-        [InlineData("2000-12-31", 24)]
-        [InlineData("1990-06-15", 34)]
-        public void CalculateAge_ShouldReturnCorrectAge(string dateOfBirthString, int expectedAge)
-        {
-            // Arrange
-            var dateOfBirth = DateOnly.Parse(dateOfBirthString);
-            var user = new User { DateOfBirth = dateOfBirth };
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var user = new User { DateOfBirth = today.AddYears(-25) };
+        Assert.Equal(25, user.CalculateAge());
+        Assert.Equal(25, user.Age);
+    }
 
-            // Act
-            var calculatedAge = user.CalculateAge();
+    [Fact]
+    public void BirthdayTomorrowHasNotIncrementedAge()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var user = new User { DateOfBirth = today.AddYears(-25).AddDays(1) };
+        Assert.Equal(24, user.CalculateAge());
+    }
 
-            // Assert
-            calculatedAge.Should().Be(expectedAge);
-        }
-
-        [Fact]
-        public void CalculateAge_ShouldHandleLeapYearCorrectly()
-        {
-            // Arrange
-            var dateOfBirth = new DateOnly(2004, 2, 29); // Високосный год
-            var user = new User { DateOfBirth = dateOfBirth };
-
-            // Act
-            var calculatedAge = user.CalculateAge();
-
-            // Assert
-            calculatedAge.Should().Be(21);
-        }
+    [Fact]
+    public void LeapDayBirthRetainsDateAndUsesExistingAnniversaryRule()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var birth = new DateOnly(2004, 2, 29);
+        var expected = today.Year - 2004;
+        if (today < new DateOnly(today.Year, 2, DateTime.IsLeapYear(today.Year) ? 29 : 28)) expected--;
+        var user = new User { DateOfBirth = birth };
+        Assert.Equal(expected, user.CalculateAge());
+        Assert.Equal(birth, user.DateOfBirth);
     }
 }

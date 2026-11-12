@@ -1,42 +1,44 @@
-﻿using MediatR;
+namespace ScheduleService.Application.UseCases.QueryHandlers.ScheduleRules;
+
+using MediatR;
+using ScheduleService.Application.Contracts;
 using ScheduleService.Application.Extensions;
+using ScheduleService.Application.Mapping;
 using ScheduleService.Application.UseCases.Queries.ScheduleRules;
-using ScheduleService.DataAccess.Repository;
-using ScheduleService.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ScheduleService.Domain.Abstractions;
 
-namespace ScheduleService.Application.UseCases.QueryHandlers.ScheduleRules
+public sealed class GetUserRulesQueryHandler
+    : IRequestHandler<GetUserRulesQuery, ScheduleRulesDto>
 {
-    public class GetUserRulesQueryHandler
-        : IRequestHandler<GetUserRulesQuery, UserScheduleRules>
+    private readonly IScheduleGenerationRuleRepository ruleRepository;
+    private readonly IScheduleRepository scheduleRepository;
+
+    public GetUserRulesQueryHandler(
+        IScheduleGenerationRuleRepository ruleRepository,
+        IScheduleRepository scheduleRepository)
     {
-        private readonly IUserRuleRepository userRuleRepository;
+        this.ruleRepository = ruleRepository;
+        this.scheduleRepository = scheduleRepository;
+    }
 
-        public GetUserRulesQueryHandler(IUserRuleRepository userRuleRepository)
-        {
-            this.userRuleRepository = userRuleRepository;
-        }
+    public async Task<ScheduleRulesDto> Handle(
+        GetUserRulesQuery request,
+        CancellationToken cancellationToken)
+    {
+        var period = new DateOnly(request.Year, request.Month, 1);
+        var rule = await ruleRepository.GetAsync(
+            request.UserId,
+            request.DepartmentId,
+            period,
+            cancellationToken);
+        rule.EnsureExists("Rules not found");
 
-        public async Task<UserScheduleRules> Handle(GetUserRulesQuery request, CancellationToken cancellationToken)
-        {
-            var monthName = new DateTime(request.Year, request.Month, 1)
-                .ToString("MMMM")
-                .ToLower();
+        var schedule = await scheduleRepository.GetAsync(
+            request.UserId,
+            request.DepartmentId,
+            period,
+            cancellationToken);
 
-            var response = await userRuleRepository
-                .GetMonthScheduleRules(
-                request.UserId,
-                request.DepartmentId,
-                monthName,
-                request.Year);
-
-            response.EnsureExists("Rules not found");
-
-            return response;
-        }
+        return rule!.ToDto(schedule?.Id ?? string.Empty);
     }
 }

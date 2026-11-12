@@ -6,12 +6,12 @@
     using System.Text;
     using System.Threading.Tasks;
     using MediatR;
-    using ScheduleService.Domain.Models;
+    using ScheduleService.Application.Contracts;
 
     public record CreateWorkDayManuallyCommand(
         string UserId,
         string DepartmentId,
         DateTime StartTime,
         DateTime EndTime)
-        : IRequest<WorkDay>;
+        : IRequest<WorkDayDto>;
 }

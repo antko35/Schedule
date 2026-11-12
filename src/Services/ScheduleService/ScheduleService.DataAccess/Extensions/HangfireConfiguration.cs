@@ -1,31 +1,33 @@
-using Hangfire;
-using Hangfire.Mongo;
-using Hangfire.Mongo.Migration.Strategies;
-using Hangfire.Mongo.Migration.Strategies.Backup;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using ScheduleService.DataAccess.Database;
-
 namespace ScheduleService.DataAccess.Extensions;
+
+using Hangfire;
+using Hangfire.PostgreSql;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 public static class HangfireConfiguration
 {
-    public static IServiceCollection HangfireConfigure(this IServiceCollection services)
+    private const string HangfireSchemaName = "schedule_hangfire";
+
+    public static IServiceCollection HangfireConfigure(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        services.AddHangfire((serviceProvider, config) =>
+        var connectionString = configuration.GetConnectionString(DbConfiguration.ConnectionStringName);
+        if (string.IsNullOrWhiteSpace(connectionString))
         {
-            var dbOptions = serviceProvider.GetService<IOptions<DbOptions>>()?.Value;
-            config.UseMongoStorage(dbOptions.ConnectionString, "HangfireDb", new MongoStorageOptions
-            {
-                MigrationOptions = new MongoMigrationOptions
+            throw new InvalidOperationException(
+                $"Connection string '{DbConfiguration.ConnectionStringName}' is not configured.");
+        }
+
+        services.AddHangfire((_, hangfireConfiguration) =>
+            hangfireConfiguration.UsePostgreSqlStorage(
+                options => options.UseNpgsqlConnection(connectionString),
+                new PostgreSqlStorageOptions
                 {
-                    MigrationStrategy = new DropMongoMigrationStrategy(),
-                    BackupStrategy = new CollectionMongoBackupStrategy()
-                },
-                Prefix = "hangfire",
-                CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
-            });
-        });
+                    SchemaName = HangfireSchemaName,
+                    PrepareSchemaIfNecessary = true,
+                }));
 
         services.AddHangfireServer();
 
